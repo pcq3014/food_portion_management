@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Sửa món ăn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="max-w-xl mx-auto p-6 bg-white mt-10 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">✏️ Sửa món ăn</h1>
+    <form action="/edit-meal/{{ meal._id }}" method="post" class="space-y-4">
+      <input type="text" name="name" placeholder="Tên món" value="{{ meal.name }}" class="w-full border p-2 rounded" required>
+      <input type="number" name="calories" placeholder="Calories" value="{{ meal.calories }}" class="w-full border p-2 rounded" required>
+      <input type="number" name="protein" placeholder="Protein" value="{{ meal.protein }}" class="w-full border p-2 rounded" required>
+      <input type="number" name="carbs" placeholder="Carbs" value="{{ meal.carbs }}" class="w-full border p-2 rounded" required>
+      <input type="number" name="fat" placeholder="Fat" value="{{ meal.fat }}" class="w-full border p-2 rounded" required>
+      <div class="flex justify-end gap-2">
+        <a href="/" class="text-gray-500 hover:underline">← Huỷ</a>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">💾 Lưu thay đổi</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

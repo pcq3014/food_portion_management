@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý khẩu phần ăn</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-white shadow p-6 mb-6">
+    <div class="container mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <img src="/static/logo.png" alt="Logo" class="w-12 h-12">
+        <div>
+          <h1 class="text-3xl font-bold">Quản lý khẩu phần ăn</h1>
+          <p class="text-gray-600">👋 Xin chào, <strong>{{ fullname }}</strong>!</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="container mx-auto mb-8 flex flex-wrap justify-center gap-3">
+    <a href="/add-meal" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow">➕ Thêm món ăn</a>
+    <a href="/log-meal" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow">📝 Ghi nhật ký</a>
+    <a href="/export-csv" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded shadow">📤 Tải CSV</a>
+    <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow">🚪 Đăng xuất</a>
+  </nav>
+
+  <!-- Danh sách món ăn -->
+  <section class="container mx-auto mb-10">
+    <h2 class="text-2xl font-semibold mb-4">📋 Danh sách món ăn</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
+      {% for meal in meals %}
+      <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200">
+        <h3 class="text-lg font-semibold">{{ meal.name }}</h3>
+        <ul class="text-sm text-gray-600 space-y-1 mt-2">
+          <li>🔥 Calories: {{ meal.calories }}</li>
+          <li>💪 Protein: {{ meal.protein }}g</li>
+          <li>🍞 Carbs: {{ meal.carbs }}g</li>
+          <li>🥑 Fat: {{ meal.fat }}g</li>
+        </ul>
+        <div class="flex gap-4 mt-4 text-sm">
+          <a href="/edit-meal/{{ meal._id }}" class="text-blue-600 hover:underline flex items-center gap-1">✏️ Sửa</a>
+          <button onclick="openModal('{{ meal._id }}')" class="text-red-600 hover:underline flex items-center gap-1">🗑️ Xoá</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Modal xác nhận xoá -->
+  <div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+      <h2 class="text-xl font-semibold mb-4">🗑️ Xác nhận xoá</h2>
+      <p class="text-gray-700 mb-4">Bạn có chắc chắn muốn xoá món ăn này?</p>
+      <div class="flex justify-end gap-3">
+        <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded">Huỷ</button>
+        <form id="confirmDeleteForm" method="POST">
+          <button type="submit" class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded">Xoá</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nhật ký hôm nay -->
+  <section class="container mx-auto mb-10">
+    <h2 class="text-2xl font-semibold mb-4">🗓️ Nhật ký hôm nay</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm border bg-white shadow rounded">
+        <thead class="bg-gray-100 font-semibold">
+          <tr>
+            <th class="p-2 border">Món</th>
+            <th class="p-2 border">Số lượng</th>
+            <th class="p-2 border">Calories</th>
+            <th class="p-2 border">Protein</th>
+            <th class="p-2 border">Carbs</th>
+            <th class="p-2 border">Fat</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr class="hover:bg-gray-50">
+            <td class="p-2 border">{{ log.meal.name }}</td>
+            <td class="p-2 border">{{ log.quantity }}</td>
+            <td class="p-2 border">{{ log.meal.calories * log.quantity }}</td>
+            <td class="p-2 border">{{ log.meal.protein * log.quantity }}</td>
+            <td class="p-2 border">{{ log.meal.carbs * log.quantity }}</td>
+            <td class="p-2 border">{{ log.meal.fat * log.quantity }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Biểu đồ -->
+  <section class="container mx-auto mb-12">
+    <h2 class="text-2xl font-semibold mb-4">📊 Phân tích hôm nay</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white p-4 rounded shadow h-[320px]">
+        <canvas id="nutritionChart"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded shadow h-[320px]">
+        <canvas id="macroPieChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Script xử lý modal -->
+  <script>
+    function openModal(mealId) {
+      const modal = document.getElementById("deleteModal");
+      const form = document.getElementById("confirmDeleteForm");
+      form.action = `/delete-meal/${mealId}`;
+      modal.classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("deleteModal").classList.add("hidden");
+    }
+  </script>
+
+  <!-- Script biểu đồ Chart.js -->
+  <script>
+    const summary = {
+      calories: {{ summary.total_calories | default(0) }},
+      protein: {{ summary.total_protein | default(0) }},
+      carbs: {{ summary.total_carbs | default(0) }},
+      fat: {{ summary.total_fat | default(0) }},
+    };
+
+    new Chart(document.getElementById("nutritionChart").getContext("2d"), {
+      type: "bar",
+      data: {
+        labels: ["Calories", "Protein", "Carbs", "Fat"],
+        datasets: [{
+          label: "Tổng dinh dưỡng hôm nay",
+          data: [summary.calories, summary.protein, summary.carbs, summary.fat],
+          backgroundColor: ["#f87171", "#60a5fa", "#facc15", "#34d399"]
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    new Chart(document.getElementById("macroPieChart").getContext("2d"), {
+      type: "pie",
+      data: {
+        labels: ["Protein", "Carbs", "Fat"],
+        datasets: [{
+          data: [summary.protein, summary.carbs, summary.fat],
+          backgroundColor: ["#60a5fa", "#facc15", "#34d399"]
+        }]
+      },
+      options: {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const value = ctx.parsed;
+                const percent = ((value / total) * 100).toFixed(1);
+                return `${ctx.label}: ${value}g (${percent}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

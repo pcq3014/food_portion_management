@@ -25,19 +25,34 @@ def register_user(
     request: Request,
     fullname: str = Form(...),
     username: str = Form(...),
-    password: str = Form(...)
+    password: str = Form(...),
+    confirm_password: str = Form(...)
 ):
+    if password != confirm_password:
+        return templates.TemplateResponse("register.html", {
+            "request": request,
+            "error": "Mật khẩu không khớp",
+            "fullname": fullname,
+            "username": username
+        }, status_code=400)
+
     if users_col.find_one({"username": username}):
-        return HTMLResponse("Tên đăng nhập đã tồn tại", status_code=400)
-    
+        return templates.TemplateResponse("register.html", {
+            "request": request,
+            "error": "Tên đăng nhập đã tồn tại",
+            "fullname": fullname,
+            "username": username
+        }, status_code=400)
+
     hashed = bcrypt.hash(password)
     users_col.insert_one({
         "fullname": fullname,
         "username": username,
         "hashed_password": hashed
     })
-    
+
     return RedirectResponse("/login", status_code=302)
+
 
 # Đăng nhập
 @app.get("/login")
@@ -46,15 +61,22 @@ def login_form(request: Request):
 
 @app.post("/login")
 def login_user(
-    response: Response,
+    request: Request,  # Thêm request vào đây
     username: str = Form(...),
     password: str = Form(...)
 ):
     user = users_col.find_one({"username": username})
     if not user or not bcrypt.verify(password, user["hashed_password"]):
-        return HTMLResponse("Invalid login", status_code=401)
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "Tên đăng nhập hoặc mật khẩu không đúng"
+            },
+            status_code=401
+        )
+
     response = RedirectResponse("/", status_code=302)
-    # Set cookie bảo mật hơn
     response.set_cookie(
         key="user_id",
         value=str(user["_id"]),

@@ -124,19 +124,17 @@ async def home(request: Request, user_id: str = Cookie(None)):
 
     # ✅ Truyền fullname vào template
     return templates.TemplateResponse("index.html", {
-        "request": request,
-        "meals": meals,
-        "logs": logs,
-        "summary": summary,
-        "fullname": fullname
+    "request": request,
+    "meals": meals,
+    "logs": logs,
+    "summary": summary,
+    "fullname": fullname,
+    "today": today  # <--- THÊM DÒNG NÀY
     })
 
 
 # Các route thêm, sửa, xóa món ăn, ghi nhật ký... giữ nguyên không đổi
 
-@app.get("/add-meal", response_class=HTMLResponse)
-async def add_meal_form(request: Request):
-    return templates.TemplateResponse("add_meal.html", {"request": request})
 
 @app.post("/add-meal")
 async def add_meal(
@@ -155,10 +153,6 @@ async def add_meal(
     })
     return RedirectResponse("/", status_code=303)
 
-@app.get("/log-meal", response_class=HTMLResponse)
-async def log_meal_form(request: Request):
-    meals = list(meals_col.find())
-    return templates.TemplateResponse("log_meal.html", {"request": request, "meals": meals})
 
 @app.post("/log-meal")
 async def log_meal(

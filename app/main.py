@@ -207,18 +207,55 @@ async def delete_meal(meal_id: str):
 
 @app.get("/export-csv")
 def export_csv():
+    pipeline = [
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "user_id",
+                "foreignField": "_id",
+                "as": "user"
+            }
+        },
+        {"$unwind": "$user"},
+        {
+            "$lookup": {
+                "from": "meals",
+                "localField": "meal_id",
+                "foreignField": "_id",
+                "as": "meal"
+            }
+        },
+        {"$unwind": "$meal"},
+        {
+            "$project": {
+                "fullname": "$user.fullname",
+                "meal_name": "$meal.name",
+                "quantity": 1,
+                "date": 1
+            }
+        }
+    ]
+    logs = logs_col.aggregate(pipeline)
+
+    # Sử dụng StringIO để ghi CSV, sau đó encode sang bytes
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["user_id", "meal_id", "quantity", "date"])
-    for log in logs_col.find():
+    writer.writerow(["Họ tên", "Tên món ăn", "Số lượng", "Ngày"])
+    for log in logs:
         writer.writerow([
-            str(log.get("user_id", "")),
-            str(log.get("meal_id", "")),
+            log.get("fullname", ""),
+            log.get("meal_name", ""),
             log.get("quantity", 0),
             log.get("date", "")
         ])
-    output.seek(0)
-    return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=log_data.csv"})
+    csv_content = output.getvalue().encode('utf-8-sig')
+    output.close()
+
+    return StreamingResponse(
+        io.BytesIO(csv_content),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=log_data.csv"}
+    )
 
 # Đăng xuất
 @app.get("/logout")

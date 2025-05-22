@@ -82,12 +82,16 @@ async def home(request: Request, user_id: str = Cookie(None)):
     user = users_col.find_one({"_id": user_id_obj})
     fullname = user.get("fullname", "Người dùng") if user else "Người dùng"
 
-    meals = list(meals_col.find())
+    meals = []
+    for meal in meals_col.find():
+        meal["_id"] = str(meal["_id"])
+        meals.append(meal)
 
     vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
     today = datetime.now(vn_tz).strftime('%Y-%m-%d')
 
-    logs = list(logs_col.aggregate([
+    logs = []
+    for log in logs_col.aggregate([
         {"$match": {"user_id": user_id_obj, "date": today}},
         {"$lookup": {
             "from": "meals",
@@ -96,7 +100,11 @@ async def home(request: Request, user_id: str = Cookie(None)):
             "as": "meal"
         }},
         {"$unwind": "$meal"}
-    ]))
+    ]):
+        log["_id"] = str(log["_id"])
+        log["meal_id"] = str(log["meal_id"])
+        log["meal"]["_id"] = str(log["meal"]["_id"])
+        logs.append(log)
 
     summary_result = logs_col.aggregate([
         {"$match": {"user_id": user_id_obj, "date": today}},
@@ -124,12 +132,12 @@ async def home(request: Request, user_id: str = Cookie(None)):
 
     # ✅ Truyền fullname vào template
     return templates.TemplateResponse("index.html", {
-    "request": request,
-    "meals": meals,
-    "logs": logs,
-    "summary": summary,
-    "fullname": fullname,
-    "today": today  # <--- THÊM DÒNG NÀY
+        "request": request,
+        "meals": meals,
+        "logs": logs,
+        "summary": summary,
+        "fullname": fullname,
+        "today": today
     })
 
 
@@ -172,12 +180,6 @@ async def log_meal(
     })
     return RedirectResponse("/", status_code=303)
 
-@app.get("/edit-meal/{meal_id}", response_class=HTMLResponse)
-async def edit_meal_form(request: Request, meal_id: str):
-    meal = meals_col.find_one({"_id": ObjectId(meal_id)})
-    if not meal:
-        return HTMLResponse(content="Không tìm thấy món ăn", status_code=404)
-    return templates.TemplateResponse("edit_meal.html", {"request": request, "meal": meal})
 
 @app.post("/edit-meal/{meal_id}")
 async def update_meal(

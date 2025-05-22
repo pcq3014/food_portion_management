@@ -22,12 +22,14 @@
   </header>
 
   <!-- Navigation -->
-  <nav class="container mx-auto mb-8 flex flex-wrap justify-center gap-3">
-    <a href="/add-meal" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow">➕ Thêm món ăn</a>
-    <a href="/log-meal" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow">📝 Ghi nhật ký</a>
-    <a href="/export-csv" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded shadow">📤 Tải CSV</a>
-    <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow">🚪 Đăng xuất</a>
-  </nav>
+<!-- Navigation -->
+<nav class="container mx-auto mb-8 flex flex-wrap justify-center gap-3">
+  <button onclick="openAddMealModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow">➕ Thêm món ăn</button>
+  <button onclick="openLogMealModal()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow">📝 Ghi nhật ký</button>
+  <a href="/export-csv" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded shadow">📤 Tải CSV</a>
+  <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow">🚪 Đăng xuất</a>
+</nav>
+
 
   <!-- Danh sách món ăn -->
   <section class="container mx-auto mb-10">
@@ -172,6 +174,60 @@
       }
     });
   </script>
+<!-- Modal Thêm Món Ăn -->
+<div id="addMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-6 rounded shadow w-full max-w-md">
+    <h2 class="text-xl font-bold mb-4">➕ Thêm món ăn</h2>
+    <form action="/add-meal" method="POST" class="space-y-4">
+      <input name="name" placeholder="Tên món ăn" class="w-full border p-2 rounded" required>
+      <input name="calories" type="number" placeholder="Calories" class="w-full border p-2 rounded" required>
+      <input name="protein" type="number" placeholder="Protein (g)" class="w-full border p-2 rounded" required>
+      <input name="carbs" type="number" placeholder="Carbs (g)" class="w-full border p-2 rounded" required>
+      <input name="fat" type="number" placeholder="Fat (g)" class="w-full border p-2 rounded" required>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeAddMealModal()" class="bg-gray-300 px-4 py-2 rounded">Huỷ</button>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Thêm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Ghi Nhật Ký -->
+<div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-6 rounded shadow w-full max-w-md">
+    <h2 class="text-xl font-bold mb-4">📝 Ghi nhật ký</h2>
+    <form action="/log-meal" method="POST" class="space-y-4">
+      <select name="meal_id" class="w-full border p-2 rounded" required>
+        {% for meal in meals %}
+        <option value="{{ meal._id }}">{{ meal.name }}</option>
+        {% endfor %}
+      </select>
+      <input name="quantity" type="number" placeholder="Số lượng" class="w-full border p-2 rounded" required>
+<input name="date" type="date" value="{{ today }}" class="w-full border p-2 rounded" required>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeLogMealModal()" class="bg-gray-300 px-4 py-2 rounded">Huỷ</button>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  function openAddMealModal() {
+    document.getElementById('addMealModal').classList.remove('hidden');
+  }
+
+  function closeAddMealModal() {
+    document.getElementById('addMealModal').classList.add('hidden');
+  }
+
+  function openLogMealModal() {
+    document.getElementById('logMealModal').classList.remove('hidden');
+  }
+
+  function closeLogMealModal() {
+    document.getElementById('logMealModal').classList.add('hidden');
+  }
+</script>
 
 </body>
 </html>

@@ -32,26 +32,31 @@
 
 
   <!-- Danh sách món ăn -->
-  <section class="container mx-auto mb-10">
-    <h2 class="text-2xl font-semibold mb-4">📋 Danh sách món ăn</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto pr-2">
-      {% for meal in meals %}
-      <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition duration-200">
-        <h3 class="text-lg font-semibold">{{ meal.name }}</h3>
-        <ul class="text-sm text-gray-600 space-y-1 mt-2">
-          <li>🔥 Calories: {{ meal.calories }}</li>
-          <li>💪 Protein: {{ meal.protein }}g</li>
-          <li>🍞 Carbs: {{ meal.carbs }}g</li>
-          <li>🥑 Fat: {{ meal.fat }}g</li>
-        </ul>
-        <div class="flex gap-4 mt-4 text-sm">
-          <a href="/edit-meal/{{ meal._id }}" class="text-blue-600 hover:underline flex items-center gap-1">✏️ Sửa</a>
-          <button onclick="openModal('{{ meal._id }}')" class="text-red-600 hover:underline flex items-center gap-1">🗑️ Xoá</button>
-        </div>
+<section class="container mx-auto mb-10 px-4">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">📋 Danh sách món ăn</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-h-[400px] overflow-y-auto pr-2">
+    {% for meal in meals %}
+    <div class="bg-white p-5 rounded-2xl shadow-md hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition duration-300 transform hover:-translate-y-1">
+      <h3 class="text-xl font-semibold text-gray-800">{{ meal.name }}</h3>
+      <ul class="text-sm text-gray-600 mt-3 space-y-1">
+        <li>🔥 <span class="font-medium">Calories:</span> {{ meal.calories }}</li>
+        <li>💪 <span class="font-medium">Protein:</span> {{ meal.protein }}g</li>
+        <li>🍞 <span class="font-medium">Carbs:</span> {{ meal.carbs }}g</li>
+        <li>🥑 <span class="font-medium">Fat:</span> {{ meal.fat }}g</li>
+      </ul>
+      <div class="flex gap-4 mt-5 text-sm font-medium">
+        <a href="/edit-meal/{{ meal._id }}" class="text-blue-600 hover:text-blue-800 transition flex items-center gap-1">
+          ✏️ Sửa
+        </a>
+        <button onclick="openModal('{{ meal._id }}')" class="text-red-600 hover:text-red-800 transition flex items-center gap-1">
+          🗑️ Xoá
+        </button>
       </div>
-      {% endfor %}
     </div>
-  </section>
+    {% endfor %}
+  </div>
+</section>
+
 
   <!-- Modal xác nhận xoá -->
   <div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
@@ -67,49 +72,51 @@
     </div>
   </div>
 
-  <!-- Nhật ký hôm nay -->
-  <section class="container mx-auto mb-10">
-    <h2 class="text-2xl font-semibold mb-4">🗓️ Nhật ký hôm nay</h2>
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm border bg-white shadow rounded">
-        <thead class="bg-gray-100 font-semibold">
-          <tr>
-            <th class="p-2 border">Món</th>
-            <th class="p-2 border">Số lượng</th>
-            <th class="p-2 border">Calories</th>
-            <th class="p-2 border">Protein</th>
-            <th class="p-2 border">Carbs</th>
-            <th class="p-2 border">Fat</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for log in logs %}
-          <tr class="hover:bg-gray-50">
-            <td class="p-2 border">{{ log.meal.name }}</td>
-            <td class="p-2 border">{{ log.quantity }}</td>
-            <td class="p-2 border">{{ log.meal.calories * log.quantity }}</td>
-            <td class="p-2 border">{{ log.meal.protein * log.quantity }}</td>
-            <td class="p-2 border">{{ log.meal.carbs * log.quantity }}</td>
-            <td class="p-2 border">{{ log.meal.fat * log.quantity }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </section>
+<!-- Nhật ký hôm nay -->
+<section class="container mx-auto mb-10 px-4">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">🗓️ Nhật ký hôm nay</h2>
+  <div class="overflow-x-auto rounded-lg shadow">
+    <table class="min-w-full text-sm bg-white">
+      <thead class="bg-gray-100 text-gray-700 font-semibold">
+        <tr>
+          <th class="p-3 text-left">Món</th>
+          <th class="p-3 text-left">Số lượng</th>
+          <th class="p-3 text-left">Calories</th>
+          <th class="p-3 text-left">Protein</th>
+          <th class="p-3 text-left">Carbs</th>
+          <th class="p-3 text-left">Fat</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr class="even:bg-gray-50 hover:bg-blue-50 transition">
+          <td class="p-3">{{ log.meal.name }}</td>
+          <td class="p-3">{{ log.quantity }}</td>
+          <td class="p-3">{{ log.meal.calories * log.quantity }}</td>
+          <td class="p-3">{{ log.meal.protein * log.quantity }}</td>
+          <td class="p-3">{{ log.meal.carbs * log.quantity }}</td>
+          <td class="p-3">{{ log.meal.fat * log.quantity }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 
-  <!-- Biểu đồ -->
-  <section class="container mx-auto mb-12">
-    <h2 class="text-2xl font-semibold mb-4">📊 Phân tích hôm nay</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-white p-4 rounded shadow h-[320px]">
-        <canvas id="nutritionChart"></canvas>
-      </div>
-      <div class="bg-white p-4 rounded shadow h-[320px]">
-        <canvas id="macroPieChart"></canvas>
-      </div>
+<!-- Biểu đồ -->
+<section class="container mx-auto mb-12 px-4">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">📊 Phân tích hôm nay</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">📈 Dinh dưỡng tổng</h3>
+      <canvas id="nutritionChart" class="h-[260px]"></canvas>
     </div>
-  </section>
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+      <h3 class="text-lg font-semibold mb-2 text-gray-700">🥗 Phân bố chất</h3>
+      <canvas id="macroPieChart" class="h-[250px] w-[250px] mx-auto"></canvas>
+    </div>
+  </div>
+</section>
 
   <!-- Script xử lý modal -->
   <script>
@@ -175,42 +182,48 @@
     });
   </script>
 <!-- Modal Thêm Món Ăn -->
-<div id="addMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-  <div class="bg-white p-6 rounded shadow w-full max-w-md">
-    <h2 class="text-xl font-bold mb-4">➕ Thêm món ăn</h2>
-    <form action="/add-meal" method="POST" class="space-y-4">
-      <input name="name" placeholder="Tên món ăn" class="w-full border p-2 rounded" required>
-      <input name="calories" type="number" placeholder="Calories" class="w-full border p-2 rounded" required>
-      <input name="protein" type="number" placeholder="Protein (g)" class="w-full border p-2 rounded" required>
-      <input name="carbs" type="number" placeholder="Carbs (g)" class="w-full border p-2 rounded" required>
-      <input name="fat" type="number" placeholder="Fat (g)" class="w-full border p-2 rounded" required>
-      <div class="flex justify-end gap-2">
-        <button type="button" onclick="closeAddMealModal()" class="bg-gray-300 px-4 py-2 rounded">Huỷ</button>
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Thêm</button>
+<div id="addMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
+  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
+    <h2 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
+      <span>➕</span> Thêm món ăn
+    </h2>
+    <form action="/add-meal" method="POST" class="space-y-3">
+      <input name="name" placeholder="Tên món ăn" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
+      <input name="calories" type="number" placeholder="Calories" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
+      <input name="protein" type="number" placeholder="Protein (g)" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
+      <input name="carbs" type="number" placeholder="Carbs (g)" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
+      <input name="fat" type="number" placeholder="Fat (g)" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="closeAddMealModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Thêm</button>
       </div>
     </form>
   </div>
 </div>
 
+
 <!-- Modal Ghi Nhật Ký -->
-<div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-  <div class="bg-white p-6 rounded shadow w-full max-w-md">
-    <h2 class="text-xl font-bold mb-4">📝 Ghi nhật ký</h2>
-    <form action="/log-meal" method="POST" class="space-y-4">
-      <select name="meal_id" class="w-full border p-2 rounded" required>
+<div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
+  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
+    <h2 class="text-2xl font-bold text-green-600 flex items-center gap-2">
+      <span>📝</span> Ghi nhật ký
+    </h2>
+    <form action="/log-meal" method="POST" class="space-y-3">
+      <select name="meal_id" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition" required>
         {% for meal in meals %}
         <option value="{{ meal._id }}">{{ meal.name }}</option>
         {% endfor %}
       </select>
-      <input name="quantity" type="number" placeholder="Số lượng" class="w-full border p-2 rounded" required>
-<input name="date" type="date" value="{{ today }}" class="w-full border p-2 rounded" required>
-      <div class="flex justify-end gap-2">
-        <button type="button" onclick="closeLogMealModal()" class="bg-gray-300 px-4 py-2 rounded">Huỷ</button>
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Lưu</button>
+      <input name="quantity" type="number" placeholder="Số lượng" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition" required>
+      <input name="date" type="date" value="{{ today }}" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition" required>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="closeLogMealModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
+        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition">Lưu</button>
       </div>
     </form>
   </div>
 </div>
+
 <script>
   function openAddMealModal() {
     document.getElementById('addMealModal').classList.remove('hidden');

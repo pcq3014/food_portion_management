@@ -1,61 +1,53 @@
-# 🥗 SmartCalories
+<p align="center"> <img src="/assets/icon.png" width="120"> </p> <h1 align="center">🥗 SmartCalories</h1> <p align="center"> <strong>Ứng dụng quản lý khẩu phần ăn và phân tích dinh dưỡng hằng ngày</strong><br> <a href="https://nhat-ky-an-uong.onrender.com/" target="_blank"><strong>🌐 Truy cập bản demo</strong></a> </p> <p align="center"> <img src="https://img.shields.io/badge/Python-3.8+-blue?logo=python"> <img src="https://img.shields.io/badge/FastAPI-Framework-0ba360?logo=fastapi"> <img src="https://img.shields.io/badge/MongoDB-Database-green?logo=mongodb"> </p>
+🚀 Tính năng chính
+👤 Đăng ký / đăng nhập người dùng
 
-**SmartCalories** là một ứng dụng web giúp bạn quản lý lượng calo và thành phần dinh dưỡng trong các bữa ăn hàng ngày. Ứng dụng cho phép thêm món ăn, ghi nhật ký ăn uống, phân tích dinh dưỡng và xuất dữ liệu dưới dạng CSV.
+🍽️ Quản lý món ăn: thêm, sửa, xoá kèm thông tin dinh dưỡng và hình ảnh
 
-![Giao diện chính](/assets/icon.png)
+🧾 Ghi nhật ký ăn uống theo ngày
 
----
+📊 Thống kê lượng calo, protein, carbs và chất béo tiêu thụ
 
-## 🚀 Tính năng chính
+📤 Xuất dữ liệu nhật ký ra file .csv
 
-- 👤 Đăng ký / đăng nhập người dùng
-- 🍽️ Quản lý món ăn: thêm, sửa, xoá kèm thông tin dinh dưỡng và hình ảnh
-- 🧾 Ghi nhật ký ăn uống theo ngày
-- 📊 Thống kê lượng calo, protein, carbs và chất béo tiêu thụ
-- 📤 Xuất dữ liệu nhật ký ra file `.csv`
-- 🔐 Quản lý phiên đăng nhập bằng cookie
-- 📸 Giao diện người dùng trực quan, hiện đại
+🔐 Quản lý phiên đăng nhập bằng cookie
 
----
+📸 Giao diện người dùng trực quan, hiện đại
 
-## 🖼️ Giao diện minh họa
+🖥️ Truy cập nhanh
+🔗 Demo Online: https://nhat-ky-an-uong.onrender.com/
 
-### 📋 Danh sách món ăn
+🖼️ Giao diện minh họa
+📋 Danh sách món ăn
+<p align="center"><img src="/assets/demo.png" width="600"></p>
+📈 Nhật ký & Phân tích
+<p align="center"><img src="/assets/analysis.png" width="600"></p>
+🛠️ Cài đặt
+✅ Yêu cầu
+Python 3.8+
 
-![Danh sách món ăn](/assets/demo.png)
+MongoDB
 
-### 📈 Nhật ký & Phân tích
+pip
 
-![Phân tích dinh dưỡng](/assets/analysis.png)
-
----
-
-## 🛠️ Cài đặt
-
-### ✅ Yêu cầu
-
-- Python 3.8+
-- MongoDB
-- pip
-
-### 📥 Cài đặt local
-
-```bash
+📥 Cài đặt local
+bash
+Copy
+Edit
 git clone https://github.com/your-username/smartcalories.git
 cd smartcalories
 pip install -r requirements.txt
 🔔 Đảm bảo MongoDB đã chạy và bạn đã cấu hình các collection:
 users_col, meals_col, logs_col
 
-🚀 Khởi chạy ứng dụng
 bash
 Copy
 Edit
 uvicorn main:app --reload
-Truy cập tại: http://localhost:8000
+🖥️ Truy cập tại: http://localhost:8000
 
-📦 requirements.txt
-txt
+📦 Thư viện sử dụng
+css
 Copy
 Edit
 fastapi
@@ -66,7 +58,7 @@ python-dotenv
 python-multipart
 pytz
 passlib[bcrypt]
-🗂️ Cấu trúc thư mục
+📂 Cấu trúc thư mục
 csharp
 Copy
 Edit
@@ -77,14 +69,15 @@ smartcalories/
 │   ├── database.py       # Kết nối MongoDB
 │   └── main.py           # FastAPI endpoints
 ├── assets/
-│   └── demo.png          # Ảnh minh hoạ ứng dụng
+│   └── demo.png
 ├── requirements.txt
 └── README.md
 📤 Xuất CSV
-Nhấn nút "Xuất CSV" tại thanh menu để tải toàn bộ nhật ký ăn uống (bao gồm họ tên, món ăn, số lượng, ngày) dưới dạng file .csv.
+Chọn "Xuất CSV" tại thanh menu để tải toàn bộ nhật ký ăn uống (họ tên, món ăn, số lượng, ngày) dưới dạng file .csv.
 
 📄 Giấy phép
-Dự án được phát hành dưới giấy phép MIT.
+Phát hành dưới giấy phép MIT.
 
 💡 Góp ý & Hỗ trợ
-Bạn có thể tạo issue hoặc gửi pull request để cải thiện dự án. Cảm ơn bạn đã sử dụng SmartCalories!
+Bạn có thể tạo issue hoặc gửi pull request để cải thiện dự án.
+Cảm ơn bạn đã sử dụng SmartCalories!

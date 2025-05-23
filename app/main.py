@@ -173,7 +173,7 @@ async def add_meal(
     carbs: int = Form(...),
     protein: int = Form(...),
     fat: int = Form(...),
-    image_url: str = Form(None)  # Thêm dòng này
+    image_url: str = Form(None)  
 ):
     meals_col.insert_one({
         "name": name,
@@ -181,9 +181,9 @@ async def add_meal(
         "carbs": carbs,
         "protein": protein,
         "fat": fat,
-        "image_url": image_url  # Thêm dòng này
+        "image_url": image_url  
     })
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(url="/?view=meals", status_code=303)
 
 
 @app.post("/log-meal")
@@ -213,7 +213,7 @@ async def update_meal(
     carbs: int = Form(...),
     protein: int = Form(...),
     fat: int = Form(...),
-    image_url: str = Form(None)  # Thêm dòng này
+    image_url: str = Form(None)  
 ):
     meals_col.update_one(
         {"_id": ObjectId(meal_id)},
@@ -223,15 +223,15 @@ async def update_meal(
             "carbs": carbs,
             "protein": protein,
             "fat": fat,
-            "image_url": image_url  # Thêm dòng này
+            "image_url": image_url  
         }}
     )
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(url="/?view=meals", status_code=303)
 
 @app.post("/delete-meal/{meal_id}")
 async def delete_meal(meal_id: str):
     meals_col.delete_one({"_id": ObjectId(meal_id)})
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(url="/?view=meals", status_code=303)
 
 @app.get("/export-csv")
 def export_csv():

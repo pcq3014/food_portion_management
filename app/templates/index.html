@@ -465,12 +465,6 @@
     }
   }
 
-  window.onload = () => {
-    // Ẩn tất cả nội dung chi tiết, chỉ hiện welcome
-    document.getElementById("mealsView").classList.add("hidden");
-    document.getElementById("logView").classList.add("hidden");
-    document.getElementById("welcomeView").classList.remove("hidden");
-  };
   function goHome() {
     // Ẩn tất cả
     document.getElementById("mealsView").classList.add("hidden");
@@ -482,8 +476,7 @@
       btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
     });
   }
-</script>
-<script>
+
   window.onload = () => {
     const params = new URLSearchParams(window.location.search);
     const view = params.get("view");

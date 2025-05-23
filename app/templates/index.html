@@ -313,6 +313,7 @@
       document.getElementById('editProtein').value = meal.protein;
       document.getElementById('editCarbs').value = meal.carbs;
       document.getElementById('editFat').value = meal.fat;
+      document.getElementById('editImageUrl').value = meal.image_url || ""; 
       document.getElementById('editMealForm').action = '/edit-meal/' + meal._id;
       document.getElementById('editMealModal').classList.remove('hidden');
     }

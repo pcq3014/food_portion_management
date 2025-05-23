@@ -2,7 +2,7 @@
 
 **SmartCalories** là một ứng dụng web giúp bạn quản lý lượng calo và thành phần dinh dưỡng trong các bữa ăn hàng ngày. Ứng dụng cho phép thêm món ăn, ghi nhật ký ăn uống, phân tích dinh dưỡng và xuất dữ liệu dưới dạng CSV.
 
-![Giao diện chính](/assets/demo.png)
+![Giao diện chính](/assets/icon.png)
 
 ---
 

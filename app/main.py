@@ -202,7 +202,7 @@ async def log_meal(
         "quantity": quantity,
         "date": date
     })
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse(url="/?view=log", status_code=303)
 
 
 @app.post("/edit-meal/{meal_id}")

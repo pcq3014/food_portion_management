@@ -172,14 +172,16 @@ async def add_meal(
     calories: int = Form(...),
     carbs: int = Form(...),
     protein: int = Form(...),
-    fat: int = Form(...)
+    fat: int = Form(...),
+    image_url: str = Form(None)  # Thêm dòng này
 ):
     meals_col.insert_one({
         "name": name,
         "calories": calories,
         "carbs": carbs,
         "protein": protein,
-        "fat": fat
+        "fat": fat,
+        "image_url": image_url  # Thêm dòng này
     })
     return RedirectResponse("/", status_code=303)
 
@@ -210,7 +212,8 @@ async def update_meal(
     calories: int = Form(...),
     carbs: int = Form(...),
     protein: int = Form(...),
-    fat: int = Form(...)
+    fat: int = Form(...),
+    image_url: str = Form(None)  # Thêm dòng này
 ):
     meals_col.update_one(
         {"_id": ObjectId(meal_id)},
@@ -219,7 +222,8 @@ async def update_meal(
             "calories": calories,
             "carbs": carbs,
             "protein": protein,
-            "fat": fat
+            "fat": fat,
+            "image_url": image_url  # Thêm dòng này
         }}
     )
     return RedirectResponse("/", status_code=303)

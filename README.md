@@ -22,11 +22,11 @@
 
 ### 📋 Danh sách món ăn
 
-![Danh sách món ăn](./mnt/data/321864db-3689-451d-a533-5de58e2a637b.png)
+![Danh sách món ăn](/assets/demo.png)
 
 ### 📈 Nhật ký & Phân tích
 
-![Phân tích dinh dưỡng](./mnt/data/de3fc34d-35c6-4fb4-b90e-5e33aa926c2d.png)
+![Phân tích dinh dưỡng](/assets/analysis.png)
 
 ---
 

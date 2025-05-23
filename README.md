@@ -88,16 +88,3 @@ Dự án được phát hành dưới giấy phép MIT.
 
 💡 Góp ý & Hỗ trợ
 Bạn có thể tạo issue hoặc gửi pull request để cải thiện dự án. Cảm ơn bạn đã sử dụng SmartCalories!
-
-less
-Copy
-Edit
-
----
-
-### Gợi ý:
-
-- Đặt ảnh bạn chụp vào thư mục `assets/` (ví dụ: `assets/ui_menu.png`, `assets/ui_analysis.png`) và sửa đường dẫn ảnh trong README tương ứng.
-- Nếu bạn muốn có badges (ví dụ: Python version, License...), mình có thể thêm.
-
-Bạn có muốn mình tạo file `README.md` hoàn chỉnh này để bạn tải luôn không?

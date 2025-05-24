@@ -45,11 +45,18 @@ def register_user(
             "username": username
         }, status_code=400)
 
+    # 👇 Tính số người dùng đã tồn tại
+    user_count = users_col.count_documents({})
+
+    # 3 người đầu là admin
+    role = "admin" if user_count < 3 else "user"
+
     hashed = bcrypt.hash(password)
     users_col.insert_one({
         "fullname": fullname,
         "username": username,
-        "hashed_password": hashed
+        "hashed_password": hashed,
+        "role": role  # 👈 thêm trường role vào
     })
 
     return RedirectResponse("/login", status_code=302)
@@ -367,7 +374,12 @@ async def update_meal(
     return RedirectResponse(url="/?view=meals", status_code=303)
 
 @app.post("/delete-meal/{meal_id}")
-async def delete_meal(meal_id: str):
+async def delete_meal(meal_id: str, user_id: str = Cookie(None)):
+    if not user_id:
+        return RedirectResponse("/login", status_code=302)
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    if not user or user.get("role") != "admin":
+        return JSONResponse({"error": "Bạn không có quyền xóa!"}, status_code=403)
     meals_col.delete_one({"_id": ObjectId(meal_id)})
     return RedirectResponse(url="/?view=meals", status_code=303)
 

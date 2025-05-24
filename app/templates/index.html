@@ -991,35 +991,60 @@ function toggleBan(userId, ban) {
 }
 </script>
 <!-- Modal thông báo đăng xuất -->
-<div id="logoutNoticeModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] hidden">
-  <div class="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full text-center">
-    <div class="text-4xl mb-3">⚠️</div>
-    <div id="logoutNoticeMsg" class="text-lg font-semibold text-gray-800 mb-4"></div>
-    <button onclick="window.location.href='/login'" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded font-bold shadow">Đăng nhập lại</button>
+<!-- Modal thông báo đăng xuất -->
+<div id="logoutNoticeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] hidden">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in">
+    <div class="text-red-500 text-5xl mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 4a8 8 0 100 16 8 8 0 000-16z" />
+      </svg>
+    </div>
+    <div id="logoutNoticeMsg" class="text-xl font-semibold text-gray-800 mb-6"></div>
+    <a href="/login" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out">
+      Đăng nhập lại
+    </a>
   </div>
 </div>
+
+<style>
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+</style>
 
 <script>
 function showLogoutNotice(msg) {
   document.getElementById('logoutNoticeMsg').textContent = msg;
   document.getElementById('logoutNoticeModal').classList.remove('hidden');
+  setTimeout(() => {
+    window.location.href = '/login';
+  }, 2500);
 }
 
-// Hàm kiểm tra session
 function checkSession() {
-    fetch('/check-session', {credentials: 'include'})
-        .then(res => res.json())
-        .then(data => {
-            if (!data.valid) {
-                let msg = '';
-                if (data.reason === 'ban') msg = 'Tài khoản của bạn đã bị khóa!';
-                else if (data.reason === 'other_login') msg = 'Tài khoản đã đăng nhập ở nơi khác!';
-                else msg = 'Phiên đăng nhập đã hết hạn!';
-                showLogoutNotice(msg);
-            }
-        });
+  fetch('/check-session', {credentials: 'include'})
+    .then(res => res.json())
+    .then(data => {
+      if (!data.valid) {
+        let msg = '';
+        if (data.reason === 'ban') msg = 'Tài khoản của bạn đã bị khóa!';
+        else if (data.reason === 'other_login') msg = 'Tài khoản đã đăng nhập ở nơi khác!';
+        else msg = 'Phiên đăng nhập đã hết hạn!';
+        showLogoutNotice(msg);
+      }
+    });
 }
-setInterval(checkSession, 10000); 
+setInterval(checkSession, 10000);
 </script>
   </body>
 </html>

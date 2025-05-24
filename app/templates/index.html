@@ -475,7 +475,6 @@
 </div>
 <!-- Gợi ý món ăn -->
 <div class="overflow-y-auto space-y-4 pr-2" id="suggestedMealGroups" style="max-height: 60vh;"></div>
-</ul>
   <div class="text-xs text-gray-500 mt-2">* Gợi ý dựa trên chất còn thiếu nhiều nhất hôm nay</div>
 </div>
   </div>
@@ -552,10 +551,6 @@
   <div>
     <label class="block mb-1">Chọn ảnh đại diện:</label>
     <input type="file" id="profileAvatarFile" accept="image/*" class="border rounded px-3 py-2 w-full" />
-  </div>
-  <div>
-    <label class="block mb-1">Hoặc link ảnh đại diện:</label>
-    <input type="url" name="avatar_url" id="profileAvatarUrl" placeholder="https://..." class="border rounded px-3 py-2 w-full" />
   </div>
   <div class="flex gap-2">
     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded font-bold w-full">Lưu</button>
@@ -824,9 +819,18 @@ function submitGoalsForm(event) {
     document.getElementById('profileWeight').value = userProfile.weight || '';
     document.getElementById('profileAge').value = userProfile.age || '';
     document.getElementById('profileGender').value = userProfile.gender || 'male';
-    document.getElementById('profileAvatarUrl').value = userProfile.avatar_url || '';
     document.getElementById('profileAvatarFile').value = '';
   }
+  document.getElementById('profileAvatarFile').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      document.getElementById('viewAvatar').src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
   function switchToViewProfile() {
     document.getElementById('profileViewMode').classList.remove('hidden');
     document.getElementById('profileForm').classList.add('hidden');

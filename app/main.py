@@ -1,14 +1,14 @@
-from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response, Query
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from app.database import meals_col, logs_col, users_col
 from bson import ObjectId
 from datetime import datetime
 import pytz
 import csv
 import io
+import json
 from passlib.hash import bcrypt
 
 app = FastAPI()
@@ -94,18 +94,32 @@ def get_current_user_id(user_id: str = Cookie(None)) -> ObjectId:
 
 # Trang chính
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
-async def home(request: Request, user_id: str = Cookie(None)):
+async def home(
+    request: Request,
+    user_id: str = Cookie(None),
+    search: str = Query("", alias="search"),
+    view: str = Query("", alias="view"),
+    goals: str = Cookie(None)
+):
     if not user_id:
         return RedirectResponse("/login", status_code=302)
 
     user_id_obj = ObjectId(user_id)
-    
-    # ✅ Lấy thông tin người dùng
     user = users_col.find_one({"_id": user_id_obj})
     fullname = user.get("fullname", "Người dùng") if user else "Người dùng"
 
+
+    bmr = tdee = None
+    if user and all(k in user for k in ("weight", "height", "age", "gender")):
+        bmr = calculate_bmr(user["weight"], user["height"], user["age"], user["gender"])
+        tdee = calculate_tdee(bmr)
+    
+    # Lọc món ăn theo tên nếu có search
     meals = []
-    for meal in meals_col.find():
+    meal_query = {}
+    if search:
+        meal_query["name"] = {"$regex": search, "$options": "i"}
+    for meal in meals_col.find(meal_query):
         meal["_id"] = str(meal["_id"])
         meals.append(meal)
 
@@ -151,6 +165,37 @@ async def home(request: Request, user_id: str = Cookie(None)):
         "total_carbs": 0,
         "total_fat": 0,
     })
+    # Lấy mục tiêu từ cookie nếu có
+    default_goals = {
+        "calories": int(tdee) if tdee else 2000,
+        "protein": 100,
+        "carbs": 250,
+        "fat": 60
+    }
+    if goals:
+        try:
+            goals_dict = json.loads(goals)
+            goals = {**default_goals, **goals_dict}
+        except Exception:
+            goals = default_goals
+    else:
+        goals = default_goals
+
+    # Tính lượng còn thiếu
+    missing = {
+        "calories": max(goals["calories"] - summary.get("total_calories", 0), 0),
+        "protein": max(goals["protein"] - summary.get("total_protein", 0), 0),
+        "carbs": max(goals["carbs"] - summary.get("total_carbs", 0), 0),
+        "fat": max(goals["fat"] - summary.get("total_fat", 0), 0),
+    }
+
+    # Gợi ý món ăn
+    nutrient_priority = max(missing, key=missing.get)
+    suggested_meals = sorted(
+        meals,
+        key=lambda m: m.get(nutrient_priority, 0),
+        reverse=True
+    )[:3]
 
     # ✅ Truyền fullname vào template
     return templates.TemplateResponse("index.html", {
@@ -159,9 +204,17 @@ async def home(request: Request, user_id: str = Cookie(None)):
         "logs": logs,
         "summary": summary,
         "fullname": fullname,
-        "today": today
+        "user": user,  # Thêm dòng này để Jinja2 không lỗi
+        "today": today,
+        "search": search,
+        "goals": goals,
+        "missing": missing,
+        "bmr": int(bmr) if bmr else None,
+        "tdee": int(tdee) if tdee else None,
+        "suggested_meals": suggested_meals,
+        "nutrient_priority": nutrient_priority,
+        "view": view
     })
-
 # tạo favicon
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
@@ -208,6 +261,86 @@ async def log_meal(
     })
     return RedirectResponse(url="/?view=log", status_code=303)
 
+@app.post("/set-goals")
+async def set_goals(
+    request: Request,
+    response: Response,
+    calories: int = Form(...),
+    protein: int = Form(...),
+    carbs: int = Form(...),
+    fat: int = Form(...),
+    user_id: str = Cookie(None)
+):
+    goals = {
+        "calories": calories,
+        "protein": protein,
+        "carbs": carbs,
+        "fat": fat
+    }
+    response.set_cookie(
+        key="goals",
+        value=json.dumps(goals, ensure_ascii=False),
+        max_age=60 * 60 * 24 * 30,
+        path="/"
+    )
+
+    # Lấy tổng hôm nay
+    vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+    today = datetime.now(vn_tz).strftime('%Y-%m-%d')
+    summary_result = logs_col.aggregate([
+        {"$match": {"user_id": ObjectId(user_id), "date": today}},
+        {"$lookup": {
+            "from": "meals",
+            "localField": "meal_id",
+            "foreignField": "_id",
+            "as": "meal"
+        }},
+        {"$unwind": "$meal"},
+        {"$group": {
+            "_id": "$date",
+            "total_calories": {"$sum": {"$multiply": ["$quantity", "$meal.calories"]}},
+            "total_protein": {"$sum": {"$multiply": ["$quantity", "$meal.protein"]}},
+            "total_carbs": {"$sum": {"$multiply": ["$quantity", "$meal.carbs"]}},
+            "total_fat": {"$sum": {"$multiply": ["$quantity", "$meal.fat"]}},
+        }}
+    ])
+    summary = next(summary_result, {
+        "total_calories": 0,
+        "total_protein": 0,
+        "total_carbs": 0,
+        "total_fat": 0,
+    })
+
+    missing = {
+        "calories": max(calories - summary.get("total_calories", 0), 0),
+        "protein": max(protein - summary.get("total_protein", 0), 0),
+        "carbs": max(carbs - summary.get("total_carbs", 0), 0),
+        "fat": max(fat - summary.get("total_fat", 0), 0),
+    }
+
+    # Lấy tất cả món ăn
+    meals = list(meals_col.find())
+    for m in meals:
+        m["_id"] = str(m["_id"])
+
+    # Tính gợi ý: chỉ món nào có lượng phù hợp với phần còn thiếu (trong khoảng 30% đến 100%)
+    suggested_by_nutrient = {}
+    for nutrient in ["calories", "protein", "carbs", "fat"]:
+        target = missing[nutrient]
+        lower = target * 0.3
+        upper = target * 1.1
+        filtered = [m for m in meals if lower <= m.get(nutrient, 0) <= upper]
+        suggested_by_nutrient[nutrient] = sorted(
+            filtered, key=lambda m: abs(m.get(nutrient, 0) - target)
+        )[:3]
+
+    return JSONResponse({
+        "goals": goals,
+        "missing": missing,
+        "suggested_meals": suggested_by_nutrient
+    })
+
+
 
 @app.post("/edit-meal/{meal_id}")
 async def update_meal(
@@ -236,6 +369,56 @@ async def update_meal(
 async def delete_meal(meal_id: str):
     meals_col.delete_one({"_id": ObjectId(meal_id)})
     return RedirectResponse(url="/?view=meals", status_code=303)
+
+# Hàm tính BMR/TDEE
+def calculate_bmr(weight, height, age, gender):
+    if gender == "male":
+        return 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)
+    else:
+        return 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)
+
+def calculate_tdee(bmr, activity_level=1.55):
+    return int(bmr * activity_level)
+
+# Trang thông tin cá nhân
+
+@app.post("/profile")
+def update_profile(
+    request: Request,
+    height: int = Form(...),
+    weight: int = Form(...),
+    age: int = Form(...),
+    gender: str = Form(...),
+    avatar_url: str = Form(""),
+    user_id: str = Cookie(None)
+):
+    if not user_id:
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
+    users_col.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {
+            "height": height,
+            "weight": weight,
+            "age": age,
+            "gender": gender,
+            "avatar_url": avatar_url
+        }}
+    )
+    bmr = calculate_bmr(weight, height, age, gender)
+    tdee = calculate_tdee(bmr)
+    return JSONResponse({
+        "success": True,
+        "message": "Cập nhật thông tin thành công!",
+        "data": {
+            "height": height,
+            "weight": weight,
+            "age": age,
+            "gender": gender,
+            "avatar_url": avatar_url,
+            "bmr": int(bmr),
+            "tdee": int(tdee)
+        }
+    })
 
 @app.get("/export-csv")
 def export_csv(

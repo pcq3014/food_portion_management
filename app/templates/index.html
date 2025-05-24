@@ -519,6 +519,7 @@
       <img id="viewAvatar" src="{{ user.avatar_url or '' }}" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-blue-300 shadow" />
       </div>
       <div class="mb-2"><b>Họ tên:</b> <span id="viewFullname">{{ fullname }}</span></div>
+      <div class="mb-2"><b>Email:</b> <span id="viewEmail">{{ user.email or "Chưa cập nhật" }}</span></div>
       <div class="mb-2"><b>Chiều cao:</b> <span id="viewHeight">{{ user.height or "Chưa cập nhật" }}</span> cm</div>
       <div class="mb-2"><b>Cân nặng:</b> <span id="viewWeight">{{ user.weight or "Chưa cập nhật" }}</span> kg</div>
       <div class="mb-2"><b>Tuổi:</b> <span id="viewAge">{{ user.age or "Chưa cập nhật" }}</span></div>
@@ -531,6 +532,7 @@
     </div>
     <!-- Chế độ chỉnh sửa -->
     <form id="profileForm" method="post" class="space-y-3 hidden" onsubmit="return submitProfileForm(event)" enctype="multipart/form-data">
+
   <div>
     <label class="block mb-1">Chiều cao (cm):</label>
     <input type="number" name="height" id="profileHeight" required class="border rounded px-3 py-2 w-full" />
@@ -549,6 +551,10 @@
       <option value="male">Nam</option>
       <option value="female">Nữ</option>
     </select>
+  </div>
+  <div>
+    <label class="block mb-1">Email:</label>
+    <input type="email" name="email" id="profileEmail" required class="border rounded px-3 py-2 w-full" />
   </div>
   <div>
     <label class="block mb-1">Chọn ảnh đại diện:</label>
@@ -790,13 +796,14 @@ function submitGoalsForm(event) {
   // Lấy thông tin user từ backend (Jinja2)
   const userProfile = {
   fullname: "{{ fullname }}",
-    height: {{ user.height if user and user.height is defined else 'null' }},
-    weight: {{ user.weight if user and user.weight is defined else 'null' }},
-    age: {{ user.age if user and user.age is defined else 'null' }},
-    gender: "{{ user.gender if user and user.gender is defined else '' }}",
-    bmr: {{ bmr if bmr is defined and bmr else 'null' }},
-    tdee: {{ tdee if tdee is defined and tdee else 'null' }},
-    avatar_url: "{{ user.avatar_url or '' }}"
+  email: "{{ user.email or '' }}",
+  height: {{ user.height if user and user.height is defined else 'null' }},
+  weight: {{ user.weight if user and user.weight is defined else 'null' }},
+  age: {{ user.age if user and user.age is defined else 'null' }},
+  gender: "{{ user.gender if user and user.gender is defined else '' }}",
+  bmr: {{ bmr if bmr is defined and bmr else 'null' }},
+  tdee: {{ tdee if tdee is defined and tdee else 'null' }},
+  avatar_url: "{{ user.avatar_url or '' }}"
   };
 
   function openProfileModal() {
@@ -807,9 +814,11 @@ function submitGoalsForm(event) {
   document.getElementById('viewWeight').textContent = userProfile.weight || 'Chưa cập nhật';
   document.getElementById('viewAge').textContent = userProfile.age || 'Chưa cập nhật';
   document.getElementById('viewGender').textContent = userProfile.gender === 'male' ? 'Nam' : (userProfile.gender === 'female' ? 'Nữ' : 'Chưa cập nhật');
+  document.getElementById('viewEmail').textContent = userProfile.email || 'Chưa cập nhật';
   document.getElementById('viewBmr').textContent = userProfile.bmr || 'Chưa có';
   document.getElementById('viewTdee').textContent = userProfile.tdee || 'Chưa có';
   document.getElementById('viewAvatar').src = userProfile.avatar_url || '';
+
 }
   function closeProfileModal() {
     document.getElementById('profileModal').classList.add('hidden');
@@ -821,6 +830,7 @@ function submitGoalsForm(event) {
     document.getElementById('profileWeight').value = userProfile.weight || '';
     document.getElementById('profileAge').value = userProfile.age || '';
     document.getElementById('profileGender').value = userProfile.gender || 'male';
+    document.getElementById('profileEmail').value = userProfile.email || '';
     document.getElementById('profileAvatarFile').value = '';
   }
   document.getElementById('profileAvatarFile').addEventListener('change', function (e) {
@@ -869,6 +879,7 @@ function submitProfileForm(event) {
         userProfile.weight = data.data.weight;
         userProfile.age = data.data.age;
         userProfile.gender = data.data.gender;
+        userProfile.email = data.data.email;
         userProfile.bmr = data.data.bmr;
         userProfile.tdee = data.data.tdee;
         userProfile.avatar_url = data.data.avatar_url || '';

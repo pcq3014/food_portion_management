@@ -175,7 +175,7 @@ def reset_password_submit(
     del reset_tokens[token]
     return templates.TemplateResponse(
         "login.html",
-        {"request": request, "error": "Đặt lại mật khẩu thành công, hãy đăng nhập lại!"}
+        {"request": request, "message": "Đặt lại mật khẩu thành công, hãy đăng nhập lại!"}
     )
 
 conf = ConnectionConfig(

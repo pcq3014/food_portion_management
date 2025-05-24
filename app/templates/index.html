@@ -990,5 +990,36 @@ function toggleBan(userId, ban) {
   });
 }
 </script>
+<!-- Modal thông báo đăng xuất -->
+<div id="logoutNoticeModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] hidden">
+  <div class="bg-white rounded-xl shadow-xl p-8 max-w-sm w-full text-center">
+    <div class="text-4xl mb-3">⚠️</div>
+    <div id="logoutNoticeMsg" class="text-lg font-semibold text-gray-800 mb-4"></div>
+    <button onclick="window.location.href='/login'" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded font-bold shadow">Đăng nhập lại</button>
+  </div>
+</div>
+
+<script>
+function showLogoutNotice(msg) {
+  document.getElementById('logoutNoticeMsg').textContent = msg;
+  document.getElementById('logoutNoticeModal').classList.remove('hidden');
+}
+
+// Hàm kiểm tra session
+function checkSession() {
+    fetch('/check-session', {credentials: 'include'})
+        .then(res => res.json())
+        .then(data => {
+            if (!data.valid) {
+                let msg = '';
+                if (data.reason === 'ban') msg = 'Tài khoản của bạn đã bị khóa!';
+                else if (data.reason === 'other_login') msg = 'Tài khoản đã đăng nhập ở nơi khác!';
+                else msg = 'Phiên đăng nhập đã hết hạn!';
+                showLogoutNotice(msg);
+            }
+        });
+}
+setInterval(checkSession, 10000); 
+</script>
   </body>
 </html>

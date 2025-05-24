@@ -93,7 +93,7 @@ def get_current_user_id(user_id: str = Cookie(None)) -> ObjectId:
     return ObjectId(user_id)
 
 # Trang chính
-@app.get("/", response_class=HTMLResponse)
+@app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def home(request: Request, user_id: str = Cookie(None)):
     if not user_id:
         return RedirectResponse("/login", status_code=302)
@@ -162,6 +162,10 @@ async def home(request: Request, user_id: str = Cookie(None)):
         "today": today
     })
 
+# tạo favicon
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("app/static/favicon.ico")
 
 # Các route thêm, sửa, xóa món ăn, ghi nhật ký... giữ nguyên không đổi
 

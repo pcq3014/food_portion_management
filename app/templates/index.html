@@ -37,6 +37,10 @@
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       📖 <span>Nhật ký & Phân tích</span>
     </button>
+    <button onclick="openSuggestModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  🥗 <span>Gợi ý món ăn</span>
+</button>
     <button onclick="openLogMealModal()"
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       📝 <span>Ghi nhật ký</span>
@@ -45,6 +49,10 @@
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       ➕ <span>Thêm món</span>
     </button>
+    <button onclick="openProfileModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  👤 <span>Thông tin cá nhân</span>
+</button>
     <div class="relative group">
   <button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none w-full">
     📤 <span>Xuất CSV</span>
@@ -63,29 +71,35 @@
     <section class="flex-1 overflow-y-auto p-6">
       <!-- Meals View -->
       <div id="mealsView" class="hidden">
-        <h2 class="text-2xl font-bold mb-4">📋 Danh sách món ăn</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {% for meal in meals %}
-            <div class="bg-white p-4 rounded-xl shadow">
-  {% if meal.image_url %}
-    <img src="{{ meal.image_url }}" alt="{{ meal.name }}" class="w-full h-40 object-cover rounded-lg mb-3" />
-  {% else %}
-    <div class="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center mb-3 text-gray-500">Không có ảnh</div>
-  {% endif %}
-  <h3 class="text-lg font-semibold">{{ meal.name }}</h3>
-  <ul class="text-sm mt-2 text-gray-600">
-    <li>🔥 Calories: {{ meal.calories }}</li>
-    <li>💪 Protein: {{ meal.protein }}g</li>
-    <li>🍞 Carbs: {{ meal.carbs }}g</li>
-    <li>🥑 Fat: {{ meal.fat }}g</li>
-  </ul>
-  <div class="mt-4 flex gap-3">
-    <button class="editMealBtn text-blue-600" data-meal='{{ meal | tojson }}'>✏️ Sửa</button>
-    <button onclick="openModal('{{ meal._id }}')" class="text-red-600">🗑️ Xoá</button>
+  <h2 class="text-2xl font-bold mb-4">📋 Danh sách món ăn</h2>
+  <form method="get" action="/" class="mb-4 flex gap-2">
+    <input type="text" name="search" placeholder="Tìm món ăn..." value="{{ search | default('') }}"
+      class="border border-gray-300 rounded-lg px-3 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+    <input type="hidden" name="view" value="meals" />
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Tìm kiếm</button>
+  </form>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+  {% for meal in meals %}
+  <div class="bg-white p-4 rounded-xl shadow">
+    {% if meal.image_url %}
+      <img src="{{ meal.image_url }}" alt="{{ meal.name }}" class="w-full h-40 object-cover rounded-lg mb-3" />
+    {% else %}
+      <div class="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center mb-3 text-gray-500">Không có ảnh</div>
+    {% endif %}
+    <h3 class="text-lg font-semibold">{{ meal.name }}</h3>
+    <ul class="text-sm mt-2 text-gray-600">
+      <li>🔥 Calories: {{ meal.calories }}</li>
+      <li>💪 Protein: {{ meal.protein }}g</li>
+      <li>🍞 Carbs: {{ meal.carbs }}g</li>
+      <li>🥑 Fat: {{ meal.fat }}g</li>
+    </ul>
+    <div class="mt-4 flex gap-3">
+      <button class="editMealBtn text-blue-600" data-meal='{{ meal | tojson }}'>✏️ Sửa</button>
+      <button onclick="openModal('{{ meal._id }}')" class="text-red-600">🗑️ Xoá</button>
+    </div>
   </div>
+  {% endfor %}
 </div>
-            {% endfor %}
-          </div>
         </div>
 
         <!-- Logs and Analytics View -->
@@ -419,6 +433,137 @@
       document.getElementById("deleteModal").classList.add("hidden");
     }
   </script>
+  <!-- Modal Gợi ý món ăn -->
+<div id="suggestModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-hidden p-6 flex flex-col">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-yellow-700 flex items-center gap-2">
+        🥗 Gợi ý món ăn & Đặt mục tiêu
+      </h2>
+      <button onclick="closeSuggestModal()" class="text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+    </div>
+    <!-- Form đặt mục tiêu -->
+    <form method="post" action="/set-goals"
+      class="flex gap-2 items-end mb-4 bg-blue-50 p-3 rounded-lg shadow"
+      id="goalsForm"
+      onsubmit="return submitGoalsForm(event)">
+      <div>
+  <label class="block text-xs font-bold mb-1">Calories</label>
+  <input type="number" name="calories" value="0" min="0" class="border rounded px-2 py-1 w-20" required />
+</div>
+<div>
+  <label class="block text-xs font-bold mb-1">Protein</label>
+  <input type="number" name="protein" value="0" min="0" class="border rounded px-2 py-1 w-20" required />
+</div>
+<div>
+  <label class="block text-xs font-bold mb-1">Carbs</label>
+  <input type="number" name="carbs" value="0" min="0" class="border rounded px-2 py-1 w-20" required />
+</div>
+<div>
+  <label class="block text-xs font-bold mb-1">Fat</label>
+  <input type="number" name="fat" value="0" min="0" class="border rounded px-2 py-1 w-20" required />
+</div>
+      <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded font-bold">Tìm kiếm</button>
+</form>
+    <!-- Thông báo lượng còn thiếu -->
+    <div class="mb-3 text-sm text-gray-700">
+  Đang thiếu:
+  <span class="font-semibold text-red-600" id="missingCalories">Calories: {{ missing.calories }}</span>,
+  <span class="font-semibold text-blue-600" id="missingProtein">Protein: {{ missing.protein }}</span>,
+  <span class="font-semibold text-yellow-600" id="missingCarbs">Carbs: {{ missing.carbs }}</span>,
+  <span class="font-semibold text-green-600" id="missingFat">Fat: {{ missing.fat }}</span>
+</div>
+<!-- Gợi ý món ăn -->
+<div class="overflow-y-auto space-y-4 pr-2" id="suggestedMealGroups" style="max-height: 60vh;"></div>
+</ul>
+  <div class="text-xs text-gray-500 mt-2">* Gợi ý dựa trên chất còn thiếu nhiều nhất hôm nay</div>
+</div>
+  </div>
+</div>
+<script>
+  function openSuggestModal() {
+  document.getElementById('suggestModal').classList.remove('hidden');
+  document.querySelector('input[name="calories"]').value = 0;
+  document.querySelector('input[name="protein"]').value = 0;
+  document.querySelector('input[name="carbs"]').value = 0;
+  document.querySelector('input[name="fat"]').value = 0;
+  // Reset các giá trị "Đang thiếu" về 0
+  document.getElementById('missingCalories').textContent = "Calories: 0";
+  document.getElementById('missingProtein').textContent = "Protein: 0";
+  document.getElementById('missingCarbs').textContent = "Carbs: 0";
+  document.getElementById('missingFat').textContent = "Fat: 0";
+  // Xoá gợi ý món ăn cũ
+  document.getElementById('suggestedMealGroups').innerHTML = "";
+}
+  // Nếu muốn submit form không reload trang, có thể dùng AJAX ở đây
+</script>
+<script>
+  function openSuggestModal() {
+    document.getElementById('suggestModal').classList.remove('hidden');
+  }
+  function closeSuggestModal() {
+    document.getElementById('suggestModal').classList.add('hidden');
+  }
+</script>
+<!-- Modal Thông tin cá nhân -->
+<div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-8 rounded-xl shadow space-y-4 w-full max-w-md relative">
+    <button onclick="closeProfileModal()" class="absolute top-2 right-3 text-2xl text-gray-400 hover:text-red-500 font-bold">&times;</button>
+    <h2 class="text-2xl font-bold mb-4">Thông tin cá nhân</h2>
+    <!-- Chế độ chỉ đọc -->
+    <div id="profileNotice" class="hidden mb-2 px-4 py-2 rounded text-white font-semibold"></div>
+    
+    <div id="profileViewMode">
+      <div class="mb-4 flex justify-center">
+      <img id="viewAvatar" src="{{ user.avatar_url or '' }}" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-blue-300 shadow" />
+      </div>
+      <div class="mb-2"><b>Họ tên:</b> <span id="viewFullname">{{ fullname }}</span></div>
+      <div class="mb-2"><b>Chiều cao:</b> <span id="viewHeight">{{ user.height or "Chưa cập nhật" }}</span> cm</div>
+      <div class="mb-2"><b>Cân nặng:</b> <span id="viewWeight">{{ user.weight or "Chưa cập nhật" }}</span> kg</div>
+      <div class="mb-2"><b>Tuổi:</b> <span id="viewAge">{{ user.age or "Chưa cập nhật" }}</span></div>
+      <div class="mb-2"><b>Giới tính:</b> <span id="viewGender">
+        {% if user.gender == "male" %}Nam{% elif user.gender == "female" %}Nữ{% else %}Chưa cập nhật{% endif %}
+      </span></div>
+      <div class="mb-2"><b>BMR:</b> <span id="viewBmr">{{ bmr if bmr else "Chưa có" }}</span> kcal/ngày</div>
+      <div class="mb-2"><b>TDEE:</b> <span id="viewTdee">{{ tdee if tdee else "Chưa có" }}</span> kcal/ngày</div>
+      <button onclick="switchToEditProfile()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded font-bold w-full">Chỉnh sửa</button>
+    </div>
+    <!-- Chế độ chỉnh sửa -->
+    <form id="profileForm" method="post" class="space-y-3 hidden" onsubmit="return submitProfileForm(event)" enctype="multipart/form-data">
+  <div>
+    <label class="block mb-1">Chiều cao (cm):</label>
+    <input type="number" name="height" id="profileHeight" required class="border rounded px-3 py-2 w-full" />
+  </div>
+  <div>
+    <label class="block mb-1">Cân nặng (kg):</label>
+    <input type="number" name="weight" id="profileWeight" required class="border rounded px-3 py-2 w-full" />
+  </div>
+  <div>
+    <label class="block mb-1">Tuổi:</label>
+    <input type="number" name="age" id="profileAge" required class="border rounded px-3 py-2 w-full" />
+  </div>
+  <div>
+    <label class="block mb-1">Giới tính:</label>
+    <select name="gender" id="profileGender" required class="border rounded px-3 py-2 w-full">
+      <option value="male">Nam</option>
+      <option value="female">Nữ</option>
+    </select>
+  </div>
+  <div>
+    <label class="block mb-1">Chọn ảnh đại diện:</label>
+    <input type="file" id="profileAvatarFile" accept="image/*" class="border rounded px-3 py-2 w-full" />
+  </div>
+  <div>
+    <label class="block mb-1">Hoặc link ảnh đại diện:</label>
+    <input type="url" name="avatar_url" id="profileAvatarUrl" placeholder="https://..." class="border rounded px-3 py-2 w-full" />
+  </div>
+  <div class="flex gap-2">
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded font-bold w-full">Lưu</button>
+    <button type="button" onclick="switchToViewProfile()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded font-bold w-full">Hủy</button>
+  </div>
+</form>
+  </div>
+</div>
 <style>
 .sidebar.collapsed > *:not(#sidebarToggleBtn):not(.w-full) {
   display: none !important;
@@ -553,6 +698,183 @@
     }
   };
 </script>
+<script>
+function submitGoalsForm(event) {
+  event.preventDefault();
+  const form = document.getElementById('goalsForm');
+  const formData = new FormData(form);
 
+  fetch('/set-goals', {
+    method: 'POST',
+    body: formData,
+    credentials: 'same-origin'
+  })
+  .then(res => res.json())
+  .then(data => {
+    // Cập nhật lượng còn thiếu
+    document.getElementById('missingCalories').textContent = "Calories: " + data.missing.calories;
+    document.getElementById('missingProtein').textContent = "Protein: " + data.missing.protein;
+    document.getElementById('missingCarbs').textContent = "Carbs: " + data.missing.carbs;
+    document.getElementById('missingFat').textContent = "Fat: " + data.missing.fat;
+
+    const container = document.getElementById('suggestedMealGroups');
+    container.innerHTML = "";
+
+    const nutrientLabels = {
+      calories: "🍚 Calories",
+      protein: "💪 Protein",
+      carbs: "🍞 Carbs",
+      fat: "🥑 Fat"
+    };
+
+    Object.keys(data.suggested_meals).forEach(nutrient => {
+      const group = document.createElement('div');
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.textContent = `Ẩn/Hiện gợi ý ${nutrientLabels[nutrient]}`;
+      toggleBtn.className = "mb-2 text-sm font-semibold bg-yellow-200 px-3 py-1 rounded shadow hover:bg-yellow-300";
+      
+      const list = document.createElement('div');
+      list.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4";
+      list.id = `group-${nutrient}`;
+
+      toggleBtn.onclick = () => {
+        list.classList.toggle("hidden");
+      };
+
+      const title = document.createElement('div');
+      title.className = "font-semibold text-yellow-700 mt-2 mb-1";
+      title.textContent = `Gợi ý theo ${nutrientLabels[nutrient]} còn thiếu:`;
+
+      const meals = data.suggested_meals[nutrient];
+      if (meals.length === 0) {
+        const msg = document.createElement("div");
+        msg.className = "text-gray-500 italic col-span-3";
+        msg.textContent = "Không có món phù hợp.";
+        list.appendChild(msg);
+      } else {
+        meals.forEach(meal => {
+          const card = document.createElement("div");
+          card.className = "bg-yellow-50 p-3 rounded-lg shadow text-center";
+
+          if (meal.image_url) {
+            const img = document.createElement("img");
+            img.src = meal.image_url + "?t=" + new Date().getTime();
+            img.alt = meal.name;
+            img.className = "w-full h-24 object-cover rounded mb-2";
+            card.appendChild(img);
+          }
+
+          const name = document.createElement("div");
+          name.className = "font-bold text-blue-700 mb-1";
+          name.textContent = meal.name;
+          card.appendChild(name);
+
+          const info = document.createElement("div");
+          info.className = "text-sm text-gray-600";
+          info.innerHTML = `🔥 ${meal.calories} cal<br>💪 ${meal.protein}g • 🍞 ${meal.carbs}g • 🥑 ${meal.fat}g`;
+          card.appendChild(info);
+
+          list.appendChild(card);
+        });
+      }
+
+      group.appendChild(toggleBtn);
+      group.appendChild(title);
+      group.appendChild(list);
+      container.appendChild(group);
+    });
+  });
+
+  return false;
+}
+</script>
+<script>
+  // Lấy thông tin user từ backend (Jinja2)
+  const userProfile = {
+  fullname: "{{ fullname }}",
+    height: {{ user.height if user and user.height is defined else 'null' }},
+    weight: {{ user.weight if user and user.weight is defined else 'null' }},
+    age: {{ user.age if user and user.age is defined else 'null' }},
+    gender: "{{ user.gender if user and user.gender is defined else '' }}",
+    bmr: {{ bmr if bmr is defined and bmr else 'null' }},
+    tdee: {{ tdee if tdee is defined and tdee else 'null' }},
+    avatar_url: "{{ user.avatar_url or '' }}"
+  };
+
+  function openProfileModal() {
+  document.getElementById('profileModal').classList.remove('hidden');
+  switchToViewProfile();
+  document.getElementById('viewFullname').textContent = userProfile.fullname || '';
+  document.getElementById('viewHeight').textContent = userProfile.height || 'Chưa cập nhật';
+  document.getElementById('viewWeight').textContent = userProfile.weight || 'Chưa cập nhật';
+  document.getElementById('viewAge').textContent = userProfile.age || 'Chưa cập nhật';
+  document.getElementById('viewGender').textContent = userProfile.gender === 'male' ? 'Nam' : (userProfile.gender === 'female' ? 'Nữ' : 'Chưa cập nhật');
+  document.getElementById('viewBmr').textContent = userProfile.bmr || 'Chưa có';
+  document.getElementById('viewTdee').textContent = userProfile.tdee || 'Chưa có';
+  document.getElementById('viewAvatar').src = userProfile.avatar_url || '';
+}
+  function closeProfileModal() {
+    document.getElementById('profileModal').classList.add('hidden');
+  }
+  function switchToEditProfile() {
+    document.getElementById('profileViewMode').classList.add('hidden');
+    document.getElementById('profileForm').classList.remove('hidden');
+    document.getElementById('profileHeight').value = userProfile.height || '';
+    document.getElementById('profileWeight').value = userProfile.weight || '';
+    document.getElementById('profileAge').value = userProfile.age || '';
+    document.getElementById('profileGender').value = userProfile.gender || 'male';
+    document.getElementById('profileAvatarUrl').value = userProfile.avatar_url || '';
+    document.getElementById('profileAvatarFile').value = '';
+  }
+  function switchToViewProfile() {
+    document.getElementById('profileViewMode').classList.remove('hidden');
+    document.getElementById('profileForm').classList.add('hidden');
+  }
+  // Gửi form cập nhật thông tin cá nhân bằng fetch (AJAX)
+  function showProfileNotice(message, success = true) {
+  const notice = document.getElementById('profileNotice');
+  notice.textContent = message;
+  notice.className = 'mb-2 px-4 py-2 rounded font-semibold ' + (success ? 'bg-green-500' : 'bg-red-500');
+  notice.style.display = '';
+  setTimeout(() => { notice.style.display = 'none'; }, 2500);
+}
+
+function submitProfileForm(event) {
+    event.preventDefault();
+    const form = document.getElementById('profileForm');
+    const formData = new FormData(form);
+
+    // Nếu có file, thêm vào formData
+    const fileInput = document.getElementById('profileAvatarFile');
+    if (fileInput.files.length > 0) {
+      formData.append('avatar_file', fileInput.files[0]);
+    }
+
+    fetch('/profile', {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        userProfile.height = data.data.height;
+        userProfile.weight = data.data.weight;
+        userProfile.age = data.data.age;
+        userProfile.gender = data.data.gender;
+        userProfile.bmr = data.data.bmr;
+        userProfile.tdee = data.data.tdee;
+        userProfile.avatar_url = data.data.avatar_url || '';
+        switchToViewProfile();
+        openProfileModal();
+        showProfileNotice(data.message, true);
+      } else {
+        showProfileNotice(data.message || "Có lỗi xảy ra!", false);
+      }
+    });
+    return false;
+  }
+</script>
   </body>
-  </html>
+</html>

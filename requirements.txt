@@ -5,4 +5,5 @@ jinja2
 python-dotenv
 python-multipart
 pytz
-passlib[bcrypt]
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1

@@ -238,8 +238,24 @@ async def delete_meal(meal_id: str):
     return RedirectResponse(url="/?view=meals", status_code=303)
 
 @app.get("/export-csv")
-def export_csv():
+def export_csv(
+    request: Request,
+    mode: str = "today",
+    user_id: str = Cookie(None)
+):
+    if not user_id:
+        return RedirectResponse("/login", status_code=302)
+
+    user_obj_id = ObjectId(user_id)
+    vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+    today = datetime.now(vn_tz).strftime('%Y-%m-%d')
+
+    match_stage = {"user_id": user_obj_id}
+    if mode == "today":
+        match_stage["date"] = today
+
     pipeline = [
+        {"$match": match_stage},
         {
             "$lookup": {
                 "from": "users",
@@ -267,9 +283,9 @@ def export_csv():
             }
         }
     ]
+
     logs = logs_col.aggregate(pipeline)
 
-    # Sử dụng StringIO để ghi CSV, sau đó encode sang bytes
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["Họ tên", "Tên món ăn", "Số lượng", "Ngày"])
@@ -283,10 +299,12 @@ def export_csv():
     csv_content = output.getvalue().encode('utf-8-sig')
     output.close()
 
+    filename = f"log_data_{today}.csv" if mode == "today" else "log_data_all.csv"
+
     return StreamingResponse(
         io.BytesIO(csv_content),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=log_data.csv"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
 # Đăng xuất

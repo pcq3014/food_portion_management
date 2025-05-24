@@ -2,15 +2,17 @@ from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response, Que
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi import UploadFile, File
+from fastapi import UploadFile, File, status
 from app.database import meals_col, logs_col, users_col
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+import secrets
 from bson import ObjectId
-from datetime import datetime
 import pytz
 import csv
 import io
 import json
 from passlib.hash import bcrypt
+from datetime import datetime, timedelta
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -26,6 +28,7 @@ def register_user(
     request: Request,
     fullname: str = Form(...),
     username: str = Form(...),
+    email: str = Form(...),  # Thêm email
     password: str = Form(...),
     confirm_password: str = Form(...)
 ):
@@ -34,7 +37,8 @@ def register_user(
             "request": request,
             "error": "Mật khẩu không khớp",
             "fullname": fullname,
-            "username": username
+            "username": username,
+            "email": email
         }, status_code=400)
 
     if users_col.find_one({"username": username}):
@@ -42,21 +46,28 @@ def register_user(
             "request": request,
             "error": "Tên đăng nhập đã tồn tại",
             "fullname": fullname,
-            "username": username
+            "username": username,
+            "email": email
         }, status_code=400)
 
-    # 👇 Tính số người dùng đã tồn tại
+    if users_col.find_one({"email": email}):
+        return templates.TemplateResponse("register.html", {
+            "request": request,
+            "error": "Email đã được sử dụng",
+            "fullname": fullname,
+            "username": username,
+            "email": email
+        }, status_code=400)
+
     user_count = users_col.count_documents({})
-
-    # 3 người đầu là admin
     role = "admin" if user_count < 3 else "user"
-
     hashed = bcrypt.hash(password)
     users_col.insert_one({
         "fullname": fullname,
         "username": username,
+        "email": email,  # Lưu email
         "hashed_password": hashed,
-        "role": role  # 👈 thêm trường role vào
+        "role": role
     })
 
     return RedirectResponse("/login", status_code=302)
@@ -93,6 +104,90 @@ def login_user(
         path="/"
     )
     return response
+reset_tokens = {}  # Lưu token tạm thời (nên dùng Redis hoặc DB thực tế)
+
+@app.get("/forgot-password", response_class=HTMLResponse)
+def forgot_password_form(request: Request):
+    return templates.TemplateResponse("forgot-password.html", {"request": request})
+
+@app.post("/forgot-password", response_class=HTMLResponse)
+async def forgot_password_submit(request: Request, email: str = Form(...)):
+    user = users_col.find_one({"username": email}) or users_col.find_one({"email": email})
+    message = "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi."
+    if user:
+        token = secrets.token_urlsafe(32)
+        reset_tokens[token] = {
+            "user_id": str(user["_id"]),
+            "expires": datetime.utcnow() + timedelta(minutes=30)
+        }
+        reset_link = str(request.url_for('reset_password_form')) + f"?token={token}"
+        email_message = MessageSchema(
+            subject="Đặt lại mật khẩu SmartCalories",
+            recipients=[user["email"]],
+            body=f"""
+                <p>Xin chào {user.get('fullname', '')},</p>
+                <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản SmartCalories.</p>
+                <p>Nhấn vào liên kết sau để đặt lại mật khẩu (có hiệu lực trong 30 phút):<br>
+                <a href="{reset_link}">{reset_link}</a></p>
+                <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+            """,
+            subtype="html"
+        )
+        fm = FastMail(conf)
+        await fm.send_message(email_message)
+    return templates.TemplateResponse(
+        "forgot-password.html",
+        {"request": request, "message": message}
+    )
+
+@app.get("/reset-password", response_class=HTMLResponse)
+def reset_password_form(request: Request, token: str = ""):
+    info = reset_tokens.get(token)
+    if not info or info["expires"] < datetime.utcnow():
+        return templates.TemplateResponse(
+            "forgot-password.html",
+            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
+        )
+    return templates.TemplateResponse("reset-password.html", {"request": request, "token": token})
+
+@app.post("/reset-password", response_class=HTMLResponse)
+def reset_password_submit(
+    request: Request,
+    token: str = Form(...),
+    password: str = Form(...),
+    confirm_password: str = Form(...)
+):
+    info = reset_tokens.get(token)
+    if not info or info["expires"] < datetime.utcnow():
+        return templates.TemplateResponse(
+            "forgot-password.html",
+            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
+        )
+    if password != confirm_password:
+        return templates.TemplateResponse(
+            "reset-password.html",
+            {"request": request, "token": token, "error": "Mật khẩu không khớp"}
+        )
+    users_col.update_one(
+        {"_id": ObjectId(info["user_id"])},
+        {"$set": {"hashed_password": bcrypt.hash(password)}}
+    )
+    del reset_tokens[token]
+    return templates.TemplateResponse(
+        "login.html",
+        {"request": request, "error": "Đặt lại mật khẩu thành công, hãy đăng nhập lại!"}
+    )
+
+conf = ConnectionConfig(
+    MAIL_USERNAME="pcq30012004@gmail.com",
+    MAIL_PASSWORD="gnxc lyya fvuq aokl",
+    MAIL_FROM="pcq30012004@gmail.com",
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=True,      # Đúng tên biến
+    MAIL_SSL_TLS=False,      # Đúng tên biến
+    USE_CREDENTIALS=True
+)
 
 # Hàm hỗ trợ lấy user hiện tại
 def get_current_user_id(user_id: str = Cookie(None)) -> ObjectId:
@@ -401,11 +496,17 @@ async def update_profile(
     weight: int = Form(...),
     age: int = Form(...),
     gender: str = Form(...),
-    avatar_file: UploadFile = File(None),  # Nhận file ảnh
+    email: str = Form(...),  # Thêm email
+    avatar_file: UploadFile = File(None),
     user_id: str = Cookie(None)
 ):
     if not user_id:
         return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
+
+    # Kiểm tra email đã tồn tại cho user khác chưa
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    if users_col.find_one({"email": email, "_id": {"$ne": ObjectId(user_id)}}):
+        return JSONResponse({"success": False, "message": "Email đã được sử dụng!"}, status_code=400)
 
     avatar_url = ""
     if avatar_file:
@@ -421,6 +522,7 @@ async def update_profile(
         "weight": weight,
         "age": age,
         "gender": gender,
+        "email": email  # Cập nhật email
     }
     if avatar_url:
         update_data["avatar_url"] = avatar_url
@@ -440,6 +542,7 @@ async def update_profile(
             "weight": weight,
             "age": age,
             "gender": gender,
+            "email": email,
             "avatar_url": avatar_url,
             "bmr": int(bmr),
             "tdee": int(tdee)

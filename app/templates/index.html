@@ -55,6 +55,12 @@
   class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   👤 <span>Thông tin cá nhân</span>
 </button>
+{% if user.role == 'admin' %}
+    <button onclick="openUserModal()"
+      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+      👥 <span>Quản lý người dùng</span>
+    </button>
+    {% endif %}
     <div class="relative group">
   <button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none w-full">
     📤 <span>Xuất CSV</span>
@@ -900,6 +906,89 @@ function submitProfileForm(event) {
     });
     return false;
   }
+</script>
+<!-- Modal Quản lý người dùng (chỉ admin) đặt trước </body> -->
+{% if user.role == 'admin' %}
+<div id="userModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-blue-700 flex items-center gap-2">
+        👥 Danh sách người dùng
+      </h2>
+      <button onclick="closeUserModal()" class="text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-blue-100 shadow">
+      <table class="min-w-full text-base">
+        <thead class="bg-gradient-to-r from-blue-600 to-blue-400 text-white font-semibold">
+          <tr>
+            <th class="p-3 text-center">Avatar</th>
+            <th class="p-3 text-left">Tên</th>
+            <th class="p-3 text-left">Email</th>
+            <th class="p-3 text-center">Quyền</th>
+            <th class="p-3 text-center">Trạng thái</th>
+            <th class="p-3 text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr class="even:bg-blue-50 odd:bg-white hover:bg-blue-100 transition">
+            <td class="p-3 text-center">
+              <img src="{{ u.avatar_url or '/static/default-avatar.png' }}" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-blue-300 mx-auto shadow" />
+            </td>
+            <td class="p-3 font-semibold text-blue-800">{{ u.fullname }}</td>
+            <td class="p-3 text-gray-700">{{ u.email }}</td>
+            <td class="p-3 text-center">
+              {% if u.role == 'admin' %}
+                <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded font-bold text-xs">Admin</span>
+              {% else %}
+                <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-xs">User</span>
+              {% endif %}
+            </td>
+            <td class="p-3 text-center">
+              {% if u.is_banned %}
+                <span class="bg-red-100 text-red-600 px-2 py-1 rounded font-bold text-xs">Banned</span>
+              {% else %}
+                <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-xs">Active</span>
+              {% endif %}
+            </td>
+            <td class="p-3 text-center">
+              {% if u.is_banned %}
+                <button onclick="toggleBan('{{ u._id }}', false)" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded-lg font-semibold shadow transition">Unban</button>
+              {% else %}
+                <button onclick="toggleBan('{{ u._id }}', true)" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg font-semibold shadow transition">Ban</button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+<script>
+function openUserModal() {
+  document.getElementById('userModal').classList.remove('hidden');
+}
+function closeUserModal() {
+  document.getElementById('userModal').classList.add('hidden');
+}
+function toggleBan(userId, ban) {
+  fetch('/ban-user', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({user_id: userId, ban: ban}),
+    credentials: 'same-origin'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.message || "Có lỗi xảy ra!");
+    }
+  });
+}
 </script>
   </body>
 </html>

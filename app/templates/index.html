@@ -952,12 +952,23 @@ function submitProfileForm(event) {
               {% endif %}
             </td>
             <td class="p-3 text-center">
-              {% if u.is_banned %}
-                <button onclick="toggleBan('{{ u._id }}', false)" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded-lg font-semibold shadow transition">Unban</button>
-              {% else %}
-                <button onclick="toggleBan('{{ u._id }}', true)" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg font-semibold shadow transition">Ban</button>
-              {% endif %}
-            </td>
+  <div class="flex justify-center gap-3">
+    {% if u.is_banned %}
+      <button onclick="toggleBan('{{ u._id }}', false)" class="bg-green-500 hover:bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Unban">
+        <span class="text-xl">🔓</span>
+      </button>
+    {% else %}
+      <button onclick="toggleBan('{{ u._id }}', true)" class="bg-red-500 hover:bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Ban">
+        <span class="text-xl">🔒</span>
+      </button>
+    {% endif %}
+    {% if u._id != user._id %}
+      <button onclick="toggleRole('{{ u._id }}', '{{ u.role }}')" class="bg-yellow-400 hover:bg-yellow-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Đổi quyền">
+        <span class="text-xl">🔄</span>
+      </button>
+    {% endif %}
+  </div>
+</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -985,12 +996,29 @@ function toggleBan(userId, ban) {
     if (data.success) {
       location.reload();
     } else {
-      alert(data.message || "Có lỗi xảy ra!");
+      showNotice(data.message || "Có lỗi xảy ra!");
+    }
+  });
+}
+function toggleRole(userId, currentRole) {
+  const newRole = currentRole === 'admin' ? 'user' : 'admin';
+  if (!confirm(`Bạn có chắc muốn đổi quyền thành "${newRole}"?`)) return;
+  fetch('/change-role', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({user_id: userId, role: newRole}),
+    credentials: 'same-origin'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      showNotice(data.message || "Có lỗi xảy ra!");
     }
   });
 }
 </script>
-<!-- Modal thông báo đăng xuất -->
 <!-- Modal thông báo đăng xuất -->
 <div id="logoutNoticeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] hidden">
   <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in">
@@ -1045,6 +1073,37 @@ function checkSession() {
     });
 }
 setInterval(checkSession, 10000);
+
+function toggleRole(userId, currentRole) {
+  const newRole = currentRole === 'admin' ? 'user' : 'admin';
+  // Xoá dòng confirm để không hiện popup xác nhận
+  fetch('/change-role', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({user_id: userId, role: newRole}),
+    credentials: 'same-origin'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotice("Đổi quyền thành công!", true);
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showNotice(data.message || "Có lỗi xảy ra!", false);
+    }
+  });
+}
 </script>
+<div id="customNotice" class="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] hidden px-6 py-3 rounded-xl shadow-2xl font-semibold text-white text-lg transition-all duration-300"></div>
+<script>
+function showNotice(msg, success=true) {
+  const el = document.getElementById('customNotice');
+  el.textContent = msg;
+  el.className = "fixed top-8 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-xl shadow-2xl font-semibold text-lg transition-all duration-300 " + (success ? "bg-green-600" : "bg-red-600");
+  el.style.display = '';
+  setTimeout(() => { el.style.display = 'none'; }, 2200);
+}
+</script>
+
   </body>
 </html>

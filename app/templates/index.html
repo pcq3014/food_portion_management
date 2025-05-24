@@ -9,21 +9,23 @@
 <body class="bg-gray-100 font-sans">
   <!-- Header mới -->
   <header class="flex items-center justify-between px-8 py-4 bg-gradient-to-r from-blue-500 via-green-400 to-yellow-300 shadow-lg sticky top-0 z-40">
-    <div class="flex items-center gap-4">
-      <img src="/static/logo.png" class="w-12 h-12 rounded-full border-4 border-white shadow" alt="Logo" />
-      <button onclick="goHome()" class="text-3xl font-extrabold text-white tracking-wide flex items-center gap-2 focus:outline-none">
-  <span></span> SmartCalories
-</button>
-    </div>
-    <div class="flex items-center gap-4">
-      <span class="text-white font-semibold text-lg flex items-center gap-2">
-        <span>👤</span> {{ fullname }}
-      </span>
-      <a href="/logout" class="bg-white/20 hover:bg-white/40 text-white px-4 py-2 rounded-xl font-bold shadow transition flex items-center gap-2">
-        <span>🚪</span> Đăng xuất
-      </a>
-    </div>
-  </header>
+  <div class="flex items-center gap-4">
+    <img src="/static/logo.png" class="w-12 h-12 rounded-full border-4 border-white shadow" alt="Logo" />
+    <button onclick="goHome()" class="text-3xl font-extrabold text-white tracking-wide flex items-center gap-2 focus:outline-none">
+      <span></span> SmartCalories
+    </button>
+  </div>
+  <div class="flex items-center gap-4">
+    <!-- Thêm avatar user ở đây -->
+    <img src="{{ user.avatar_url or '/static/default-avatar.png' }}" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-white shadow" />
+    <span class="text-white font-semibold text-lg flex items-center gap-2">
+    {{ fullname }}
+    </span>
+    <a href="/logout" class="bg-white/20 hover:bg-white/40 text-white px-4 py-2 rounded-xl font-bold shadow transition flex items-center gap-2">
+      <span>🚪</span> Đăng xuất
+    </a>
+  </div>
+</header>
   <!-- Dashboard layout -->
   <main class="flex h-[calc(100vh-80px)] transition-all duration-300 ease-in-out">
     <!-- Sidebar -->

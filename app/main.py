@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-
+from fastapi.responses import FileResponse
 from app.database import meals_col, logs_col, users_col
 from bson import ObjectId
 from datetime import datetime

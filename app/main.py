@@ -13,6 +13,8 @@ import io
 import json
 from passlib.hash import bcrypt
 from datetime import datetime, timedelta
+import cloudinary
+import cloudinary.uploader
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -146,7 +148,7 @@ def reset_password_form(request: Request, token: str = ""):
     if not info or info["expires"] < datetime.utcnow():
         return templates.TemplateResponse(
             "forgot-password.html",
-            {"request": request, "error": "Liên kết không hợp lệ hoặc đã hết hạn."}
+            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
         )
     return templates.TemplateResponse("reset-password.html", {"request": request, "token": token})
 
@@ -161,7 +163,7 @@ def reset_password_submit(
     if not info or info["expires"] < datetime.utcnow():
         return templates.TemplateResponse(
             "forgot-password.html",
-            {"request": request, "error": "Liên kết không hợp lệ hoặc đã hết hạn."}
+            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
         )
     if password != confirm_password:
         return templates.TemplateResponse(
@@ -184,8 +186,8 @@ conf = ConnectionConfig(
     MAIL_FROM="pcq30012004@gmail.com",
     MAIL_PORT=587,
     MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=True,     
-    MAIL_SSL_TLS=False,      
+    MAIL_STARTTLS=True,      # Đúng tên biến
+    MAIL_SSL_TLS=False,      # Đúng tên biến
     USE_CREDENTIALS=True
 )
 
@@ -443,7 +445,11 @@ async def set_goals(
         "suggested_meals": suggested_by_nutrient
     })
 
-
+cloudinary.config(
+    cloud_name="df4esejf8",
+    api_key="673739585779132",
+    api_secret="_s-PaBNgEJuBLdtRrRE62gQm4n0"
+)
 
 @app.post("/edit-meal/{meal_id}")
 async def update_meal(
@@ -496,33 +502,29 @@ async def update_profile(
     weight: int = Form(...),
     age: int = Form(...),
     gender: str = Form(...),
-    email: str = Form(...),  # Thêm email
+    email: str = Form(...),
     avatar_file: UploadFile = File(None),
     user_id: str = Cookie(None)
 ):
     if not user_id:
         return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
 
-    # Kiểm tra email đã tồn tại cho user khác chưa
     user = users_col.find_one({"_id": ObjectId(user_id)})
     if users_col.find_one({"email": email, "_id": {"$ne": ObjectId(user_id)}}):
         return JSONResponse({"success": False, "message": "Email đã được sử dụng!"}, status_code=400)
 
     avatar_url = ""
     if avatar_file:
-        ext = avatar_file.filename.split('.')[-1].lower()
-        filename = f"{user_id}.{ext}"
-        save_path = f"app/static/avatars/{filename}"
-        with open(save_path, "wb") as f:
-            f.write(await avatar_file.read())
-        avatar_url = f"/static/avatars/{filename}"
+        # Upload lên Cloudinary
+        result = cloudinary.uploader.upload(await avatar_file.read(), folder="avatars")
+        avatar_url = result["secure_url"]
 
     update_data = {
         "height": height,
         "weight": weight,
         "age": age,
         "gender": gender,
-        "email": email  # Cập nhật email
+        "email": email
     }
     if avatar_url:
         update_data["avatar_url"] = avatar_url

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response, Query
+from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response, Query, Body
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -82,7 +82,7 @@ def login_form(request: Request):
 
 @app.post("/login")
 def login_user(
-    request: Request,  # Thêm request vào đây
+    request: Request,
     username: str = Form(...),
     password: str = Form(...)
 ):
@@ -95,6 +95,15 @@ def login_user(
                 "error": "Tên đăng nhập hoặc mật khẩu không đúng"
             },
             status_code=401
+        )
+    if user.get("is_banned", False):
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên."
+            },
+            status_code=403
         )
 
     response = RedirectResponse("/", status_code=302)
@@ -303,6 +312,13 @@ async def home(
     )[:3]
 
     # ✅ Truyền fullname vào template
+    users = []
+    if user and user.get("role") == "admin":
+        for u in users_col.find():
+            u["_id"] = str(u["_id"])
+            u["is_banned"] = u.get("is_banned", False)
+            users.append(u)
+
     return templates.TemplateResponse("index.html", {
         "request": request,
         "meals": meals,
@@ -318,7 +334,8 @@ async def home(
         "tdee": int(tdee) if tdee else None,
         "suggested_meals": suggested_meals,
         "nutrient_priority": nutrient_priority,
-        "view": view
+        "view": view,
+        "users": users
     })
 # tạo favicon
 @app.get("/favicon.ico", include_in_schema=False)
@@ -550,6 +567,35 @@ async def update_profile(
             "tdee": int(tdee)
         }
     })
+
+@app.post("/ban-user")
+async def ban_user(
+    request: Request,
+    user_id: str = Cookie(None),
+    data: dict = Body(...)
+):
+    # Kiểm tra đăng nhập
+    if not user_id:
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
+    admin = users_col.find_one({"_id": ObjectId(user_id)})
+    if not admin or admin.get("role") != "admin":
+        return JSONResponse({"success": False, "message": "Bạn không có quyền"}, status_code=403)
+
+    target_id = data.get("user_id")
+    ban = data.get("ban")
+    if not target_id:
+        return JSONResponse({"success": False, "message": "Thiếu user_id"}, status_code=400)
+    if str(target_id) == str(user_id):
+        return JSONResponse({"success": False, "message": "Không thể tự ban chính mình!"}, status_code=400)
+
+    result = users_col.update_one(
+        {"_id": ObjectId(target_id)},
+        {"$set": {"is_banned": bool(ban)}}
+    )
+    if result.modified_count == 1:
+        return JSONResponse({"success": True})
+    else:
+        return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không thay đổi"}, status_code=404)
 
 @app.get("/export-csv")
 def export_csv(

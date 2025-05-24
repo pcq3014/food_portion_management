@@ -94,9 +94,11 @@
       <li>🥑 Fat: {{ meal.fat }}g</li>
     </ul>
     <div class="mt-4 flex gap-3">
-      <button class="editMealBtn text-blue-600" data-meal='{{ meal | tojson }}'>✏️ Sửa</button>
-      <button onclick="openModal('{{ meal._id }}')" class="text-red-600">🗑️ Xoá</button>
-    </div>
+  {% if user.role == 'admin' %}
+    <button class="editMealBtn text-blue-600" data-meal='{{ meal | tojson }}'>✏️ Sửa</button>
+    <button onclick="openModal('{{ meal._id }}')" class="text-red-600">🗑️ Xoá</button>
+  {% endif %}
+</div>
   </div>
   {% endfor %}
 </div>

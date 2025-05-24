@@ -106,16 +106,24 @@ def login_user(
             status_code=403
         )
 
+    session_token = secrets.token_urlsafe(16)
+    users_col.update_one({"_id": user["_id"]}, {"$set": {"session_token": session_token}})
     response = RedirectResponse("/", status_code=302)
     response.set_cookie(
         key="user_id",
         value=str(user["_id"]),
         httponly=True,
-        max_age=86400,  # 1 ngày
+        max_age=86400,
+        path="/"
+    )
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        max_age=86400,
         path="/"
     )
     return response
-reset_tokens = {}  # Lưu token tạm thời (nên dùng Redis hoặc DB thực tế)
 
 @app.get("/forgot-password", response_class=HTMLResponse)
 def forgot_password_form(request: Request):
@@ -211,6 +219,7 @@ def get_current_user_id(user_id: str = Cookie(None)) -> ObjectId:
 async def home(
     request: Request,
     user_id: str = Cookie(None),
+    session_token: str = Cookie(None),
     search: str = Query("", alias="search"),
     view: str = Query("", alias="view"),
     goals: str = Cookie(None)
@@ -221,7 +230,20 @@ async def home(
     user_id_obj = ObjectId(user_id)
     user = users_col.find_one({"_id": user_id_obj})
     fullname = user.get("fullname", "Người dùng") if user else "Người dùng"
-
+    
+    # Kiểm tra session_token và trạng thái ban
+    if not user or user.get("is_banned", False):
+        response = RedirectResponse("/login", status_code=302)
+        response.delete_cookie("user_id", path="/")
+        response.delete_cookie("session_token", path="/")
+        response.set_cookie("logout_reason", "ban", path="/")
+        return response
+    if session_token != user.get("session_token"):
+        response = RedirectResponse("/login", status_code=302)
+        response.delete_cookie("user_id", path="/")
+        response.delete_cookie("session_token", path="/")
+        response.set_cookie("logout_reason", "other_login", path="/")
+        return response
 
     bmr = tdee = None
     if user and all(k in user for k in ("weight", "height", "age", "gender")):
@@ -666,7 +688,16 @@ def export_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
-
+@app.get("/check-session")
+def check_session(user_id: str = Cookie(None), session_token: str = Cookie(None)):
+    if not user_id:
+        return {"valid": False, "reason": "logout"}
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    if not user or user.get("is_banned", False):
+        return {"valid": False, "reason": "ban"}
+    if session_token != user.get("session_token"):
+        return {"valid": False, "reason": "other_login"}
+    return {"valid": True}
 # Đăng xuất
 @app.get("/logout")
 def logout():

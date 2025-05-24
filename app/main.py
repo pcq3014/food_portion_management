@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response, Que
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi import UploadFile, File
 from app.database import meals_col, logs_col, users_col
 from bson import ObjectId
 from datetime import datetime
@@ -381,29 +382,42 @@ def calculate_tdee(bmr, activity_level=1.55):
     return int(bmr * activity_level)
 
 # Trang thông tin cá nhân
-
 @app.post("/profile")
-def update_profile(
+async def update_profile(
     request: Request,
     height: int = Form(...),
     weight: int = Form(...),
     age: int = Form(...),
     gender: str = Form(...),
-    avatar_url: str = Form(""),
+    avatar_file: UploadFile = File(None),  # Nhận file ảnh
     user_id: str = Cookie(None)
 ):
     if not user_id:
         return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
+
+    avatar_url = ""
+    if avatar_file:
+        ext = avatar_file.filename.split('.')[-1].lower()
+        filename = f"{user_id}.{ext}"
+        save_path = f"app/static/avatars/{filename}"
+        with open(save_path, "wb") as f:
+            f.write(await avatar_file.read())
+        avatar_url = f"/static/avatars/{filename}"
+
+    update_data = {
+        "height": height,
+        "weight": weight,
+        "age": age,
+        "gender": gender,
+    }
+    if avatar_url:
+        update_data["avatar_url"] = avatar_url
+
     users_col.update_one(
         {"_id": ObjectId(user_id)},
-        {"$set": {
-            "height": height,
-            "weight": weight,
-            "age": age,
-            "gender": gender,
-            "avatar_url": avatar_url
-        }}
+        {"$set": update_data}
     )
+
     bmr = calculate_bmr(weight, height, age, gender)
     tdee = calculate_tdee(bmr)
     return JSONResponse({

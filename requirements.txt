@@ -7,3 +7,5 @@ python-multipart
 pytz
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
+fastapi_mail
+httpx>=0.25.0

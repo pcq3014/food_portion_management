@@ -93,28 +93,28 @@
           <h2 class="text-2xl font-bold mb-4">🗓️ Nhật ký hôm nay</h2>
           <div class="bg-white rounded-xl shadow overflow-x-auto">
             <table class="min-w-full text-sm">
-              <thead class="bg-gray-100">
-                <tr>
-                  <th class="p-3 text-left">Món</th>
-                  <th class="p-3 text-left">Số lượng</th>
-                  <th class="p-3 text-left">Calories</th>
-                  <th class="p-3 text-left">Protein</th>
-                  <th class="p-3 text-left">Carbs</th>
-                  <th class="p-3 text-left">Fat</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for log in logs %}
-                <tr class="even:bg-gray-50">
-                  <td class="p-3">{{ log.meal.name }}</td>
-                  <td class="p-3">{{ log.quantity }}</td>
-                  <td class="p-3">{{ log.meal.calories * log.quantity }}</td>
-                  <td class="p-3">{{ log.meal.protein * log.quantity }}</td>
-                  <td class="p-3">{{ log.meal.carbs * log.quantity }}</td>
-                  <td class="p-3">{{ log.meal.fat * log.quantity }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
+              <thead class="bg-blue-700 text-white font-semibold">
+  <tr>
+    <th class="p-3 text-center border border-blue-800">Món</th>
+    <th class="p-3 text-center border border-blue-800">Số lượng</th>
+    <th class="p-3 text-center border border-blue-800">Calories</th>
+    <th class="p-3 text-center border border-blue-800">Protein</th>
+    <th class="p-3 text-center border border-blue-800">Carbs</th>
+    <th class="p-3 text-center border border-blue-800">Fat</th>
+  </tr>
+</thead>
+<tbody>
+  {% for log in logs %}
+  <tr class="even:bg-blue-50 odd:bg-white">
+    <td class="p-3 text-center border border-blue-200">{{ log.meal.name }}</td>
+    <td class="p-3 text-center border border-blue-200">{{ log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-200">{{ log.meal.calories * log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-200">{{ log.meal.protein * log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-200">{{ log.meal.carbs * log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-200">{{ log.meal.fat * log.quantity }}</td>
+  </tr>
+  {% endfor %}
+</tbody>
             </table>
           </div>
 
@@ -160,47 +160,101 @@
   };
 
       new Chart(document.getElementById("nutritionChart"), {
-        type: 'bar',
-        data: {
-          labels: ['Calories', 'Protein', 'Carbs', 'Fat'],
-          datasets: [{
-            label: 'Dinh dưỡng hôm nay',
-            data: [summary.calories, summary.protein, summary.carbs, summary.fat],
-            backgroundColor: ['#f87171', '#60a5fa', '#facc15', '#34d399']
-          }]
+    type: 'bar',
+    data: {
+      labels: ['Calories', 'Protein', 'Carbs', 'Fat'],
+      datasets: [{
+        label: 'Dinh dưỡng hôm nay',
+        data: [summary.calories, summary.protein, summary.carbs, summary.fat],
+        backgroundColor: [
+          'rgba(248,113,113,0.85)', // đỏ nhạt
+          'rgba(96,165,250,0.85)',  // xanh dương
+          'rgba(250,204,21,0.85)',  // vàng
+          'rgba(52,211,153,0.85)'   // xanh lá
+        ],
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: [
+          '#ef4444', '#2563eb', '#ca8a04', '#059669'
+        ],
+        maxBarThickness: 60
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: false
         },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-
-      new Chart(document.getElementById("macroPieChart"), {
-        type: 'pie',
-        data: {
-          labels: ['Protein', 'Carbs', 'Fat'],
-          datasets: [{
-            data: [summary.protein, summary.carbs, summary.fat],
-            backgroundColor: ['#60a5fa', '#facc15', '#34d399']
-          }]
-        },
-        options: {
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function (ctx) {
-                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                  const value = ctx.parsed;
-                  const percent = ((value / total) * 100).toFixed(1);
-                  return `${ctx.label}: ${value}g (${percent}%)`;
-                }
-              }
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return `${ctx.label}: ${ctx.parsed.y} ${ctx.label === 'Calories' ? '' : 'g'}`;
             }
           }
         }
-      });
-    </script>
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 16, weight: 'bold' } }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: '#e5e7eb' },
+          ticks: { font: { size: 14 } }
+        }
+      }
+    }
+  });
+
+  // Macro Pie Chart
+  new Chart(document.getElementById("macroPieChart"), {
+    type: 'doughnut',
+    data: {
+      labels: ['Protein', 'Carbs', 'Fat'],
+      datasets: [{
+        data: [summary.protein, summary.carbs, summary.fat],
+        backgroundColor: [
+          'rgba(59,130,246,0.85)', // xanh dương
+          'rgba(253,224,71,0.85)', // vàng nhạt
+          'rgba(16,185,129,0.85)'  // xanh lá
+        ],
+        borderColor: ['#2563eb', '#ca8a04', '#059669'],
+        borderWidth: 2,
+        hoverOffset: 16
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            font: { size: 15, weight: 'bold' },
+            color: '#374151'
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const value = ctx.parsed;
+              const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+              return `${ctx.label}: ${value}g (${percent}%)`;
+            }
+          }
+        },
+        title: {
+          display: false
+        }
+      }
+    }
+  });
+</script>
     <!-- Modal Ghi Nhật Ký -->
   <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
     <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">

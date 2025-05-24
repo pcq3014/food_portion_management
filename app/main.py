@@ -596,28 +596,27 @@ async def ban_user(
     user_id: str = Cookie(None),
     data: dict = Body(...)
 ):
-    # Kiểm tra đăng nhập
     if not user_id:
-        return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"})
     admin = users_col.find_one({"_id": ObjectId(user_id)})
     if not admin or admin.get("role") != "admin":
-        return JSONResponse({"success": False, "message": "Bạn không có quyền"}, status_code=403)
-
+        return JSONResponse({"success": False, "message": "Bạn không có quyền"})
     target_id = data.get("user_id")
     ban = data.get("ban")
     if not target_id:
-        return JSONResponse({"success": False, "message": "Thiếu user_id"}, status_code=400)
+        return JSONResponse({"success": False, "message": "Thiếu user_id"})
     if str(target_id) == str(user_id):
-        return JSONResponse({"success": False, "message": "Không thể tự ban chính mình!"}, status_code=400)
+        return JSONResponse({"success": False, "message": "Không thể tự ban chính mình!"})
 
     result = users_col.update_one(
         {"_id": ObjectId(target_id)},
         {"$set": {"is_banned": bool(ban)}}
     )
     if result.modified_count == 1:
-        return JSONResponse({"success": True})
+        msg = "Đã khóa tài khoản!" if ban else "Đã mở khóa tài khoản!"
+        return JSONResponse({"success": True, "message": msg})
     else:
-        return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không thay đổi"}, status_code=404)
+        return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không thay đổi"})
 
 @app.get("/export-csv")
 def export_csv(
@@ -688,6 +687,34 @@ def export_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+#Đổi quyền người dùng
+@app.post("/change-role")
+async def change_role(
+    request: Request,
+    user_id: str = Cookie(None),
+    data: dict = Body(...)
+):
+    # Kiểm tra đăng nhập
+    if not user_id:
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"})
+    admin = users_col.find_one({"_id": ObjectId(user_id)})
+    if not admin or admin.get("role") != "admin":
+        return JSONResponse({"success": False, "message": "Bạn không có quyền"})
+    target_id = data.get("user_id")
+    new_role = data.get("role")
+    if not target_id or not new_role:
+        return JSONResponse({"success": False, "message": "Thiếu thông tin"})
+    if str(target_id) == str(user_id):
+        return JSONResponse({"success": False, "message": "Không thể đổi quyền chính mình!"})
+    user = users_col.find_one({"_id": ObjectId(target_id)})
+    if not user:
+        return JSONResponse({"success": False, "message": "Không tìm thấy user!"})
+    users_col.update_one({"_id": ObjectId(target_id)}, {"$set": {"role": new_role}})
+    return JSONResponse({"success": True, "message": "Đã đổi quyền thành công!"})
+
+
+# Kiểm tra phiên đăng nhập
 @app.get("/check-session")
 def check_session(user_id: str = Cookie(None), session_token: str = Cookie(None)):
     if not user_id:
@@ -698,6 +725,7 @@ def check_session(user_id: str = Cookie(None), session_token: str = Cookie(None)
     if session_token != user.get("session_token"):
         return {"valid": False, "reason": "other_login"}
     return {"valid": True}
+
 # Đăng xuất
 @app.get("/logout")
 def logout():

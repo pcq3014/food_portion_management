@@ -113,7 +113,7 @@ def forgot_password_form(request: Request):
 @app.post("/forgot-password", response_class=HTMLResponse)
 async def forgot_password_submit(request: Request, email: str = Form(...)):
     user = users_col.find_one({"username": email}) or users_col.find_one({"email": email})
-    message = "Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi."
+    message = "Đặt lại mật khẩu đã được gửi vào email."
     if user:
         token = secrets.token_urlsafe(32)
         reset_tokens[token] = {
@@ -146,7 +146,7 @@ def reset_password_form(request: Request, token: str = ""):
     if not info or info["expires"] < datetime.utcnow():
         return templates.TemplateResponse(
             "forgot-password.html",
-            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
+            {"request": request, "error": "Liên kết không hợp lệ hoặc đã hết hạn."}
         )
     return templates.TemplateResponse("reset-password.html", {"request": request, "token": token})
 
@@ -161,7 +161,7 @@ def reset_password_submit(
     if not info or info["expires"] < datetime.utcnow():
         return templates.TemplateResponse(
             "forgot-password.html",
-            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
+            {"request": request, "error": "Liên kết không hợp lệ hoặc đã hết hạn."}
         )
     if password != confirm_password:
         return templates.TemplateResponse(
@@ -184,8 +184,8 @@ conf = ConnectionConfig(
     MAIL_FROM="pcq30012004@gmail.com",
     MAIL_PORT=587,
     MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=True,      # Đúng tên biến
-    MAIL_SSL_TLS=False,      # Đúng tên biến
+    MAIL_STARTTLS=True,     
+    MAIL_SSL_TLS=False,      
     USE_CREDENTIALS=True
 )
 

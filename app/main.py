@@ -157,25 +157,25 @@ async def forgot_password_submit(request: Request, email: str = Form(...)):
         reset_link = str(request.url_for('reset_password_form')) + f"?token={token}"
 
         email_message = MessageSchema(
-    subject="Yêu cầu đặt lại mật khẩu - SmartCalories",
-    recipients=[user["email"]],
-    body=f"""
+            subject="Yêu cầu đặt lại mật khẩu - SmartCalories",
+            recipients=[user["email"]],
+            body=f"""
     <table width="100%" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 0;">
       <tr>
         <td align="center" style="padding: 40px 0;">
-          <img src="https://yourdomain.com/static/logo.png" alt="SmartCalories Logo" width="120" style="display:block; margin-bottom: 20px;">
+          <!-- Không có logo -->
           <table width="420" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0001;">
             <tr>
               <td style="padding: 32px 32px 16px 32px;">
-                <h2 style="color: #4CAF50; margin: 0 0 16px 0; text-align:center;">Đặt lại mật khẩu</h2>
+                <h2 style="color: #FF6F61; margin: 0 0 16px 0; text-align:center;">Đặt lại mật khẩu</h2>
                 <p style="font-size: 16px; color: #222;">Xin chào <strong>{user.get('fullname', '')}</strong>,</p>
                 <p style="font-size: 15px; color: #444;">Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản SmartCalories.</p>
                 <p style="font-size: 15px; color: #444;">Nhấn vào nút bên dưới để đặt lại mật khẩu (liên kết có hiệu lực trong 30 phút):</p>
                 <div style="text-align: center; margin: 28px 0;">
-                  <a href="{reset_link}" style="background: linear-gradient(90deg,#4CAF50,#43a047); color: #fff; padding: 14px 32px; border-radius: 6px; font-size: 16px; text-decoration: none; font-weight: bold; letter-spacing: 1px; display: inline-block;">Đặt lại mật khẩu</a>
+                  <a href="{reset_link}" style="background: linear-gradient(90deg,#FF6F61,#FF8A80); color: #fff; padding: 14px 32px; border-radius: 6px; font-size: 16px; text-decoration: none; font-weight: bold; letter-spacing: 1px; display: inline-block;">Đặt lại mật khẩu</a>
                 </div>
                 <p style="font-size: 14px; color: #888;">Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email.</p>
-                <p style="font-size: 14px; color: #888; margin-top: 32px;">Trân trọng,<br>Đội ngũ <span style="color:#4CAF50;font-weight:bold;">SmartCalories</span></p>
+                <p style="font-size: 14px; color: #888; margin-top: 32px;">Trân trọng,<br>Đội ngũ <span style="color:#FF6F61;font-weight:bold;">SmartCalories</span></p>
               </td>
             </tr>
             <tr>
@@ -188,8 +188,8 @@ async def forgot_password_submit(request: Request, email: str = Form(...)):
       </tr>
     </table>
     """,
-    subtype="html"
-    )
+            subtype="html"
+        )
 
         fm = FastMail(conf)
         await fm.send_message(email_message)

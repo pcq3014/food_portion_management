@@ -33,49 +33,49 @@
 <aside class="w-64 bg-gradient-to-b from-blue-700 via-blue-500 to-blue-400 text-white p-4 space-y-2 shadow-lg">
   <nav class="flex flex-col gap-1">
     <button onclick="switchView('meals')" id="btn-meals"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       📋 <span>Danh sách món</span>
     </button>
     <button onclick="switchView('log')" id="btn-log"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       📖 <span>Nhật ký & Phân tích</span>
     </button>
     {% if user.role != 'admin' %}
 <button onclick="openSuggestModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   🥗 <span>Gợi ý món ăn</span>
 </button>
 <button onclick="openLogMealModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   📝 <span>Ghi nhật ký</span>
 </button>
 <button onclick="openActivityModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   🏃 <span>Hoạt động thể chất</span>
 </button>
 {% endif %}
     <button onclick="openProfileModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   👤 <span>Thông tin cá nhân</span>
 </button>
 {% if user.role == 'admin' %}
     <button onclick="openUserModal()"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       👥 <span>Quản lý người dùng</span>
     </button>
     {% endif %}
       {% if user.role == 'admin' %}
   <button onclick="openActivityLogModal()"
-    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
     📜 <span>Nhật ký hoạt động</span>
   </button>
   <button onclick="openLoginLogModal()"
-    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
     🔑 <span>Xem đăng nhập</span>
   </button>
 {% endif %}
     <div class="relative group">
-  <button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none w-full">
+  <button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition-all duration-200 font-medium focus:outline-none w-full">
     📤 <span>Xuất CSV</span>
   </button>
   <div class="absolute left-0 mt-1 hidden group-hover:block bg-white text-gray-800 shadow-lg rounded-lg overflow-hidden z-10 w-48">
@@ -91,15 +91,26 @@
 <aside id="mobileSidebar" class="fixed inset-0 bg-black/40 z-50 flex sm:hidden hidden">
   <div class="w-64 bg-gradient-to-b from-blue-700 via-blue-500 to-blue-400 text-white p-4 space-y-2 shadow-lg h-full">
     <button onclick="closeMobileSidebar()" class="mb-4 text-white text-2xl">&times;</button>
+    <nav class="flex flex-col gap-2">
+      <button onclick="switchView('meals'); closeMobileSidebar()" class="sidebar-btn">📋 Danh sách món</button>
+      <button onclick="switchView('log'); closeMobileSidebar()" class="sidebar-btn">📖 Nhật ký & Phân tích</button>
+      <button onclick="openSuggestModal(); closeMobileSidebar()" class="sidebar-btn">🥗 Gợi ý món ăn</button>
+      <button onclick="openLogMealModal(); closeMobileSidebar()" class="sidebar-btn">📝 Ghi nhật ký</button>
+      <button onclick="openActivityModal(); closeMobileSidebar()" class="sidebar-btn">🏃 Hoạt động thể chất</button>
+      <button onclick="openProfileModal(); closeMobileSidebar()" class="sidebar-btn">👤 Thông tin cá nhân</button>
+    </nav>
   </div>
   <div class="flex-1" onclick="closeMobileSidebar()"></div>
 </aside>
 <script>
-document.getElementById('openSidebarBtn').onclick = () => {
+document.getElementById('openSidebarBtn')?.addEventListener('click', () => {
   document.getElementById('mobileSidebar').classList.remove('hidden');
-};
+  document.getElementById('mobileSidebar').classList.add('flex');
+});
 function closeMobileSidebar() {
-  document.getElementById('mobileSidebar').classList.add('hidden');
+  const sidebar = document.getElementById('mobileSidebar');
+  sidebar.classList.add('hidden');
+  sidebar.classList.remove('flex');
 }
 </script>
 
@@ -113,7 +124,7 @@ function closeMobileSidebar() {
   <input type="text" name="search" placeholder="Tìm món ăn..." value="{{ search | default('') }}"
     class="border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base sm:text-sm" />
   <input type="hidden" name="view" value="meals" />
-  <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition w-full sm:w-auto">Tìm kiếm</button>
+  <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 transition w-full sm:w-auto">Tìm kiếm</button>
 </form>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
   {% for meal in meals %}
@@ -339,10 +350,14 @@ function closeMobileSidebar() {
   </div>
   <script>
     function openLogMealModal() {
-      document.getElementById('logMealModal').classList.remove('hidden');
+      const modal = document.getElementById('logMealModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
     }
     function closeLogMealModal() {
-      document.getElementById('logMealModal').classList.add('hidden');
+      const modal = document.getElementById('logMealModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex'); 
     }
   </script>
   <!-- Modal Thêm Món Ăn -->
@@ -376,7 +391,7 @@ function closeMobileSidebar() {
         </div>
         <div class="flex justify-end gap-3 pt-2">
           <button type="button" onclick="closeAddMealModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
-          <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Thêm</button>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Thêm</button>
         </div>
         <div>
   <label for="addImageUrl" class="block mb-1 font-medium text-gray-700">Link ảnh (tuỳ chọn)</label>
@@ -425,7 +440,7 @@ function closeMobileSidebar() {
         </div>
         <div class="flex justify-end gap-3 pt-2">
           <button type="button" onclick="closeEditMealModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
-          <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Lưu</button>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Lưu</button>
         </div>
         <div>
   <label for="editImageUrl" class="block mb-1 font-medium text-gray-700">Link ảnh (tuỳ chọn)</label>
@@ -545,10 +560,14 @@ function closeMobileSidebar() {
 </script>
 <script>
   function openSuggestModal() {
-    document.getElementById('suggestModal').classList.remove('hidden');
+    const modal = document.getElementById('logMealModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
   }
   function closeSuggestModal() {
-    document.getElementById('suggestModal').classList.add('hidden');
+    const modal = document.getElementById('logMealModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
   }
 </script>
 <!-- Modal Thông tin cá nhân -->
@@ -852,7 +871,9 @@ function submitGoalsForm(event) {
   };
 
   function openProfileModal() {
-  document.getElementById('profileModal').classList.remove('hidden');
+  const modal = document.getElementById('logMealModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
   switchToViewProfile();
   document.getElementById('viewFullname').textContent = userProfile.fullname || '';
   document.getElementById('viewHeight').textContent = userProfile.height || 'Chưa cập nhật';
@@ -866,7 +887,9 @@ function submitGoalsForm(event) {
 
 }
   function closeProfileModal() {
-    document.getElementById('profileModal').classList.add('hidden');
+    const modal = document.getElementById('logMealModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
   }
   function switchToEditProfile() {
     document.getElementById('profileViewMode').classList.add('hidden');
@@ -1334,7 +1357,7 @@ function closeLoginLogModal() {
       </div>
       <div class="flex justify-end gap-3 pt-2">
         <button type="button" onclick="closeActivityModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Lưu</button>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Lưu</button>
       </div>
       <div id="activityError" class="text-red-600 text-sm font-semibold"></div>
     </form>
@@ -1349,20 +1372,24 @@ function closeLoginLogModal() {
     <h2 class="text-xl font-bold mb-4">Lịch sử hoạt động thể chất</h2>
     <div id="activityHistoryContent" class="max-h-96 overflow-y-auto"></div>
     <div class="flex justify-end mt-4">
-      <button onclick="closeActivityHistoryModal()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Đóng</button>
+      <button onclick="closeActivityHistoryModal()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:bg-blue-600 active:bg-blue-600">Đóng</button>
     </div>
   </div>
 </div>
 <script>
 // Mở modal ghi nhận hoạt động
 function openActivityModal() {
-  document.getElementById('activityModal').classList.remove('hidden');
+  const modal = document.getElementById('logMealModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
   document.getElementById('activityForm').reset();
   document.getElementById('activityError').textContent = '';
 }
 // Đóng modal ghi nhận hoạt động
 function closeActivityModal() {
-  document.getElementById('activityModal').classList.add('hidden');
+  const modal = document.getElementById('logMealModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
 }
 // Xử lý submit hoạt động thể chất bằng AJAX
 document.getElementById('activityForm').onsubmit = function(event) {

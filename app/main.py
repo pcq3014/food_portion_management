@@ -143,28 +143,61 @@ def forgot_password_form(request: Request):
 @app.post("/forgot-password", response_class=HTMLResponse)
 async def forgot_password_submit(request: Request, email: str = Form(...)):
     user = users_col.find_one({"username": email}) or users_col.find_one({"email": email})
+    
+    # Luôn trả về cùng một thông điệp để đảm bảo tính bảo mật
     message = "Đặt lại mật khẩu đã được gửi vào email."
+
     if user:
         token = secrets.token_urlsafe(32)
         reset_tokens[token] = {
             "user_id": str(user["_id"]),
             "expires": datetime.utcnow() + timedelta(minutes=30)
         }
+
         reset_link = str(request.url_for('reset_password_form')) + f"?token={token}"
+
         email_message = MessageSchema(
-            subject="Đặt lại mật khẩu SmartCalories",
+            subject="Yêu cầu đặt lại mật khẩu - SmartCalories",
             recipients=[user["email"]],
             body=f"""
-                <p>Xin chào {user.get('fullname', '')},</p>
-                <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản SmartCalories.</p>
-                <p>Nhấn vào liên kết sau để đặt lại mật khẩu (có hiệu lực trong 30 phút):<br>
-                <a href="{reset_link}">{reset_link}</a></p>
-                <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+              <tr>
+                <td>
+                  <table width="600" cellpadding="0" cellspacing="0" style="margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+                    <tr style="background-color: #4CAF50; color: white;">
+                      <td style="padding: 20px; text-align: center;">
+                        <h2>SmartCalories</h2>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 30px;">
+                        <p>Xin chào <strong>{user.get('fullname', '')}</strong>,</p>
+                        <p>Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản SmartCalories.</p>
+                        <p>Nhấn vào nút bên dưới để đặt lại mật khẩu (liên kết có hiệu lực trong 30 phút):</p>
+                        <p style="text-align: center;">
+                          <a href="{reset_link}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Đặt lại mật khẩu</a>
+                        </p>
+                        <p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email.</p>
+                        <br>
+                        <p>Trân trọng,<br>Đội ngũ SmartCalories</p>
+                      </td>
+                    </tr>
+                    <tr style="background-color: #f4f4f4; color: #888;">
+                      <td style="padding: 20px; text-align: center; font-size: 12px;">
+                        © 2025 SmartCalories. Mọi quyền được bảo lưu.
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
             """,
             subtype="html"
         )
+
         fm = FastMail(conf)
         await fm.send_message(email_message)
+
     return templates.TemplateResponse(
         "forgot-password.html",
         {"request": request, "message": message}
@@ -209,13 +242,13 @@ def reset_password_submit(
     )
 
 conf = ConnectionConfig(
-    MAIL_USERNAME="pcq30012004@gmail.com",
-    MAIL_PASSWORD="gnxc lyya fvuq aokl",
-    MAIL_FROM="pcq30012004@gmail.com",
+    MAIL_USERNAME="smartcalories.vn@gmail.com",
+    MAIL_PASSWORD="zpln zcew qcti koba",
+    MAIL_FROM="smartcalories.vn@gmail.com",
     MAIL_PORT=587,
     MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=True,      # Đúng tên biến
-    MAIL_SSL_TLS=False,      # Đúng tên biến
+    MAIL_STARTTLS=True,      
+    MAIL_SSL_TLS=False,     
     USE_CREDENTIALS=True
 )
 

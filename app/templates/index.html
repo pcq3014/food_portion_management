@@ -61,6 +61,16 @@
       👥 <span>Quản lý người dùng</span>
     </button>
     {% endif %}
+      {% if user.role == 'admin' %}
+  <button onclick="openActivityLogModal()"
+    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+    📜 <span>Nhật ký hoạt động</span>
+  </button>
+  <button onclick="openLoginLogModal()"
+    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+    🔑 <span>Xem đăng nhập</span>
+  </button>
+{% endif %}
     <div class="relative group">
   <button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none w-full">
     📤 <span>Xuất CSV</span>
@@ -120,10 +130,10 @@
 
         <!-- Logs and Analytics View -->
         <div id="logView" class="hidden">
-          <h2 class="text-2xl font-bold mb-4">🗓️ Nhật ký hôm nay</h2>
+          <h2 class="text-3xl font-extrabold text-blue-700 mb-4 flex items-center gap-2">🗓️ Nhật ký hôm nay</h2>
           <div class="bg-white rounded-xl shadow overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="bg-blue-700 text-white font-semibold">
+            <table class="min-w-full text-sm text-gray-700">
+              <thead class="bg-gradient-to-r from-blue-600 to-blue-400 text-white text-base font-semibold">
   <tr>
     <th class="p-3 text-center border border-blue-800">Món</th>
     <th class="p-3 text-center border border-blue-800">Số lượng</th>
@@ -135,30 +145,30 @@
 </thead>
 <tbody>
   {% for log in logs %}
-  <tr class="even:bg-blue-50 odd:bg-white">
-    <td class="p-3 text-center border border-blue-200">{{ log.meal.name }}</td>
-    <td class="p-3 text-center border border-blue-200">{{ log.quantity }}</td>
-    <td class="p-3 text-center border border-blue-200">{{ log.meal.calories * log.quantity }}</td>
-    <td class="p-3 text-center border border-blue-200">{{ log.meal.protein * log.quantity }}</td>
-    <td class="p-3 text-center border border-blue-200">{{ log.meal.carbs * log.quantity }}</td>
-    <td class="p-3 text-center border border-blue-200">{{ log.meal.fat * log.quantity }}</td>
+  <tr class="odd:bg-white even:bg-blue-50 hover:bg-blue-100 transition-all">
+    <td class="p-3 text-center border border-blue-100 whitespace-nowrap font-medium">{{ log.meal.name }}</td>
+    <td class="p-3 text-center border border-blue-100">{{ log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-100">{{ log.meal.calories * log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-100">{{ log.meal.protein * log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-100">{{ log.meal.carbs * log.quantity }}</td>
+    <td class="p-3 text-center border border-blue-100">{{ log.meal.fat * log.quantity }}</td>
   </tr>
   {% endfor %}
 </tbody>
             </table>
           </div>
 
-          <h2 class="text-2xl font-bold mt-10 mb-4">📊 Phân tích hôm nay</h2>
+          <h2 class="text-3xl font-extrabold text-green-700 mt-10 mb-4 flex items-center gap-2">📊 Phân tích hôm nay</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-xl shadow">
-              <h3 class="text-lg font-semibold mb-2">📈 Dinh dưỡng tổng</h3>
-              <canvas id="nutritionChart"></canvas>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow">
-              <h3 class="text-lg font-semibold mb-2">🥗 Phân bố chất</h3>
-              <canvas id="macroPieChart"></canvas>
-            </div>
-          </div>
+  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
+    <h3 class="text-lg font-semibold mb-4 text-gray-700">📈 Dinh dưỡng tổng</h3>
+    <canvas id="nutritionChart" class="h-64 w-full"></canvas>
+  </div>
+  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
+    <h3 class="text-lg font-semibold mb-4 text-gray-700">🥗 Phân bố chất</h3>
+    <canvas id="macroPieChart" class="max-w-full h-64"></canvas>
+  </div>
+</div>
         </div>
         <div id="welcomeView" class="flex flex-col items-center justify-center h-full text-center text-gray-700 space-y-4">
   <img src="/static/trangchu.png" alt="Welcome" class="w-40 h-40">
@@ -190,100 +200,101 @@
   };
 
       new Chart(document.getElementById("nutritionChart"), {
-    type: 'bar',
-    data: {
-      labels: ['Calories', 'Protein', 'Carbs', 'Fat'],
-      datasets: [{
-        label: 'Dinh dưỡng hôm nay',
-        data: [summary.calories, summary.protein, summary.carbs, summary.fat],
-        backgroundColor: [
-          'rgba(248,113,113,0.85)', // đỏ nhạt
-          'rgba(96,165,250,0.85)',  // xanh dương
-          'rgba(250,204,21,0.85)',  // vàng
-          'rgba(52,211,153,0.85)'   // xanh lá
-        ],
-        borderRadius: 12,
-        borderWidth: 2,
-        borderColor: [
-          '#ef4444', '#2563eb', '#ca8a04', '#059669'
-        ],
-        maxBarThickness: 60
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        title: {
-          display: false
-        },
-        tooltip: {
-          callbacks: {
-            label: function(ctx) {
-              return `${ctx.label}: ${ctx.parsed.y} ${ctx.label === 'Calories' ? '' : 'g'}`;
-            }
+  type: 'bar',
+  data: {
+    labels: ['Calories', 'Protein', 'Carbs', 'Fat'],
+    datasets: [{
+      label: 'Dinh dưỡng hôm nay',
+      data: [summary.calories, summary.protein, summary.carbs, summary.fat],
+      backgroundColor: [
+        'rgba(255,99,132,0.8)',  // đỏ
+        'rgba(54,162,235,0.8)',  // xanh dương
+        'rgba(255,206,86,0.8)',  // vàng
+        'rgba(75,192,192,0.8)'   // xanh lá
+      ],
+      hoverBackgroundColor: [
+        'rgba(255,99,132,1)',
+        'rgba(54,162,235,1)',
+        'rgba(255,206,86,1)',
+        'rgba(75,192,192,1)'
+      ],
+      borderRadius: 12,
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1f2937',
+        titleFont: { weight: 'bold', size: 14 },
+        bodyFont: { size: 13 },
+        padding: 10,
+        callbacks: {
+          label: function(ctx) {
+            return `${ctx.label}: ${ctx.parsed.y} ${ctx.label === 'Calories' ? 'kcal' : 'g'}`;
           }
         }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 16, weight: 'bold' }, color: '#374151' }
       },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { font: { size: 16, weight: 'bold' } }
-        },
-        y: {
-          beginAtZero: true,
-          grid: { color: '#e5e7eb' },
-          ticks: { font: { size: 14 } }
-        }
+      y: {
+        beginAtZero: true,
+        grid: { color: '#e5e7eb' },
+        ticks: { font: { size: 14 }, color: '#4b5563' }
       }
     }
-  });
+  }
+});
+
 
   // Macro Pie Chart
   new Chart(document.getElementById("macroPieChart"), {
-    type: 'doughnut',
-    data: {
-      labels: ['Protein', 'Carbs', 'Fat'],
-      datasets: [{
-        data: [summary.protein, summary.carbs, summary.fat],
-        backgroundColor: [
-          'rgba(59,130,246,0.85)', // xanh dương
-          'rgba(253,224,71,0.85)', // vàng nhạt
-          'rgba(16,185,129,0.85)'  // xanh lá
-        ],
-        borderColor: ['#2563eb', '#ca8a04', '#059669'],
-        borderWidth: 2,
-        hoverOffset: 16
-      }]
-    },
-    options: {
-      responsive: true,
-      cutout: '65%',
-      plugins: {
-        legend: {
-          display: true,
-          position: 'bottom',
-          labels: {
-            font: { size: 15, weight: 'bold' },
-            color: '#374151'
+  type: 'doughnut',
+  data: {
+    labels: ['Protein', 'Carbs', 'Fat'],
+    datasets: [{
+      data: [summary.protein, summary.carbs, summary.fat],
+      backgroundColor: [
+        'rgba(59,130,246,0.9)', // xanh dương
+        'rgba(253,224,71,0.9)', // vàng
+        'rgba(52,211,153,0.9)'  // xanh lá
+      ],
+      hoverOffset: 14,
+      borderColor: ['#2563eb', '#ca8a04', '#059669'],
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '65%',
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          font: { size: 15, weight: 'bold' },
+          color: '#374151'
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+            const value = ctx.parsed;
+            const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+            return `${ctx.label}: ${value}g (${percent}%)`;
           }
-        },
-        tooltip: {
-          callbacks: {
-            label: function(ctx) {
-              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-              const value = ctx.parsed;
-              const percent = total ? ((value / total) * 100).toFixed(1) : 0;
-              return `${ctx.label}: ${value}g (${percent}%)`;
-            }
-          }
-        },
-        title: {
-          display: false
         }
       }
     }
-  });
+  }
+});
 </script>
     <!-- Modal Ghi Nhật Ký -->
   <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
@@ -917,8 +928,8 @@ function submitProfileForm(event) {
       </h2>
       <button onclick="closeUserModal()" class="text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
     </div>
-    <div class="overflow-x-auto rounded-xl border border-blue-100 shadow">
-      <table class="min-w-full text-base">
+    <div class="overflow-y-auto max-h-[70vh] scrollbar-thin scroll-smooth">
+    <table class="min-w-full text-base">
         <thead class="bg-gradient-to-r from-blue-600 to-blue-400 text-white font-semibold">
           <tr>
             <th class="p-3 text-center">Avatar</th>
@@ -965,6 +976,9 @@ function submitProfileForm(event) {
     {% if u._id != user._id %}
       <button onclick="toggleRole('{{ u._id }}', '{{ u.role }}')" class="bg-yellow-400 hover:bg-yellow-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Đổi quyền">
         <span class="text-xl">🔄</span>
+      </button>
+      <button onclick="confirmDeleteUser('{{ u._id }}')" class="bg-red-400 hover:bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Xóa người dùng">
+        <span class="text-xl">🗑️</span>
       </button>
     {% endif %}
   </div>
@@ -1104,6 +1118,167 @@ function showNotice(msg, success=true) {
   setTimeout(() => { el.style.display = 'none'; }, 2200);
 }
 </script>
+<!-- Modal xác nhận xóa người dùng -->
+<div id="deleteUserModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] hidden">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in">
+    <div class="text-red-500 text-5xl mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 4a8 8 0 100 16 8 8 0 000-16z" />
+      </svg>
+    </div>
+    <div class="text-xl font-semibold text-gray-800 mb-6">Bạn có chắc chắn muốn xóa người dùng này?</div>
+    <div class="flex justify-center gap-4">
+      <button onclick="closeDeleteUserModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded font-bold">Hủy</button>
+      <button id="confirmDeleteUserBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded font-bold">Xóa</button>
+    </div>
+  </div>
+</div>
 
+<script>
+let userIdToDelete = null;
+function confirmDeleteUser(userId) {
+  userIdToDelete = userId;
+  document.getElementById('deleteUserModal').classList.remove('hidden');
+}
+function closeDeleteUserModal() {
+  userIdToDelete = null;
+  document.getElementById('deleteUserModal').classList.add('hidden');
+}
+document.getElementById('confirmDeleteUserBtn').onclick = function() {
+  if (!userIdToDelete) return;
+  fetch('/delete-user', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({user_id: userIdToDelete}),
+    credentials: 'same-origin'
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showNotice("Xóa người dùng thành công!", true);
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showNotice(data.message || "Có lỗi xảy ra!", false);
+    }
+    closeDeleteUserModal();
+  });
+};
+</script>
+<style>
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f3f4f6; /* gray-100 */
+  border-radius: 10px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 10px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+#activityLogContent table,
+#loginLogContent table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+#activityLogContent th,
+#activityLogContent td,
+#loginLogContent th,
+#loginLogContent td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+#activityLogContent th,
+#loginLogContent th {
+  background: linear-gradient(to right, #2563eb, #38bdf8);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+}
+#activityLogContent tr:nth-child(even),
+#loginLogContent tr:nth-child(even) {
+  background-color: #f1f5f9;
+}
+#activityLogContent tr:hover,
+#loginLogContent tr:hover {
+  background-color: #e0e7ef;
+}
+@media (max-width: 900px) {
+  #activityLogContent table,
+  #loginLogContent table {
+    min-width: 600px;
+    font-size: 0.95rem;
+  }
+}
+@media (max-width: 700px) {
+  #activityLogContent table,
+  #loginLogContent table {
+    min-width: 400px;
+    font-size: 0.9rem;
+  }
+  #activityLogModal .p-8,
+  #loginLogModal .p-8 {
+    padding: 1rem !important;
+  }
+}
+</style>
+<!-- Modal nhật ký hoạt động -->
+<div id="activityLogModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-blue-700 flex items-center gap-2">
+        📜 Nhật ký hoạt động
+      </h2>
+      <button onclick="closeActivityLogModal()" class="text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
+    </div>
+    <div id="activityLogContent" class="text-gray-700 text-base min-h-[200px]">
+      <div class="flex justify-center items-center h-32 text-gray-400">Đang tải...</div>
+    </div>
+  </div>
+</div>
+<!-- Modal nhật ký đăng nhập -->
+<div id="loginLogModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-green-700 flex items-center gap-2">
+        🔑 Nhật ký đăng nhập
+      </h2>
+      <button onclick="closeLoginLogModal()" class="text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
+    </div>
+    <div id="loginLogContent" class="text-gray-700 text-base min-h-[200px]">
+      <div class="flex justify-center items-center h-32 text-gray-400">Đang tải...</div>
+    </div>
+  </div>
+</div>
+<script>
+function openActivityLogModal() {
+  document.getElementById('activityLogModal').classList.remove('hidden');
+  document.getElementById('activityLogContent').innerHTML = '<div class="flex justify-center items-center h-32 text-gray-400">Đang tải...</div>';
+  fetch('/activity-log')
+    .then(res => res.text())
+    .then(html => { document.getElementById('activityLogContent').innerHTML = html; });
+}
+function closeActivityLogModal() {
+  document.getElementById('activityLogModal').classList.add('hidden');
+}
+function openLoginLogModal() {
+  document.getElementById('loginLogModal').classList.remove('hidden');
+  document.getElementById('loginLogContent').innerHTML = '<div class="flex justify-center items-center h-32 text-gray-400">Đang tải...</div>';
+  fetch('/login-log')
+    .then(res => res.text())
+    .then(html => { document.getElementById('loginLogContent').innerHTML = html; });
+}
+function closeLoginLogModal() {
+  document.getElementById('loginLogModal').classList.add('hidden');
+}
+</script>
   </body>
 </html>

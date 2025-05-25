@@ -85,6 +85,7 @@
 </div>
   </nav>
 </aside>
+<!-- Nút sidebar mobile -->
 <button id="openSidebarBtn" class="fixed top-4 left-4 z-50 sm:hidden bg-blue-600 text-white p-2 rounded-full shadow-lg">
   <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
 </button>
@@ -103,7 +104,7 @@
   <div class="flex-1" onclick="closeMobileSidebar()"></div>
 </aside>
 <script>
-document.getElementById('openSidebarBtn')?.addEventListener('click', () => {
+document.getElementById('openSidebarBtn')?.addEventListener('click', function() {
   document.getElementById('mobileSidebar').classList.remove('hidden');
   document.getElementById('mobileSidebar').classList.add('flex');
 });
@@ -328,7 +329,7 @@ function closeMobileSidebar() {
 
 </script>
     <!-- Modal Ghi Nhật Ký -->
-  <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] hidden transition-opacity duration-300 ease-in-out">
+<div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] hidden transition-opacity duration-300 ease-in-out">
   <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4 modal-form overflow-y-auto">
       <h2 class="text-2xl font-bold text-green-600 flex items-center gap-2">
         <span>📝</span> Ghi nhật ký
@@ -349,16 +350,16 @@ function closeMobileSidebar() {
     </div>
   </div>
   <script>
-    function openLogMealModal() {
-      const modal = document.getElementById('logMealModal');
+function openLogMealModal() {
+  const modal = document.getElementById('logMealModal');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
-    }
-    function closeLogMealModal() {
-      const modal = document.getElementById('logMealModal');
+}
+function closeLogMealModal() {
+  const modal = document.getElementById('logMealModal');
   modal.classList.add('hidden');
-  modal.classList.remove('flex'); 
-    }
+  modal.classList.remove('flex');
+}
   </script>
   <!-- Modal Thêm Món Ăn -->
   <div id="addMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
@@ -542,21 +543,22 @@ function closeMobileSidebar() {
   </div>
 </div>
 <script>
-  function openSuggestModal() {
+function openSuggestModal() {
   document.getElementById('suggestModal').classList.remove('hidden');
-  document.querySelector('input[name="calories"]').value = 0;
-  document.querySelector('input[name="protein"]').value = 0;
-  document.querySelector('input[name="carbs"]').value = 0;
-  document.querySelector('input[name="fat"]').value = 0;
-  // Reset các giá trị "Đang thiếu" về 0
+  // Reset form và nội dung nếu cần
+  document.querySelector('#suggestModal input[name="calories"]').value = 0;
+  document.querySelector('#suggestModal input[name="protein"]').value = 0;
+  document.querySelector('#suggestModal input[name="carbs"]').value = 0;
+  document.querySelector('#suggestModal input[name="fat"]').value = 0;
   document.getElementById('missingCalories').textContent = "Calories: 0";
   document.getElementById('missingProtein').textContent = "Protein: 0";
   document.getElementById('missingCarbs').textContent = "Carbs: 0";
   document.getElementById('missingFat').textContent = "Fat: 0";
-  // Xoá gợi ý món ăn cũ
   document.getElementById('suggestedMealGroups').innerHTML = "";
 }
-  // Nếu muốn submit form không reload trang, có thể dùng AJAX ở đây
+function closeSuggestModal() {
+  document.getElementById('suggestModal').classList.add('hidden');
+}
 </script>
 <script>
   function openSuggestModal() {
@@ -870,10 +872,9 @@ function submitGoalsForm(event) {
   avatar_url: "{{ user.avatar_url or '' }}"
   };
 
-  function openProfileModal() {
-  const modal = document.getElementById('logMealModal');
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
+function openProfileModal() {
+  document.getElementById('profileModal').classList.remove('hidden');
+  document.getElementById('profileModal').classList.add('flex');
   switchToViewProfile();
   document.getElementById('viewFullname').textContent = userProfile.fullname || '';
   document.getElementById('viewHeight').textContent = userProfile.height || 'Chưa cập nhật';
@@ -884,13 +885,11 @@ function submitGoalsForm(event) {
   document.getElementById('viewBmr').textContent = userProfile.bmr || 'Chưa có';
   document.getElementById('viewTdee').textContent = userProfile.tdee || 'Chưa có';
   document.getElementById('viewAvatar').src = userProfile.avatar_url || '';
-
 }
-  function closeProfileModal() {
-    const modal = document.getElementById('logMealModal');
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-  }
+function closeProfileModal() {
+  document.getElementById('profileModal').classList.add('hidden');
+  document.getElementById('profileModal').classList.remove('flex');
+}
   function switchToEditProfile() {
     document.getElementById('profileViewMode').classList.add('hidden');
     document.getElementById('profileForm').classList.remove('hidden');
@@ -1379,17 +1378,16 @@ function closeLoginLogModal() {
 <script>
 // Mở modal ghi nhận hoạt động
 function openActivityModal() {
-  const modal = document.getElementById('logMealModal');
+  const modal = document.getElementById('activityModal');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
   document.getElementById('activityForm').reset();
   document.getElementById('activityError').textContent = '';
 }
-// Đóng modal ghi nhận hoạt động
 function closeActivityModal() {
-  const modal = document.getElementById('logMealModal');
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
+  const modal = document.getElementById('activityModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
 }
 // Xử lý submit hoạt động thể chất bằng AJAX
 document.getElementById('activityForm').onsubmit = function(event) {

@@ -124,10 +124,11 @@ def login_user(
         max_age=86400,
         path="/"
     )
-    # Ghi log đăng nhập
+    # Ghi log đăng nhập với giờ Việt Nam
+    vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
     db = meals_col.database
     db["login_logs"].insert_one({
-        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "time": datetime.now(vn_tz).strftime("%Y-%m-%d %H:%M:%S"),
         "user": user.get("fullname", ""),
         "ip": request.client.host if request.client else ""
     })

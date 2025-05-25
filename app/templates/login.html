@@ -50,17 +50,5 @@
       <a href="/register" class="text-indigo-600 font-medium hover:underline">Đăng ký ngay</a>
     </p>
   </div>
-<script>
-window.onload = function() {
-    const reason = document.cookie.split('; ').find(row => row.startsWith('logout_reason='));
-    if (reason) {
-        let msg = "";
-        if (reason.endsWith('ban')) msg = "Tài khoản của bạn đã bị khóa!";
-        if (reason.endsWith('other_login')) msg = "Tài khoản đã đăng nhập ở nơi khác!";
-        if (msg) alert(msg);
-        document.cookie = "logout_reason=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    }
-}
-</script>
 </body>
 </html>

@@ -8,42 +8,42 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </head>
 <body class="bg-gradient-to-tr from-green-400 to-emerald-600 flex items-center justify-center min-h-screen px-4">
-  <div class="bg-white bg-opacity-90 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-md w-full border border-emerald-200">
-    <div class="flex flex-col items-center mb-6">
-      <div class="bg-emerald-100 rounded-full p-4 mb-2 shadow">
-        <i class="fa fa-user-plus text-4xl text-emerald-600"></i>
+  <div class="bg-white bg-opacity-95 backdrop-blur-lg p-10 rounded-3xl shadow-2xl max-w-md w-full border border-emerald-100 transition-all duration-300 hover:shadow-3xl">
+    <div class="flex flex-col items-center mb-8">
+      <div class="bg-emerald-200 rounded-full p-5 mb-3 shadow animate-bounce">
+        <i class="fa fa-user-plus text-5xl text-emerald-700"></i>
       </div>
-      <h2 class="text-3xl font-extrabold text-center text-emerald-700 mb-2">Đăng ký</h2>
-      <p class="text-gray-500 text-center text-sm">Tạo tài khoản mới để bắt đầu hành trình sức khỏe!</p>
+      <h2 class="text-3xl font-extrabold text-center text-emerald-800 mb-2 tracking-wide">Đăng ký</h2>
+      <p class="text-gray-500 text-center text-base">Tạo tài khoản mới để bắt đầu hành trình <span class="font-bold text-emerald-600">sức khỏe</span>!</p>
     </div>
     <form method="post" action="/register" class="space-y-6">
       <div class="relative">
         <input type="text" name="fullname" placeholder="Họ và tên" required
-          class="peer w-full py-3 pl-12 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm" />
-        <i class="fa fa-user-circle absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500"></i>
+          class="peer w-full py-3 pl-12 pr-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm bg-gray-50" />
+        <i class="fa fa-user-circle absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500 transition"></i>
       </div>
       <div class="relative">
         <input type="text" name="username" placeholder="Tên đăng nhập" required
-          class="peer w-full py-3 pl-12 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm" />
-        <i class="fa fa-user absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500"></i>
+          class="peer w-full py-3 pl-12 pr-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm bg-gray-50" />
+        <i class="fa fa-user absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500 transition"></i>
       </div>
       <div class="relative">
         <input type="email" name="email" placeholder="Email" required
-          class="peer w-full py-3 pl-12 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm" />
-        <i class="fa fa-envelope absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500"></i>
+          class="peer w-full py-3 pl-12 pr-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm bg-gray-50" />
+        <i class="fa fa-envelope absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500 transition"></i>
       </div>
       <div class="relative">
         <input type="password" name="password" placeholder="Mật khẩu" required
-          class="peer w-full py-3 pl-12 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm" />
-        <i class="fa fa-lock absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500"></i>
+          class="peer w-full py-3 pl-12 pr-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm bg-gray-50" />
+        <i class="fa fa-lock absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500 transition"></i>
       </div>
       <div class="relative">
         <input type="password" name="confirm_password" placeholder="Xác nhận mật khẩu" required
-          class="peer w-full py-3 pl-12 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm" />
-        <i class="fa fa-lock absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500"></i>
+          class="peer w-full py-3 pl-12 pr-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition shadow-sm bg-gray-50" />
+        <i class="fa fa-lock absolute left-4 top-3.5 text-gray-400 peer-focus:text-emerald-500 transition"></i>
       </div>
       <button type="submit"
-        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:scale-105">Đăng ký</button>
+        class="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white py-3 rounded-xl font-semibold transition shadow-lg hover:scale-105">Đăng ký</button>
     </form>
     {% if error %}
     <div class="flex items-center gap-2 mt-4 bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg shadow animate-pulse">
@@ -51,10 +51,9 @@
       <span class="font-medium">{{ error }}</span>
     </div>
     {% endif %}
-
-    <p class="mt-6 text-center text-gray-700">
+    <p class="mt-8 text-center text-gray-700">
       Đã có tài khoản?
-      <a href="/login" class="text-emerald-600 font-medium hover:underline">Đăng nhập ngay</a>
+      <a href="/login" class="text-emerald-600 font-medium hover:underline transition">Đăng nhập ngay</a>
     </p>
   </div>
 </body>

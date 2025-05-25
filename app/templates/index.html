@@ -3,34 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <title>Nhật Ký Ăn Uống</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- Thêm dòng này -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 font-sans">
   <!-- Header mới -->
-  <header class="flex items-center justify-between px-8 py-4 bg-gradient-to-r from-blue-500 via-green-400 to-yellow-300 shadow-lg sticky top-0 z-40">
-  <div class="flex items-center gap-4">
-    <img src="/static/logo.png" class="w-12 h-12 rounded-full border-4 border-white shadow" alt="Logo" />
-    <button onclick="goHome()" class="text-3xl font-extrabold text-white tracking-wide flex items-center gap-2 focus:outline-none">
-      <span></span> SmartCalories
-    </button>
+<header class="flex flex-col sm:flex-row items-center sm:justify-between px-2 sm:px-8 py-2 sm:py-4 bg-gradient-to-r from-blue-500 via-green-400 to-yellow-300 shadow-lg sticky top-0 z-40">
+  <div class="flex w-full items-center justify-between">
+    <div class="flex items-center gap-2">
+      <img src="/static/logo.png" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-4 border-white shadow" alt="Logo" />
+      <button onclick="goHome()" class="text-xl sm:text-3xl font-extrabold text-white tracking-wide flex items-center gap-2 focus:outline-none">
+        SmartCalories
+      </button>
+    </div>
+    <button id="sidebarToggleBtn" class="md:hidden text-white text-2xl ml-2" onclick="toggleSidebar()">☰</button>
   </div>
-  <div class="flex items-center gap-4">
-    <!-- Thêm avatar user ở đây -->
-    <img src="{{ user.avatar_url or '/static/default-avatar.png' }}" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-white shadow" />
-    <span class="text-white font-semibold text-lg flex items-center gap-2">
-    {{ fullname }}
+  <div class="flex items-center gap-2 sm:gap-4 mt-2 sm:mt-0 w-full sm:w-auto justify-center sm:justify-end">
+    <img src="{{ user.avatar_url or '/static/default-avatar.png' }}" alt="Avatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow" />
+    <span class="text-white font-semibold text-base sm:text-lg truncate max-w-[80px] sm:max-w-none">
+      {{ fullname }}
     </span>
-    <a href="/logout" class="bg-white/20 hover:bg-white/40 text-white px-4 py-2 rounded-xl font-bold shadow transition flex items-center gap-2">
-      <span>🚪</span> Đăng xuất
+    <a href="/logout" class="bg-white/20 hover:bg-white/40 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-xl font-bold shadow transition flex items-center gap-2 text-base sm:text-lg">
+      <span>🚪</span> <span class="hidden xs:inline">Đăng xuất</span>
     </a>
   </div>
 </header>
   <!-- Dashboard layout -->
-  <main class="flex h-[calc(100vh-80px)] transition-all duration-300 ease-in-out">
+  <main class="flex flex-col md:flex-row h-auto md:h-[calc(100vh-80px)] transition-all duration-300 ease-in-out">
     <!-- Sidebar -->
-<aside class="w-64 bg-gradient-to-b from-blue-700 via-blue-500 to-blue-400 text-white p-4 space-y-2 shadow-lg">
-  <nav class="flex flex-col gap-1">
+<aside id="sidebar" class="w-full md:w-64 bg-gradient-to-b from-blue-700 via-blue-500 to-blue-400 text-white p-4 space-y-2 shadow-lg fixed md:static top-0 left-0 h-full md:h-auto z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
+      style="max-width:100vw;">
+      <button id="sidebarToggleBtn" class="md:hidden mb-4 text-white text-2xl" onclick="toggleSidebar()">☰</button>
+      <nav class="flex flex-col gap-1">
     <button onclick="switchView('meals')" id="btn-meals"
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       📋 <span>Danh sách món</span>
@@ -84,11 +89,10 @@
 </div>
   </nav>
 </aside>
-
-
-
+ <!-- Overlay for sidebar on mobile -->
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
     <!-- Content Area -->
-    <section class="flex-1 overflow-y-auto p-6">
+    <section class="flex-1 overflow-y-auto p-2 sm:p-6 mt-16 md:mt-0">
       <!-- Meals View -->
       <div id="mealsView" class="hidden">
   <h2 class="text-2xl font-bold mb-4">📋 Danh sách món ăn</h2>
@@ -98,7 +102,7 @@
     <input type="hidden" name="view" value="meals" />
     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Tìm kiếm</button>
   </form>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
   {% for meal in meals %}
   <div class="bg-white p-4 rounded-xl shadow">
     {% if meal.image_url %}
@@ -132,9 +136,9 @@
 
         <!-- Logs and Analytics View -->
         <div id="logView" class="hidden">
-          <h2 class="text-3xl font-extrabold text-blue-700 mb-4 flex items-center gap-2">🗓️ Nhật ký hôm nay</h2>
-          <div class="bg-white rounded-xl shadow overflow-x-auto">
-            <table class="min-w-full text-sm text-gray-700">
+  <h2 class="text-3xl font-extrabold text-blue-700 mb-4 flex items-center gap-2">🗓️ Nhật ký hôm nay</h2>
+  <div class="bg-white rounded-xl shadow overflow-x-auto">
+    <table class="min-w-full text-sm text-gray-700">
               <thead class="bg-gradient-to-r from-blue-600 to-blue-400 text-white text-base font-semibold">
   <tr>
     <th class="p-3 text-center border border-blue-800">Món</th>
@@ -1231,7 +1235,70 @@ document.getElementById('confirmDeleteUserBtn').onclick = function() {
     padding: 1rem !important;
   }
 }
+@media (max-width: 768px) {
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    width: 80vw;
+    max-width: 320px;
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    background: linear-gradient(to bottom, #2563eb, #38bdf8);
+  }
+  #sidebar.open {
+    transform: translateX(0);
+  }
+  #sidebarOverlay {
+    display: block;
+  }
+  main {
+    flex-direction: column;
+  }
+  section {
+    margin-top: 0;
+  }
+}
+@media (max-width: 640px) {
+  .modal, .max-w-md, .max-w-2xl, .max-w-3xl {
+    max-width: 98vw !important;
+    padding: 0.5rem !important;
+  }
+  .p-6, .p-8 {
+    padding: 1rem !important;
+  }
+  .rounded-2xl, .rounded-xl {
+    border-radius: 1rem !important;
+  }
+}
+#sidebarOverlay.hidden {
+  pointer-events: none;
+  opacity: 0;
+}
 </style>
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  const isOpen = sidebar.classList.contains('open');
+  if (isOpen) {
+    sidebar.classList.remove('open');
+    overlay.classList.add('hidden');
+  } else {
+    sidebar.classList.add('open');
+    overlay.classList.remove('hidden');
+  }
+}
+// Đóng sidebar khi chọn menu (mobile)
+document.querySelectorAll('#sidebar nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (window.innerWidth < 768) toggleSidebar();
+  });
+});
+</script>
 <!-- Modal nhật ký hoạt động -->
 <div id="activityLogModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in">
@@ -1359,6 +1426,14 @@ document.getElementById('activityForm').onsubmit = function(event) {
     document.getElementById('activityError').textContent = err.message || "Có lỗi xảy ra!";
   });
 };
+window.addEventListener('resize', () => {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (window.innerWidth >= 768) {
+    sidebar.classList.remove('open');
+    overlay.classList.add('hidden');
+  }
+});
 // Mở modal lịch sử hoạt động
 function openActivityHistoryModal() {
   document.getElementById('activityHistoryModal').classList.remove('hidden');

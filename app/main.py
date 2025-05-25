@@ -126,9 +126,10 @@ def login_user(
     )
     # Ghi log đăng nhập với giờ Việt Nam
     vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+    now_vn = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(vn_tz)
     db = meals_col.database
     db["login_logs"].insert_one({
-        "time": datetime.now(vn_tz).strftime("%Y-%m-%d %H:%M:%S"),
+        "time": now_vn.strftime("%Y-%m-%d %H:%M:%S"),
         "user": user.get("fullname", ""),
         "ip": request.client.host if request.client else ""
     })

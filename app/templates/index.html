@@ -39,18 +39,20 @@
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       📖 <span>Nhật ký & Phân tích</span>
     </button>
-    <button onclick="openSuggestModal()"
+    {% if user.role != 'admin' %}
+<button onclick="openSuggestModal()"
   class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   🥗 <span>Gợi ý món ăn</span>
 </button>
-    <button onclick="openLogMealModal()"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-      📝 <span>Ghi nhật ký</span>
-    </button>
-    <button onclick="openAddMealModal()"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-      ➕ <span>Thêm món</span>
-    </button>
+<button onclick="openLogMealModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  📝 <span>Ghi nhật ký</span>
+</button>
+<button onclick="openActivityModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  🏃 <span>Hoạt động thể chất</span>
+</button>
+{% endif %}
     <button onclick="openProfileModal()"
   class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   👤 <span>Thông tin cá nhân</span>
@@ -1280,5 +1282,126 @@ function closeLoginLogModal() {
   document.getElementById('loginLogModal').classList.add('hidden');
 }
 </script>
+<!-- Modal Hoạt động thể chất & Lịch sử hoạt động -->
+<div id="activityModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
+  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
+    <h2 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
+      <span>🏃</span> Ghi nhận hoạt động thể chất
+    </h2>
+    <form id="activityForm" class="space-y-3">
+      <div>
+        <label for="activityType" class="block mb-1 font-medium text-gray-700">Chọn hoạt động</label>
+        <select name="activity" id="activityType" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
+          <option value="">-- Chọn hoạt động --</option>
+          <option value="walking">🚶 Đi bộ</option>
+          <option value="running">🏃 Chạy bộ</option>
+          <option value="cycling">🚴 Đạp xe</option>
+          <option value="swimming">🏊 Bơi lội</option>
+          <option value="yoga">🧘 Yoga</option>
+          <option value="weightlifting">🏋️ Tập tạ</option>
+          <option value="jumping_rope">🤾 Nhảy dây</option>
+        </select>
+      </div>
+      <div>
+        <label for="activityDuration" class="block mb-1 font-medium text-gray-700">Thời gian (phút)</label>
+        <input name="duration" id="activityDuration" type="number" min="1" placeholder="Nhập số phút" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="closeActivityModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Lưu</button>
+      </div>
+      <div id="activityError" class="text-red-600 text-sm font-semibold"></div>
+    </form>
+    <div class="text-right">
+      <a href="javascript:void(0)" onclick="openActivityHistoryModal()" class="text-blue-600 hover:underline text-sm">Xem lịch sử hoạt động &rarr;</a>
+    </div>
+  </div>
+</div>
+<div id="activityHistoryModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
+    <h2 class="text-xl font-bold mb-4">Lịch sử hoạt động thể chất</h2>
+    <div id="activityHistoryContent" class="max-h-96 overflow-y-auto"></div>
+    <div class="flex justify-end mt-4">
+      <button onclick="closeActivityHistoryModal()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Đóng</button>
+    </div>
+  </div>
+</div>
+<script>
+// Mở modal ghi nhận hoạt động
+function openActivityModal() {
+  document.getElementById('activityModal').classList.remove('hidden');
+  document.getElementById('activityForm').reset();
+  document.getElementById('activityError').textContent = '';
+}
+// Đóng modal ghi nhận hoạt động
+function closeActivityModal() {
+  document.getElementById('activityModal').classList.add('hidden');
+}
+// Xử lý submit hoạt động thể chất bằng AJAX
+document.getElementById('activityForm').onsubmit = function(event) {
+  event.preventDefault();
+  const form = event.target;
+  const data = new FormData(form);
+  fetch('/activity', {
+    method: 'POST',
+    body: data,
+    credentials: 'same-origin'
+  })
+  .then(res => {
+    if (res.ok) return res.json();
+    return res.json().then(err => { throw err; });
+  })
+  .then(result => {
+    closeActivityModal();
+    showNotice("Ghi nhận hoạt động thành công!", true);
+  })
+  .catch(err => {
+    document.getElementById('activityError').textContent = err.message || "Có lỗi xảy ra!";
+  });
+};
+// Mở modal lịch sử hoạt động
+function openActivityHistoryModal() {
+  document.getElementById('activityHistoryModal').classList.remove('hidden');
+  document.getElementById('activityHistoryContent').innerHTML = '<div class="text-gray-400 text-center py-8">Đang tải...</div>';
+fetch('/activity-history')
+  .then(res => res.json())
+  .then(data => {
+    let html = `
+      <table class="min-w-full text-sm border rounded-xl overflow-hidden shadow">
+        <thead>
+          <tr class="bg-blue-100 text-blue-700">
+            <th class="px-4 py-2">Họ tên</th>
+            <th class="px-4 py-2">Hoạt động</th>
+            <th class="px-4 py-2">Thời gian</th>
+            <th class="px-4 py-2">Calories</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+    if (data.error) {
+      html += `<tr><td colspan="4" class="text-center text-red-500 py-4">${data.error}</td></tr>`;
+    } else if (data.length === 0) {
+      html += '<tr><td colspan="4" class="text-center text-gray-500 py-4">Chưa có hoạt động nào</td></tr>';
+    } else {
+      data.forEach(act => {
+        html += `<tr class="hover:bg-blue-50 transition">
+          <td class="px-4 py-2">${act.fullname || ''}</td>
+          <td class="px-4 py-2 capitalize">${act.activity}</td>
+          <td class="px-4 py-2">${act.timestamp}</td>
+          <td class="px-4 py-2 font-semibold text-blue-600">${act.calories_burned} kcal</td>
+        </tr>`;
+      });
+    }
+    html += '</tbody></table>';
+    document.getElementById('activityHistoryContent').innerHTML = html;
+  });
+}
+// Đóng modal lịch sử hoạt động
+function closeActivityHistoryModal() {
+  document.getElementById('activityHistoryModal').classList.add('hidden');
+}
+</script>
+<!-- Nút mở modal hoạt động thể chất -->
+<button onclick="openActivityModal()" class="text-blue-600 hover:underline text-sm mt-4">🏃 Ghi nhận hoạt động thể chất</button>
   </body>
 </html>

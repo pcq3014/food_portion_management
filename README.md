@@ -70,6 +70,8 @@ apscheduler (tự động hóa hoặc gửi thông báo định kỳ)
 
 Chart.js và TailwindCSS (frontend)
 
+---
+
 ### 📁 Cấu trúc thư mục
 
 csharp
@@ -90,17 +92,22 @@ smartcalories/
 
 <p align="center"><img src="/assets/demo.png" width="600"></p>
 
-### 📈 Nhật ký & Phân tích
+📈 Nhật ký & Phân tích
 
 <p align="center"><img src="/assets/analysis.png" width="600"></p>
 
+---
 ### 📤 Xuất CSV
 
 Chọn "Xuất CSV" từ menu, chọn xuất hôm nay hoặc tất cả lịch sử nhật ký ăn uống.
 
+---
+
 ### 📄 Giấy phép
 
 Phát hành dưới giấy phép MIT.
+
+---
 
 ### 💡 Góp ý & Hỗ trợ
 

@@ -2,8 +2,8 @@ from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response, Que
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi import UploadFile, File, status
-from app.database import meals_col, logs_col, users_col
+from fastapi import UploadFile, File
+from app.database import meals_col, logs_col, users_col, activities_col
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from apscheduler.schedulers.background import BackgroundScheduler
 import secrets
@@ -377,6 +377,90 @@ async def favicon():
 
 # Các route thêm, sửa, xóa món ăn, ghi nhật ký... giữ nguyên không đổi
 
+activity_met_table = {
+    "walking": 3.5,
+    "running": 7.5,
+    "cycling": 6.8,
+    "swimming": 8.0,
+    "yoga": 2.5,
+    "weightlifting": 3.0,
+    "jumping_rope": 10.0,
+}
+def calculate_burned_calories(weight_kg: float, duration_min: float, met: float) -> float:
+    return round(met * weight_kg * (duration_min / 60.0), 2)
+
+# Hiển thị form nhập hoạt động thể chất
+@app.get("/activity", response_class=HTMLResponse)
+def activity_form(request: Request, user_id: str = Cookie(None)):
+    if not user_id:
+        return RedirectResponse("/login", status_code=302)
+    return templates.TemplateResponse("activity.html", {
+        "request": request,
+        "activities": activity_met_table.keys()
+    })
+
+@app.post("/activity")
+async def add_activity(
+    request: Request,
+    activity: str = Form(...),
+    duration: int = Form(...),
+    user_id: str = Cookie(None)
+):
+    if not user_id:
+        return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        return JSONResponse({"error": "Không tìm thấy user"}, status_code=404)
+    weight = user.get("weight", 60)
+    met = activity_met_table.get(activity)
+    if not met:
+        return JSONResponse({"error": "Hoạt động không hợp lệ"}, status_code=400)
+    calories_burned = calculate_burned_calories(weight, duration, met)
+    vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+    now_vn = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(vn_tz)
+    activities_col.insert_one({
+        "user_id": ObjectId(user_id),
+        "fullname": user.get("fullname", ""), 
+        "activity": activity,
+        "duration": duration,
+        "calories_burned": calories_burned,
+        "timestamp": now_vn.strftime("%Y-%m-%d %H:%M:%S")
+    })
+    return {"success": True, "calories_burned": calories_burned}
+
+@app.get("/activity-history")
+async def activity_history(user_id: str = Cookie(None)):
+    if not user_id:
+        return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
+    activities = list(activities_col.find({"user_id": ObjectId(user_id)}).sort("timestamp", -1).limit(30))
+    for act in activities:
+        act["_id"] = str(act["_id"])
+    result = [
+        {
+            "fullname": act.get("fullname", ""),  # Lấy fullname từ DB
+            "activity": act.get("activity", ""),
+            "timestamp": format_vn_datetime(act.get("timestamp", "")),  # Format đẹp
+            "calories_burned": act.get("calories_burned", 0)
+        }
+        for act in activities
+    ]
+    return result
+
+def format_vn_datetime(dt_str):
+    # dt_str dạng "YYYY-MM-DD HH:MM:SS"
+    try:
+        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+        return dt.strftime("%H:%M %d/%m/%Y")
+    except Exception:
+        return dt_str
+
+def format_vn_datetime(dt_str):
+    # dt_str dạng "YYYY-MM-DD HH:MM:SS"
+    try:
+        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+        return dt.strftime("%H:%M %d/%m/%Y")
+    except Exception:
+        return dt_str
 
 @app.post("/add-meal")
 async def add_meal(

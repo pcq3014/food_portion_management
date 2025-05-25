@@ -1383,14 +1383,25 @@ fetch('/activity-history')
     } else if (data.length === 0) {
       html += '<tr><td colspan="4" class="text-center text-gray-500 py-4">Chưa có hoạt động nào</td></tr>';
     } else {
-      data.forEach(act => {
-        html += `<tr class="hover:bg-blue-50 transition">
-          <td class="px-4 py-2">${act.fullname || ''}</td>
-          <td class="px-4 py-2 capitalize">${act.activity}</td>
-          <td class="px-4 py-2">${act.timestamp}</td>
-          <td class="px-4 py-2 font-semibold text-blue-600">${act.calories_burned} kcal</td>
-        </tr>`;
-      });
+      // ...existing code...
+data.forEach(act => {
+  let activityName = act.activity;
+  if (activityName === 'jumping_rope') activityName = 'Nhảy dây';
+  else if (activityName === 'walking') activityName = 'Đi bộ';
+  else if (activityName === 'running') activityName = 'Chạy bộ';
+  else if (activityName === 'cycling') activityName = 'Đạp xe';
+  else if (activityName === 'swimming') activityName = 'Bơi lội';
+  else if (activityName === 'yoga') activityName = 'Yoga';
+  else if (activityName === 'weightlifting') activityName = 'Tập tạ';
+
+  html += `<tr class="hover:bg-blue-50 transition">
+    <td class="px-4 py-2">${act.fullname || ''}</td>
+    <td class="px-4 py-2 capitalize">${activityName}</td>
+    <td class="px-4 py-2">${act.timestamp}</td>
+    <td class="px-4 py-2 font-semibold text-blue-600">${act.calories_burned} kcal</td>
+  </tr>`;
+});
+// ...existing code...
     }
     html += '</tbody></table>';
     document.getElementById('activityHistoryContent').innerHTML = html;

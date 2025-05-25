@@ -1,7 +1,13 @@
+from dotenv import load_dotenv
+import os
 from pymongo import MongoClient
 
+load_dotenv()
+# Đọc biến môi trường từ file .env
+MONGO_URI = os.getenv("MONGO_URI")
+
 # Kết nối đến MongoDB
-client = MongoClient("mongodb+srv://pcq3014:bigdata@mealtracker.9ged2qc.mongodb.net/")
+client = MongoClient(MONGO_URI)
 
 # Lấy database
 db = client["meal_tracker"]

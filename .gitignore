@@ -1,0 +1,21 @@
+# Bỏ qua file chứa thông tin nhạy cảm
+.env
+
+# Bỏ thư mục cache của Python
+__pycache__/
+*.py[cod]
+
+# Bỏ các file dữ liệu SQLite hoặc DB tạm
+*.sqlite3
+*.db
+
+# Bỏ các file log, backup
+*.log
+*.bak
+
+# Bỏ thư mục cấu hình VS Code
+.vscode/
+
+# Bỏ môi trường ảo nếu bạn dùng
+venv/
+env/

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Nhật Ký Ăn Uống</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -84,7 +85,24 @@
 </div>
   </nav>
 </aside>
-
+<button id="openSidebarBtn" class="fixed top-4 left-4 z-50 sm:hidden bg-blue-600 text-white p-2 rounded-full shadow-lg">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+</button>
+<aside id="mobileSidebar" class="fixed inset-0 bg-black/40 z-50 flex sm:hidden hidden">
+  <div class="w-64 bg-gradient-to-b from-blue-700 via-blue-500 to-blue-400 text-white p-4 space-y-2 shadow-lg h-full">
+    <button onclick="closeMobileSidebar()" class="mb-4 text-white text-2xl">&times;</button>
+    <!-- ...copy nav content here... -->
+  </div>
+  <div class="flex-1" onclick="closeMobileSidebar()"></div>
+</aside>
+<script>
+document.getElementById('openSidebarBtn').onclick = () => {
+  document.getElementById('mobileSidebar').classList.remove('hidden');
+};
+function closeMobileSidebar() {
+  document.getElementById('mobileSidebar').classList.add('hidden');
+}
+</script>
 
 
     <!-- Content Area -->
@@ -297,6 +315,7 @@
     }
   }
 });
+
 </script>
     <!-- Modal Ghi Nhật Ký -->
   <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
@@ -1231,6 +1250,17 @@ document.getElementById('confirmDeleteUserBtn').onclick = function() {
     padding: 1rem !important;
   }
 }
+@media (max-width: 640px) {
+  main {
+    flex-direction: column !important;
+  }
+  aside {
+    display: none !important;
+  }
+  section {
+    padding: 1rem !important;
+  }
+}
 </style>
 <!-- Modal nhật ký hoạt động -->
 <div id="activityLogModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
@@ -1383,8 +1413,7 @@ fetch('/activity-history')
     } else if (data.length === 0) {
       html += '<tr><td colspan="4" class="text-center text-gray-500 py-4">Chưa có hoạt động nào</td></tr>';
     } else {
-      // ...existing code...
-data.forEach(act => {
+      data.forEach(act => {
   let activityName = act.activity;
   if (activityName === 'jumping_rope') activityName = 'Nhảy dây';
   else if (activityName === 'walking') activityName = 'Đi bộ';
@@ -1401,7 +1430,6 @@ data.forEach(act => {
     <td class="px-4 py-2 font-semibold text-blue-600">${act.calories_burned} kcal</td>
   </tr>`;
 });
-// ...existing code...
     }
     html += '</tbody></table>';
     document.getElementById('activityHistoryContent').innerHTML = html;
@@ -1410,6 +1438,73 @@ data.forEach(act => {
 // Đóng modal lịch sử hoạt động
 function closeActivityHistoryModal() {
   document.getElementById('activityHistoryModal').classList.add('hidden');
+}
+function openActivityHistoryModal() {
+  document.getElementById('activityHistoryModal').classList.remove('hidden');
+  document.getElementById('activityHistoryContent').innerHTML = '<div class="text-gray-400 text-center py-8">Đang tải...</div>';
+  fetch('/activity-history')
+    .then(res => res.json())
+    .then(data => {
+      let isMobile = window.innerWidth < 640;
+      let html = '';
+      if (data.error) {
+        html += `<div class="text-center text-red-500 py-4">${data.error}</div>`;
+      } else if (data.length === 0) {
+        html += '<div class="text-center text-gray-500 py-4">Chưa có hoạt động nào</div>';
+      } else if (isMobile) {
+        html += '<div class="space-y-3">';
+        data.forEach(act => {
+          let activityName = act.activity;
+          if (activityName === 'jumping_rope') activityName = 'Nhảy dây';
+          else if (activityName === 'walking') activityName = 'Đi bộ';
+          else if (activityName === 'running') activityName = 'Chạy bộ';
+          else if (activityName === 'cycling') activityName = 'Đạp xe';
+          else if (activityName === 'swimming') activityName = 'Bơi lội';
+          else if (activityName === 'yoga') activityName = 'Yoga';
+          else if (activityName === 'weightlifting') activityName = 'Tập tạ';
+          html += `
+            <div class="rounded-xl shadow p-3 bg-blue-50">
+              <div class="font-bold text-blue-700">${act.fullname || ''}</div>
+              <div class="capitalize">${activityName}</div>
+              <div class="text-sm text-gray-600">${act.timestamp}</div>
+              <div class="font-semibold text-blue-600">${act.calories_burned} kcal</div>
+            </div>
+          `;
+        });
+        html += '</div>';
+      } else {
+        html += `
+          <table class="min-w-full text-sm border rounded-xl overflow-hidden shadow">
+            <thead>
+              <tr class="bg-blue-100 text-blue-700">
+                <th class="px-4 py-2">Họ tên</th>
+                <th class="px-4 py-2">Hoạt động</th>
+                <th class="px-4 py-2">Thời gian</th>
+                <th class="px-4 py-2">Calories</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        data.forEach(act => {
+          let activityName = act.activity;
+          if (activityName === 'jumping_rope') activityName = 'Nhảy dây';
+          else if (activityName === 'walking') activityName = 'Đi bộ';
+          else if (activityName === 'running') activityName = 'Chạy bộ';
+          else if (activityName === 'cycling') activityName = 'Đạp xe';
+          else if (activityName === 'swimming') activityName = 'Bơi lội';
+          else if (activityName === 'yoga') activityName = 'Yoga';
+          else if (activityName === 'weightlifting') activityName = 'Tập tạ';
+          html += `<tr class="hover:bg-blue-50 transition">
+            <td class="px-4 py-2">${act.fullname || ''}</td>
+            <td class="px-4 py-2 capitalize">${activityName}</td>
+            <td class="px-4 py-2">${act.timestamp}</td>
+            <td class="px-4 py-2 font-semibold text-blue-600">${act.calories_burned} kcal</td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+      }
+      document.getElementById('activityHistoryContent').innerHTML = html;
+    });
 }
 </script>
   </body>

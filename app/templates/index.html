@@ -317,8 +317,8 @@ function closeMobileSidebar() {
 
 </script>
     <!-- Modal Ghi Nhật Ký -->
-  <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4 modal-form">
+  <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] hidden transition-opacity duration-300 ease-in-out">
+  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4 modal-form overflow-y-auto">
       <h2 class="text-2xl font-bold text-green-600 flex items-center gap-2">
         <span>📝</span> Ghi nhật ký
       </h2>
@@ -347,7 +347,7 @@ function closeMobileSidebar() {
   </script>
   <!-- Modal Thêm Món Ăn -->
   <div id="addMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
+  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4 modal-form overflow-y-auto">
       <h2 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
         <span>➕</span> Thêm món ăn
       </h2>
@@ -395,7 +395,7 @@ function closeMobileSidebar() {
   </script>
   <!-- Modal sửa món ăn -->
   <div id="editMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
+  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4 modal-form overflow-y-auto">
       <h2 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
         <span>✏️</span> Sửa món ăn
       </h2>
@@ -482,7 +482,7 @@ function closeMobileSidebar() {
   </script>
   <!-- Modal Gợi ý món ăn -->
 <div id="suggestModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-hidden p-6 flex flex-col">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-hidden p-6 flex flex-col modal-form overflow-y-auto">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold text-yellow-700 flex items-center gap-2">
         🥗 Gợi ý món ăn & Đặt mục tiêu
@@ -553,7 +553,7 @@ function closeMobileSidebar() {
 </script>
 <!-- Modal Thông tin cá nhân -->
 <div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-  <div class="bg-white p-8 rounded-xl shadow space-y-4 w-full max-w-md relative">
+  <div class="bg-white p-8 rounded-xl shadow space-y-4 w-full max-w-md relative modal-form overflow-y-auto">
     <button onclick="closeProfileModal()" class="absolute top-2 right-3 text-2xl text-gray-400 hover:text-red-500 font-bold">&times;</button>
     <h2 class="text-2xl font-bold mb-4">Thông tin cá nhân</h2>
     <!-- Chế độ chỉ đọc -->
@@ -941,7 +941,7 @@ function submitProfileForm(event) {
 <!-- Modal Quản lý người dùng (chỉ admin) đặt trước </body> -->
 {% if user.role == 'admin' %}
 <div id="userModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col modal-form overflow-y-auto">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-blue-700 flex items-center gap-2">
         👥 Danh sách người dùng
@@ -1140,7 +1140,7 @@ function showNotice(msg, success=true) {
 </script>
 <!-- Modal xác nhận xóa người dùng -->
 <div id="deleteUserModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] hidden">
-  <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fade-in modal-form overflow-y-auto">
     <div class="text-red-500 text-5xl mb-4">
       <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 4a8 8 0 100 16 8 8 0 000-16z" />
@@ -1250,20 +1250,17 @@ document.getElementById('confirmDeleteUserBtn').onclick = function() {
   }
 }
 @media (max-width: 640px) {
-  main {
-    flex-direction: column !important;
-  }
   aside {
     display: none !important;
   }
-  section {
-    padding: 1rem !important;
+  #openSidebarBtn {
+    display: block !important;
   }
 }
 </style>
 <!-- Modal nhật ký hoạt động -->
 <div id="activityLogModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in modal-form overflow-y-auto">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-blue-700 flex items-center gap-2">
         📜 Nhật ký hoạt động
@@ -1277,7 +1274,7 @@ document.getElementById('confirmDeleteUserBtn').onclick = function() {
 </div>
 <!-- Modal nhật ký đăng nhập -->
 <div id="loginLogModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in modal-form overflow-y-auto">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold text-green-700 flex items-center gap-2">
         🔑 Nhật ký đăng nhập
@@ -1313,7 +1310,7 @@ function closeLoginLogModal() {
 </script>
 <!-- Modal Hoạt động thể chất & Lịch sử hoạt động -->
 <div id="activityModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
+  <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4 modal-form overflow-y-auto">
     <h2 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
       <span>🏃</span> Ghi nhận hoạt động thể chất
     </h2>
@@ -1346,8 +1343,9 @@ function closeLoginLogModal() {
     </div>
   </div>
 </div>
+<!-- Modal lịch sử hoạt động -->
 <div id="activityHistoryModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl">
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl modal-form overflow-y-auto">
     <h2 class="text-xl font-bold mb-4">Lịch sử hoạt động thể chất</h2>
     <div id="activityHistoryContent" class="max-h-96 overflow-y-auto"></div>
     <div class="flex justify-end mt-4">
@@ -1511,7 +1509,6 @@ function isMobile() {
 </script>
 <style>
 @media (max-width: 640px) {
-  /* Ví dụ: form modal full màn hình trên mobile */
   .modal-form {
     border-radius: 0 !important;
     width: 100vw !important;
@@ -1519,6 +1516,7 @@ function isMobile() {
     height: 100vh !important;
     max-height: 100vh !important;
     padding: 1.5rem !important;
+    overflow-y: auto !important;
   }
   .modal-form input, .modal-form select {
     font-size: 1.1rem !important;

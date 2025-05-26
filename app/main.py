@@ -841,7 +841,7 @@ async def ban_user(
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")   
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))  
 
 @app.post("/chatbot")
 async def chatbot_endpoint(request: Request):
@@ -853,7 +853,7 @@ async def chatbot_endpoint(request: Request):
     activities = data.get("activities", [])
 
     try:
-        genai.configure(GEMINI_API_KEY)
+        genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
         meal_list = "\n".join([f"- {m['name']} (Calories: {m['calories']}, Protein: {m['protein']}g, Carbs: {m['carbs']}g, Fat: {m['fat']}g)" for m in meals])
         log_list = "\n".join([f"- {l['meal']['name']} x{l['quantity']} ({l['meal']['calories']*l['quantity']} cal)" for l in logs])

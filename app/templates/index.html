@@ -1066,7 +1066,7 @@ function submitGoalsForm(event) {
     document.getElementById('profileEmail').value = userProfile.email || '';
     document.getElementById('profileAvatarFile').value = '';
   }
-  document.getElementById('profileAvatarFile').addEventListener('change', function (e) {
+document.getElementById('profileAvatarFile').addEventListener('change', function (e) {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();

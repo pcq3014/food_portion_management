@@ -48,34 +48,53 @@
     <button id="sidebarToggleBtn" class="md:hidden mb-4 mt-2 text-white text-4xl absolute right-4" onclick="toggleSidebar()">☰</button>
 </div>
   <div class="border-t-2 border-white-400 my-5 block md:hidden"></div>
-  <nav class="flex flex-col gap-2">
-  <div class="flex flex-col gap-2">
-    <button>📋 Danh sách món</button>
-  </div>
-
-  {% if user.role != 'admin' %}
-  <div class="flex flex-col gap-2">
-    <button>📖 Nhật ký & Phân tích</button>
-    <button>🥗 Gợi ý món ăn</button>
-    <button>📝 Ghi nhật ký</button>
-    <button>🏃 Hoạt động thể chất</button>
-  </div>
-  {% endif %}
-
-  <div class="flex flex-col gap-2">
-    <button>👤 Thông tin cá nhân</button>
-  </div>
-
-  {% if user.role == 'admin' %}
-  <div class="flex flex-col gap-2">
-    <button>👥 Quản lý người dùng</button>
-    <button>📜 Nhật ký hoạt động</button>
-    <button>🔑 Xem đăng nhập</button>
-  </div>
-  {% endif %}
-
-  <div class="relative group">
-    <button>📤 Xuất CSV</button>
+  <nav class="flex flex-col gap-1">
+    <button onclick="switchView('meals')" id="btn-meals"
+      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+      📋 <span>Danh sách món</span>
+    </button>
+    {% if user.role != 'admin' %}
+    <button onclick="switchView('log')" id="btn-log"
+      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+      📖 <span>Nhật ký & Phân tích</span>
+    </button>
+<button onclick="openSuggestModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  🥗 <span>Gợi ý món ăn</span>
+</button>
+<button onclick="openLogMealModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  📝 <span>Ghi nhật ký</span>
+</button>
+<button onclick="openActivityModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  🏃 <span>Hoạt động thể chất</span>
+</button>
+{% endif %}
+    <button onclick="openProfileModal()"
+  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+  👤 <span>Thông tin cá nhân</span>
+</button>
+{% if user.role == 'admin' %}
+    <button onclick="openUserModal()"
+      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+      👥 <span>Quản lý người dùng</span>
+    </button>
+    {% endif %}
+      {% if user.role == 'admin' %}
+  <button onclick="openActivityLogModal()"
+    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+    📜 <span>Nhật ký hoạt động</span>
+  </button>
+  <button onclick="openLoginLogModal()"
+    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
+    🔑 <span>Xem đăng nhập</span>
+  </button>
+{% endif %}
+    <div class="relative group">
+  <button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none w-full">
+    📤 <span>Xuất CSV</span>
+  </button>
   <div class="absolute left-0 mt-1 hidden group-hover:block bg-white text-gray-800 shadow-lg rounded-lg overflow-hidden z-10 w-48">
     <a href="/export-csv?mode=today" class="block px-4 py-2 hover:bg-blue-100">📆 Xuất hôm nay</a>
     <a href="/export-csv?mode=all" class="block px-4 py-2 hover:bg-blue-100">📦 Xuất tất cả</a>

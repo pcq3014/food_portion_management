@@ -44,11 +44,11 @@
     <!-- Sidebar -->
 <aside id="sidebar" class="w-full md:w-64 bg-[#fbc3bc] text-gray-800 p-4 space-y-2 shadow-lg fixed md:static top-0 left-0 h-full md:h-auto z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
       style="max-width:100vw;">
-<div class="flex items-start">
+<div class="relative flex items-start">
     <button id="sidebarToggleBtn" class="md:hidden mb-4 mt-2 text-white text-4xl absolute right-4" onclick="toggleSidebar()">☰</button>
 </div>
-<div class="border-t-2 border-white-400 my-5 block md:hidden"></div>
-<nav class="flex flex-col gap-1">
+  <div class="border-t-2 border-white-400 my-5 block md:hidden"></div>
+  <nav class="flex flex-col gap-1">
     <button onclick="switchView('meals')" id="btn-meals"
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       📋 <span>Danh sách món</span>

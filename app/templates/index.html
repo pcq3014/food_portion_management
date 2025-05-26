@@ -45,7 +45,7 @@
 <aside id="sidebar" class="w-full md:w-64 bg-[#fbc3bc] text-gray-800 p-4 space-y-2 shadow-lg fixed md:static top-0 left-0 h-full md:h-auto z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
       style="max-width:100vw;">
 <button id="sidebarToggleBtn" class="md:hidden mb-4 ml-40 mt-2 text-white text-4xl " onclick="toggleSidebar()">☰</button>
-<div class="border-t-2 border-white-400 my-5 block md:hidden"></div>      
+<div class="border-t-2 border-white-400 my-5 block md:hidden"></div>
 <nav class="flex flex-col gap-1">
     <button onclick="switchView('meals')" id="btn-meals"
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
@@ -194,7 +194,12 @@
 </div>
       </section>
     </main>
-
+<script>
+  window.mealsData = {{ meals | tojson | safe }};
+  window.logsData = {{ logs | tojson | safe }};
+  window.summary = {{ summary | tojson | safe }};
+  window.activitiesData = {{ activities | tojson | safe }};
+</script>
     <!-- JS Script -->
     <script>
       const summary = {
@@ -548,6 +553,235 @@
     document.getElementById('suggestModal').classList.add('hidden');
   }
 </script>
+<!-- Chatbot Floating Button & Modal -->
+<style>
+#chatbot-float-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  background: linear-gradient(90deg,#FF6F61,#FF8A80);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 60px; height: 60px;
+  box-shadow: 0 4px 16px #0002;
+  font-size: 2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#chatbot-float-btn:hover { background: linear-gradient(90deg,#FF8A80,#FF6F61);}
+#chatbot-modal {
+  position: fixed;
+  bottom: 100px;
+  right: 32px;
+  width: 300px;
+  max-width: 95vw;
+  height: 400px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #0003;
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid #FF8A80;
+}
+#chatbot-modal.open { display: flex; }
+#chatbot-header {
+  background: linear-gradient(90deg,#FF6F61,#FF8A80);
+  color: #fff;
+  padding: 14px 18px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#chatbot-close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+#chatbot-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #fff7f6;
+ font-size: 0.95rem; /* nhỏ hơn mặc định */
+  line-height: 1.5;
+}
+.chatbot-msg {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.chatbot-msg.user {
+  align-items: flex-end;
+}
+.chatbot-msg .bubble {
+  font-size: 0.97rem; 
+  padding: 8px 14px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  word-break: break-word;
+  white-space: pre-line; 
+}
+.chatbot-msg.user .bubble {
+  background: #FF8A80;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.chatbot-msg.bot .bubble {
+  background: #fbc3bc;
+  color: #222;
+  border-bottom-left-radius: 4px;
+}
+#chatbot-input-area {
+  display: flex;
+  border-top: 1px solid #fbc3bc;
+  background: #fff;
+  padding: 10px;
+  gap: 8px;
+}
+#chatbot-input {
+  flex: 1;
+  border: 1px solid #fbc3bc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  outline: none;
+}
+#chatbot-send-btn {
+  background: linear-gradient(90deg,#FF6F61,#FF8A80);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 18px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#chatbot-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 500px) {
+  #chatbot-modal { right: 2vw; width: 98vw; }
+}
+</style>
+<button id="chatbot-float-btn" title="Chat với SmartCalories">💬</button>
+<div id="chatbot-modal">
+  <div id="chatbot-header">
+    <span style="font-weight:bold;color:#f5f2f2;font-size:1.1rem;">SmartCalories Chatbot</span>
+    <button id="chatbot-close-btn" style="float:right;font-size:1.2rem;background:none;border:none;cursor:pointer;">×</button>
+  </div>
+  <div id="chatbot-messages" style="flex:1;overflow-y:auto;padding:12px 8px 0 8px;max-height:350px;"></div>
+  <form id="chatbot-input-area" autocomplete="off">
+    <input id="chatbot-input" type="text" placeholder="Hỏi về món ăn, dinh dưỡng, gợi ý thực đơn..." required />
+    <button id="chatbot-send-btn" type="submit">Gửi</button>
+  </form>
+</div>
+  <form id="chatbot-input-area" autocomplete="off">
+<input id="chatbot-input" type="text" placeholder="Hỏi về món ăn, dinh dưỡng, gợi ý thực đơn..." required />    <button id="chatbot-send-btn" type="submit">Gửi</button>
+  </form>
+</div>
+<script>
+const chatbotBtn = document.getElementById('chatbot-float-btn');
+const chatbotModal = document.getElementById('chatbot-modal');
+const chatbotClose = document.getElementById('chatbot-close-btn');
+const chatbotMessages = document.getElementById('chatbot-messages');
+const chatbotInput = document.getElementById('chatbot-input');
+const chatbotSendBtn = document.getElementById('chatbot-send-btn');
+
+let chatbotHistory = [
+  {role: "system", content: "Bạn là trợ lý dinh dưỡng."},
+  {role: "assistant", content: "Xin chào! Tôi là ChatGPT chuyên về nhật ký ăn uống và dinh dưỡng. Bạn cần hỏi gì?"}
+];
+
+function renderChatbotHistory() {
+  chatbotMessages.innerHTML = '';
+  chatbotHistory.forEach(msg => {
+    if (msg.role === 'system') return;
+    appendMsg(msg.role === 'assistant' ? 'bot' : 'user', msg.content);
+  });
+  chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+}
+
+chatbotBtn.onclick = () => {
+  chatbotModal.classList.add('open');
+  setTimeout(() => {
+    renderChatbotHistory();
+    chatbotInput.focus();
+  }, 50);
+};
+
+chatbotClose.onclick = () => chatbotModal.classList.remove('open');
+
+function appendMsg(role, text) {
+  const msg = document.createElement('div');
+  msg.className = 'chatbot-msg ' + (role === 'user' ? 'user' : 'bot');
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = text
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .replace(/^\s*\*\s+/gm, '• ') 
+    .replace(/\n/g, "<br>");
+  msg.appendChild(bubble);
+  chatbotMessages.appendChild(msg);
+  chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+}
+document.getElementById('chatbot-input-area').onsubmit = async function(e) {
+  e.preventDefault();
+  const text = chatbotInput.value.trim();
+  if (!text) return;
+
+  chatbotHistory.push({role: "user", content: text});
+  appendMsg('user', text);
+  chatbotInput.value = '';
+  chatbotSendBtn.disabled = true;
+
+  // Hiện "Đang trả lời..."
+const loadingMsg = document.createElement('div');
+loadingMsg.className = 'chatbot-msg bot';
+const loadingBubble = document.createElement('div');
+loadingBubble.className = 'bubble';
+loadingBubble.textContent = 'Đang trả lời...';
+loadingMsg.appendChild(loadingBubble);
+chatbotMessages.appendChild(loadingMsg);
+chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+
+  try {
+    // Lấy danh sách món ăn từ biến mealsData do backend render ra
+    const res = await fetch('/chatbot', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        messages: chatbotHistory,
+        meals: window.mealsData || [],
+        logs: window.logsData || [],
+        summary: window.summary || {},
+        activities: window.activitiesData || []
+      }),
+      credentials: 'same-origin'
+    });
+
+    const data = await res.json();
+    loadingMsg.remove(); // Xoá "Đang trả lời..."
+    const reply = data.reply || 'Xin lỗi, tôi chưa có câu trả lời.';
+    chatbotHistory.push({role: "assistant", content: reply});
+    appendMsg('bot', reply);
+  } catch (err) {
+    loadingMsg.remove();
+    appendMsg('bot', '❌ Lỗi kết nối đến máy chủ.');
+  }
+
+  chatbotSendBtn.disabled = false;
+};
+</script>
+
 <!-- Modal Thông tin cá nhân -->
 <div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
   <div class="bg-white p-4 sm:p-8 rounded-xl shadow space-y-3 sm:space-y-4 w-full max-w-xs sm:max-w-md relative">
@@ -708,6 +942,7 @@
     padding: 0.5rem !important;
   }
 }
+.fe-bold { font-weight: bold; color: #FF6F61; }
 </style>
 <script>
   function switchView(view) {
@@ -1284,7 +1519,7 @@ document.getElementById('confirmDeleteUserBtn').onclick = function() {
     max-width: 98vw !important;
     padding: 0.5rem !important;
   }
-  .p-6, .p-8 {
+  .p-6, .p-8 {  
     padding: 1rem !important;
   }
   .rounded-2xl, .rounded-xl {

@@ -528,7 +528,6 @@ async def activity_history(user_id: str = Cookie(None)):
     ]
     return JSONResponse(result)
 
-
 def format_vn_datetime(dt_str):
     # dt_str dạng "YYYY-MM-DD HH:MM:SS"
     try:
@@ -544,6 +543,16 @@ def format_vn_datetime(dt_str):
         return dt.strftime("%H:%M %d/%m/%Y")
     except Exception:
         return dt_str
+
+def reset_logs_job():
+    db = meals_col.database
+    db["activity_logs"].delete_many({})
+    db["login_logs"].delete_many({})
+    activities_col.delete_many({}) 
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(reset_logs_job, 'cron', day=1, hour=0, minute=1)
+scheduler.start()
 
 @app.post("/add-meal")
 async def add_meal(

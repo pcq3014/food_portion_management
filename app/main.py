@@ -277,13 +277,13 @@ def reset_password_submit(
     )
 
 conf = ConnectionConfig(
-    MAIL_USERNAME="pcq30012004@gmail.com",
-    MAIL_PASSWORD="gnxc lyya fvuq aokl",
-    MAIL_FROM="pcq30012004@gmail.com",
+    MAIL_USERNAME="smartcalories.vn@gmail.com",
+    MAIL_PASSWORD="zpln zcew qcti koba",
+    MAIL_FROM="smartcalories.vn@gmail.com",
     MAIL_PORT=587,
     MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=True,      # Đúng tên biến
-    MAIL_SSL_TLS=False,      # Đúng tên biến
+    MAIL_STARTTLS=True,      
+    MAIL_SSL_TLS=False,     
     USE_CREDENTIALS=True
 )
 
@@ -844,7 +844,7 @@ async def chatbot_endpoint(request: Request):
     activities = data.get("activities", [])
 
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
+        genai.configure(GEMINI_API_KEY)
         model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
         meal_list = "\n".join([f"- {m['name']} (Calories: {m['calories']}, Protein: {m['protein']}g, Carbs: {m['carbs']}g, Fat: {m['fat']}g)" for m in meals])
         log_list = "\n".join([f"- {l['meal']['name']} x{l['quantity']} ({l['meal']['calories']*l['quantity']} cal)" for l in logs])

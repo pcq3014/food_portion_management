@@ -832,7 +832,7 @@ async def ban_user(
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))  
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")   
 
 @app.post("/chatbot")
 async def chatbot_endpoint(request: Request):

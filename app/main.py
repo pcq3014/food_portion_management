@@ -244,7 +244,7 @@ def reset_password_form(request: Request, token: str = ""):
     if not info or info["expires"] < datetime.utcnow():
         return templates.TemplateResponse(
             "forgot-password.html",
-            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
+            {"request": request, "error": "Liên kết không hợp lệ hoặc đã hết hạn."}
         )
     return templates.TemplateResponse("reset-password.html", {"request": request, "token": token})
 

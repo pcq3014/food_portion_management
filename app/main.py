@@ -3,15 +3,21 @@ from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse,
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi import UploadFile, File
+from threading import Lock
+from dotenv import load_dotenv
+import os
 from app.database import meals_col, logs_col, users_col, activities_col
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from apscheduler.schedulers.background import BackgroundScheduler
+import google.generativeai as genai
 import secrets
 from bson import ObjectId
+import threading
 import pytz
 import csv
 import io
 import json
+import time
 from passlib.hash import bcrypt
 from datetime import datetime, timedelta
 import cloudinary
@@ -26,15 +32,38 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 def register_form(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
 
+last_register_time = {}
+register_lock = Lock()
+def is_too_fast(user, action, seconds=3):
+    now = time.time()
+    last_time = user.get(f"last_{action}_time", 0)
+    if now - last_time < seconds:
+        return True
+    users_col.update_one({"_id": user["_id"]}, {"$set": {f"last_{action}_time": now}})
+    return False
 @app.post("/register")
 def register_user(
     request: Request,
     fullname: str = Form(...),
     username: str = Form(...),
-    email: str = Form(...),  # Thêm email
+    email: str = Form(...),
     password: str = Form(...),
     confirm_password: str = Form(...)
 ):
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    with register_lock:
+        last_time = last_register_time.get(client_ip, 0)
+        if now - last_time < 3:
+            return templates.TemplateResponse("register.html", {
+                "request": request,
+                "error": "Vui lòng chờ vài giây rồi thử lại.",
+                "fullname": fullname,
+                "username": username,
+                "email": email
+            }, status_code=429)
+        last_register_time[client_ip] = now
+
     if password != confirm_password:
         return templates.TemplateResponse("register.html", {
             "request": request,
@@ -81,6 +110,15 @@ def register_user(
 def login_form(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
+def log_login_async(db, user_fullname, ip, time_str):
+    def task():
+        db["login_logs"].insert_one({
+            "time": time_str,
+            "user": user_fullname,
+            "ip": ip
+        })
+    threading.Thread(target=task, daemon=True).start()
+
 @app.post("/login")
 def login_user(
     request: Request,
@@ -124,15 +162,16 @@ def login_user(
         max_age=86400,
         path="/"
     )
-    # Ghi log đăng nhập với giờ Việt Nam
+    # Ghi log đăng nhập với giờ Việt Nam (bất đồng bộ)
     vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
     now_vn = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(vn_tz)
     db = meals_col.database
-    db["login_logs"].insert_one({
-        "time": now_vn.strftime("%Y-%m-%d %H:%M:%S"),
-        "user": user.get("fullname", ""),
-        "ip": request.client.host if request.client else ""
-    })
+    log_login_async(
+        db,
+        user.get("fullname", ""),
+        request.client.host if request.client else "",
+        now_vn.strftime("%Y-%m-%d %H:%M:%S")
+    )
     return response
 reset_tokens = {}
 
@@ -238,13 +277,13 @@ def reset_password_submit(
     )
 
 conf = ConnectionConfig(
-    MAIL_USERNAME="smartcalories.vn@gmail.com",
-    MAIL_PASSWORD="zpln zcew qcti koba",
-    MAIL_FROM="smartcalories.vn@gmail.com",
+    MAIL_USERNAME="pcq30012004@gmail.com",
+    MAIL_PASSWORD="gnxc lyya fvuq aokl",
+    MAIL_FROM="pcq30012004@gmail.com",
     MAIL_PORT=587,
     MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=True,      
-    MAIL_SSL_TLS=False,     
+    MAIL_STARTTLS=True,      # Đúng tên biến
+    MAIL_SSL_TLS=False,      # Đúng tên biến
     USE_CREDENTIALS=True
 )
 
@@ -254,7 +293,13 @@ def get_current_user_id(user_id: str = Cookie(None)) -> ObjectId:
         raise HTTPException(status_code=401, detail="Not logged in")
     return ObjectId(user_id)
 
-# Trang chính
+def fix_objectid(obj):
+    if isinstance(obj, list):
+        return [fix_objectid(item) for item in obj]
+    if isinstance(obj, dict):
+        return {k: (str(v) if isinstance(v, ObjectId) else fix_objectid(v)) for k, v in obj.items()}
+    return obj
+
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def home(
     request: Request,
@@ -269,6 +314,8 @@ async def home(
 
     user_id_obj = ObjectId(user_id)
     user = users_col.find_one({"_id": user_id_obj})
+    if user:
+        user = fix_objectid(user)
     fullname = user.get("fullname", "Người dùng") if user else "Người dùng"
     
     # Kiểm tra session_token và trạng thái ban
@@ -295,9 +342,7 @@ async def home(
     meal_query = {}
     if search:
         meal_query["name"] = {"$regex": search, "$options": "i"}
-    for meal in meals_col.find(meal_query):
-        meal["_id"] = str(meal["_id"])
-        meals.append(meal)
+    meals = [fix_objectid(meal) for meal in meals_col.find(meal_query)]
 
     vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
     today = datetime.now(vn_tz).strftime('%Y-%m-%d')
@@ -313,10 +358,7 @@ async def home(
         }},
         {"$unwind": "$meal"}
     ]):
-        log["_id"] = str(log["_id"])
-        log["meal_id"] = str(log["meal_id"])
-        log["meal"]["_id"] = str(log["meal"]["_id"])
-        logs.append(log)
+        logs.append(fix_objectid(log))
 
     summary_result = logs_col.aggregate([
         {"$match": {"user_id": user_id_obj, "date": today}},
@@ -373,11 +415,16 @@ async def home(
         reverse=True
     )[:3]
 
-    # ✅ Truyền fullname vào template
+    # Lấy danh sách hoạt động thể chất
+    activities = []
+    activities = [fix_objectid(act) for act in activities_col.find({"user_id": user_id_obj})]
+
+
+    # Lấy danh sách user cho admin
     users = []
     if user and user.get("role") == "admin":
         for u in users_col.find():
-            u["_id"] = str(u["_id"])
+            u = fix_objectid(u)
             u["is_banned"] = u.get("is_banned", False)
             users.append(u)
 
@@ -387,7 +434,7 @@ async def home(
         "logs": logs,
         "summary": summary,
         "fullname": fullname,
-        "user": user,  # Thêm dòng này để Jinja2 không lỗi
+        "user": user,
         "today": today,
         "search": search,
         "goals": goals,
@@ -397,7 +444,8 @@ async def home(
         "suggested_meals": suggested_meals,
         "nutrient_priority": nutrient_priority,
         "view": view,
-        "users": users
+        "users": users,
+        "activities": activities,
     })
 # tạo favicon
 @app.get("/favicon.ico", include_in_schema=False)
@@ -438,6 +486,8 @@ async def add_activity(
     if not user_id:
         return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
     user = users_col.find_one({"_id": ObjectId(user_id)})
+    if is_too_fast(user, "activity"):
+        return JSONResponse({"error": "Bạn thao tác quá nhanh, vui lòng thử lại sau."}, status_code=429)
     if not user:
         return JSONResponse({"error": "Không tìm thấy user"}, status_code=404)
     weight = user.get("weight", 60)
@@ -461,19 +511,23 @@ async def add_activity(
 async def activity_history(user_id: str = Cookie(None)):
     if not user_id:
         return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
+
     activities = list(activities_col.find({"user_id": ObjectId(user_id)}).sort("timestamp", -1).limit(30))
-    for act in activities:
-        act["_id"] = str(act["_id"])
+
+    # Sửa toàn bộ ObjectId trong document
+    activities = [fix_objectid(act) for act in activities]
+
     result = [
         {
-            "fullname": act.get("fullname", ""),  # Lấy fullname từ DB
+            "fullname": act.get("fullname", ""),
             "activity": act.get("activity", ""),
-            "timestamp": format_vn_datetime(act.get("timestamp", "")),  # Format đẹp
+            "timestamp": format_vn_datetime(act.get("timestamp", "")),
             "calories_burned": act.get("calories_burned", 0)
         }
         for act in activities
     ]
-    return result
+    return JSONResponse(result)
+
 
 def format_vn_datetime(dt_str):
     # dt_str dạng "YYYY-MM-DD HH:MM:SS"
@@ -502,6 +556,8 @@ async def add_meal(
     user_id: str = Cookie(None)
 ):
     user = users_col.find_one({"_id": ObjectId(user_id)}) if user_id else None
+    if user and is_too_fast(user, "add_meal"):
+        return RedirectResponse(url="/?view=meals&error=double_click", status_code=303)
     fullname = user.get("fullname", "") if user else ""
     meals_col.insert_one({
         "name": name,
@@ -510,7 +566,7 @@ async def add_meal(
         "protein": protein,
         "fat": fat,
         "image_url": image_url,
-        "created_by": fullname  # Thêm dòng này
+        "created_by": fullname
     })
     # Ghi log hoạt động
     db = meals_col.database
@@ -532,6 +588,18 @@ async def log_meal(
 ):
     if not user_id:
         return RedirectResponse("/login", status_code=302)
+    # --- Chống double-click ---
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    now = datetime.utcnow()
+    last_log = user.get("last_log_meal_time")
+    if last_log:
+        if isinstance(last_log, str):
+            last_log = datetime.strptime(last_log, "%Y-%m-%d %H:%M:%S")
+        if now - last_log < timedelta(seconds=3):
+            # Nếu thao tác quá nhanh, từ chối
+            return RedirectResponse(url="/?view=log&error=double_click", status_code=303)
+    users_col.update_one({"_id": ObjectId(user_id)}, {"$set": {"last_log_meal_time": now.strftime("%Y-%m-%d %H:%M:%S")}})
+    # --- End chống double-click ---
     logs_col.insert_one({
         "user_id": ObjectId(user_id),
         "meal_id": ObjectId(meal_id),
@@ -761,6 +829,43 @@ async def ban_user(
         return JSONResponse({"success": True, "message": msg})
     else:
         return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không thay đổi"})
+
+load_dotenv()
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))  
+
+@app.post("/chatbot")
+async def chatbot_endpoint(request: Request):
+    data = await request.json()
+    messages = data.get("messages", [])
+    meals = data.get("meals", [])
+    logs = data.get("logs", [])
+    summary = data.get("summary", {})
+    activities = data.get("activities", [])
+
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+        meal_list = "\n".join([f"- {m['name']} (Calories: {m['calories']}, Protein: {m['protein']}g, Carbs: {m['carbs']}g, Fat: {m['fat']}g)" for m in meals])
+        log_list = "\n".join([f"- {l['meal']['name']} x{l['quantity']} ({l['meal']['calories']*l['quantity']} cal)" for l in logs])
+        activity_list = "\n".join([f"- {a['activity']} {a['duration']} phút ({a['calories_burned']} kcal)" for a in activities])
+        summary_text = f"Tổng hôm nay: {summary.get('calories', 0)} cal, {summary.get('protein', 0)}g protein, {summary.get('carbs', 0)}g carbs, {summary.get('fat', 0)}g fat."
+
+        prompt = (
+            "Bạn là trợ lý dinh dưỡng SmartCalories, hãy xưng hô thân thiện là 'bạn' với người dùng.\n"
+            "Danh sách món ăn hiện có:\n" + meal_list +
+            "\n---\nNhật ký hôm nay:\n" + log_list +
+            "\n---\nPhân tích hôm nay:\n" + summary_text +
+            "\n---\nHoạt động thể chất hôm nay:\n" + activity_list +
+            "\n---\n"
+            + "\n".join([m.get("content", "") for m in messages])
+        )
+        response = model.generate_content(prompt)
+        reply = response.text
+        return JSONResponse({"reply": reply})
+    except Exception as e:
+        print("Lỗi gọi Gemini API:", e)
+        return JSONResponse({"reply": "Xin lỗi, có lỗi xảy ra."})
 
 @app.get("/export-csv")
 def export_csv(

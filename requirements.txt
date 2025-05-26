@@ -11,3 +11,4 @@ fastapi_mail
 httpx>=0.25.0
 cloudinary
 apscheduler
+google-generativeai 

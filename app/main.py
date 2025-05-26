@@ -259,7 +259,7 @@ def reset_password_submit(
     if not info or info["expires"] < datetime.utcnow():
         return templates.TemplateResponse(
             "forgot-password.html",
-            {"request": request, "message": "Liên kết không hợp lệ hoặc đã hết hạn."}
+            {"request": request, "error": "Liên kết không hợp lệ hoặc đã hết hạn."}
         )
     if password != confirm_password:
         return templates.TemplateResponse(

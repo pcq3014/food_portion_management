@@ -725,12 +725,26 @@ chatbotClose.onclick = () => chatbotModal.classList.remove('open');
 function appendMsg(role, text) {
   const msg = document.createElement('div');
   msg.className = 'chatbot-msg ' + (role === 'user' ? 'user' : 'bot');
+
+  // Avatar element
+  const avatar = document.createElement('img');
+  avatar.className = 'w-6 h-6 rounded-full mb-1';
+
+  // Chọn avatar phù hợp
+  if (role === 'user') {
+    avatar.src = "{{ user.avatar_url or '/static/default-avatar.png' }}";
+  } else {
+    avatar.src = "/static/bot-avatar.png";
+  }
+
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
   bubble.innerHTML = text
     .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-    .replace(/^\s*\*\s+/gm, '• ') 
+    .replace(/^\s*\*\s+/gm, '• ')
     .replace(/\n/g, "<br>");
+
+  msg.appendChild(avatar);
   msg.appendChild(bubble);
   chatbotMessages.appendChild(msg);
   chatbotMessages.scrollTop = chatbotMessages.scrollHeight;

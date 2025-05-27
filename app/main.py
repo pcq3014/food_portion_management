@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import UploadFile, File
 from threading import Lock
 from dotenv import load_dotenv
+import re
 import os
 from app.database import meals_col, logs_col, users_col, activities_col
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
@@ -840,7 +841,9 @@ async def ban_user(
         return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không thay đổi"})
 
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") 
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+
 
 @app.post("/chatbot")
 async def chatbot_endpoint(request: Request):
@@ -851,13 +854,68 @@ async def chatbot_endpoint(request: Request):
     summary = data.get("summary", {})
     activities = data.get("activities", [])
 
+    last_msg = messages[-1]["content"].strip().lower()
+    meal_names = [meal["name"].lower() for meal in meals]
+
+    # Bắt mẫu: "thêm món [tên]"
+    match = re.match(r"(thêm|tạo)\s+món\s+(.+)", last_msg)
+    if match:
+        raw_name = match.group(2).strip()
+        if raw_name in meal_names:
+            return JSONResponse({"reply": f"Món **{raw_name}** đã có trong danh sách."})
+
+        # Gọi Gemini để ước tính
+        try:
+            model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+            prompt = (
+                f"Hãy phân tích món '{raw_name}' và ước tính thành phần dinh dưỡng theo 1 khẩu phần:\n"
+                "- Calories (kcal)\n- Protein (g)\n- Carbs (g)\n- Fat (g)\n"
+                "Chỉ trả về đúng định dạng JSON như sau:\n"
+                '{ "name": "Sườn xào", "calories": 480, "protein": 25, "carbs": 15, "fat": 35 }'
+            )
+            response = model.generate_content(prompt)
+            json_text = response.text.strip()
+
+            # Tự động parse kết quả JSON
+            estimate = json.loads(json_text)
+            chatbot_temp_cache[estimate["name"].lower()] = estimate  # lưu để thêm sau nếu người dùng đồng ý
+
+            reply = (
+                f"Món **{estimate['name']}** (ước tính 1 khẩu phần):\n"
+                f"- Calories: {estimate['calories']} kcal\n"
+                f"- Protein: {estimate['protein']}g\n"
+                f"- Carbs: {estimate['carbs']}g\n"
+                f"- Fat: {estimate['fat']}g\n\n"
+                f"👉 Bạn có muốn thêm món này vào danh sách không? Trả lời `đồng ý` để thêm."
+            )
+            return JSONResponse({"reply": reply})
+
+        except Exception as e:
+            print("Gemini error:", e)
+            return JSONResponse({"reply": "❌ Không thể ước tính thành phần dinh dưỡng lúc này."})
+
+    # Nếu người dùng đồng ý sau khi được gợi ý
+    if last_msg in ["đồng ý", "yes", "ok", "thêm"]:
+        if chatbot_temp_cache:
+            latest = list(chatbot_temp_cache.values())[-1]
+            meals_col.insert_one(latest)
+            chatbot_temp_cache.clear()
+            return JSONResponse({"reply": f"✅ Đã thêm món **{latest['name']}** vào danh sách!"})
+        else:
+            return JSONResponse({"reply": "Không có món nào để thêm."})
+
+    # Nếu không rơi vào trường hợp đặc biệt -> fallback về Gemini như cũ
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
         model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
         meal_list = "\n".join([f"- {m['name']} (Calories: {m['calories']}, Protein: {m['protein']}g, Carbs: {m['carbs']}g, Fat: {m['fat']}g)" for m in meals])
         log_list = "\n".join([f"- {l['meal']['name']} x{l['quantity']} ({l['meal']['calories']*l['quantity']} cal)" for l in logs])
         activity_list = "\n".join([f"- {a['activity']} {a['duration']} phút ({a['calories_burned']} kcal)" for a in activities])
-        summary_text = f"Tổng hôm nay: {summary.get('calories', 0)} cal, {summary.get('protein', 0)}g protein, {summary.get('carbs', 0)}g carbs, {summary.get('fat', 0)}g fat."
+        summary_text = (
+            f"Tổng hôm nay: {summary.get('total_calories', 0)} cal, "
+            f"{summary.get('total_protein', 0)}g protein, "
+            f"{summary.get('total_carbs', 0)}g carbs, "
+            f"{summary.get('total_fat', 0)}g fat."
+        )
 
         prompt = (
             "Bạn là trợ lý dinh dưỡng SmartCalories, hãy xưng hô thân thiện là 'bạn' với người dùng.\n"
@@ -869,11 +927,11 @@ async def chatbot_endpoint(request: Request):
             + "\n".join([m.get("content", "") for m in messages])
         )
         response = model.generate_content(prompt)
-        reply = response.text
-        return JSONResponse({"reply": reply})
+        return JSONResponse({"reply": response.text})
     except Exception as e:
-        print("Lỗi gọi Gemini API:", e)
-        return JSONResponse({"reply": "Xin lỗi, có lỗi xảy ra."})
+        print("Gemini fallback error:", e)
+        return JSONResponse({"reply": "Lỗi không xác định xảy ra."})
+
 
 @app.get("/export-csv")
 def export_csv(

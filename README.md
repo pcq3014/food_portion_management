@@ -56,6 +56,7 @@ pip install -r requirements.txt
 ---
 
 ### Tạo file .env để lưu cấu hình bảo mật:
+
 env
 Sao chép
 Chỉnh sửa

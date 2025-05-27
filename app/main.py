@@ -27,6 +27,7 @@ import cloudinary.uploader
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+chatbot_temp_cache = {}
 
 # Đăng ký
 @app.get("/register")
@@ -386,7 +387,7 @@ async def home(
     })
     # Lấy mục tiêu từ cookie nếu có
     default_goals = {
-        "calories": int(tdee) if tdee else 2000,
+        "calories": float(tdee) if tdee else 2000,
         "protein": 100,
         "carbs": 250,
         "fat": 60
@@ -440,8 +441,8 @@ async def home(
         "search": search,
         "goals": goals,
         "missing": missing,
-        "bmr": int(bmr) if bmr else None,
-        "tdee": int(tdee) if tdee else None,
+        "bmr": float(bmr) if bmr else None,
+        "tdee": float(tdee) if tdee else None,
         "suggested_meals": suggested_meals,
         "nutrient_priority": nutrient_priority,
         "view": view,
@@ -481,7 +482,7 @@ def activity_form(request: Request, user_id: str = Cookie(None)):
 async def add_activity(
     request: Request,
     activity: str = Form(...),
-    duration: int = Form(...),
+    duration: float = Form(...),
     user_id: str = Cookie(None)
 ):
     if not user_id:
@@ -558,10 +559,10 @@ scheduler.start()
 @app.post("/add-meal")
 async def add_meal(
     name: str = Form(...),
-    calories: int = Form(...),
-    carbs: int = Form(...),
-    protein: int = Form(...),
-    fat: int = Form(...),
+    calories: float = Form(...),
+    carbs: float = Form(...),
+    protein: float = Form(...),
+    fat: float = Form(...),
     image_url: str = Form(None),
     user_id: str = Cookie(None)
 ):
@@ -592,7 +593,7 @@ async def add_meal(
 async def log_meal(
     request: Request,
     meal_id: str = Form(...),
-    quantity: int = Form(...),
+    quantity: float = Form(...),
     date: str = Form(...),
     user_id: str = Cookie(None)
 ):
@@ -622,10 +623,10 @@ async def log_meal(
 async def set_goals(
     request: Request,
     response: Response,
-    calories: int = Form(...),
-    protein: int = Form(...),
-    carbs: int = Form(...),
-    fat: int = Form(...),
+    calories: float = Form(...),
+    protein: float = Form(...),
+    carbs: float = Form(...),
+    fat: float = Form(...),
     user_id: str = Cookie(None)
 ):
     goals = {
@@ -707,10 +708,10 @@ cloudinary.config(
 async def update_meal(
     meal_id: str,
     name: str = Form(...),
-    calories: int = Form(...),
-    carbs: int = Form(...),
-    protein: int = Form(...),
-    fat: int = Form(...),
+    calories: float = Form(...),
+    carbs: float = Form(...),
+    protein: float = Form(...),
+    fat: float = Form(...),
     image_url: str = Form(None)  
 ):
     meals_col.update_one(
@@ -753,15 +754,15 @@ def calculate_bmr(weight, height, age, gender):
         return 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)
 
 def calculate_tdee(bmr, activity_level=1.55):
-    return int(bmr * activity_level)
+    return float(bmr * activity_level)
 
 # Trang thông tin cá nhân
 @app.post("/profile")
 async def update_profile(
     request: Request,
-    height: int = Form(...),
-    weight: int = Form(...),
-    age: int = Form(...),
+    height: float = Form(...),
+    weight: float = Form(...),
+    age: float = Form(...),
     gender: str = Form(...),
     email: str = Form(...),
     avatar_file: UploadFile = File(None),
@@ -807,8 +808,8 @@ async def update_profile(
             "gender": gender,
             "email": email,
             "avatar_url": avatar_url,
-            "bmr": int(bmr),
-            "tdee": int(tdee)
+            "bmr": float(bmr),
+            "tdee": float(tdee)
         }
     })
 
@@ -846,7 +847,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
 @app.post("/chatbot")
-async def chatbot_endpoint(request: Request):
+async def chatbot_endpofloat(request: Request):
     data = await request.json()
     messages = data.get("messages", [])
     meals = data.get("meals", [])
@@ -857,44 +858,50 @@ async def chatbot_endpoint(request: Request):
     last_msg = messages[-1]["content"].strip().lower()
     meal_names = [meal["name"].lower() for meal in meals]
 
-    # Bắt mẫu: "thêm món [tên]"
+    # 🧠 Tự động nhận diện tên món ăn từ các kiểu câu khác nhau
+    potential_name = None
     match = re.match(r"(thêm|tạo)\s+món\s+(.+)", last_msg)
     if match:
-        raw_name = match.group(2).strip()
-        if raw_name in meal_names:
-            return JSONResponse({"reply": f"Món **{raw_name}** đã có trong danh sách."})
+        potential_name = match.group(2).strip()
+    elif any(key in last_msg for key in ["thông tin món", "bao nhiêu calo", "dinh dưỡng món", "calories", "món ăn"]):
+        name_match = re.search(r"món\s+(.+?)(?:\?|$)", last_msg)
+        if name_match:
+            potential_name = name_match.group(1).strip()
 
-        # Gọi Gemini để ước tính
+    # Nếu phát hiện tên món và chưa có trong danh sách thì gọi Gemini
+    if potential_name and potential_name not in meal_names:
         try:
             model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
             prompt = (
-                f"Hãy phân tích món '{raw_name}' và ước tính thành phần dinh dưỡng theo 1 khẩu phần:\n"
+                f"Hãy phân tích món '{potential_name}' và ước tính thành phần dinh dưỡng trung bình cho 1 khẩu phần:\n"
                 "- Calories (kcal)\n- Protein (g)\n- Carbs (g)\n- Fat (g)\n"
-                "Chỉ trả về đúng định dạng JSON như sau:\n"
-                '{ "name": "Sườn xào", "calories": 480, "protein": 25, "carbs": 15, "fat": 35 }'
+                "- Image URL minh họa từ floaternet (nếu có)\n"
+                "Trả về đúng định dạng JSON như sau:\n"
+                '{ "name": "Tên món", "calories": ..., "protein": ..., "carbs": ..., "fat": ..., "image_url": "https://..." }'
             )
             response = model.generate_content(prompt)
             json_text = response.text.strip()
 
-            # Tự động parse kết quả JSON
             estimate = json.loads(json_text)
-            chatbot_temp_cache[estimate["name"].lower()] = estimate  # lưu để thêm sau nếu người dùng đồng ý
+            estimate["image_url"] = estimate.get("image_url") or "/static/default-food.jpg"
+            chatbot_temp_cache[estimate["name"].lower()] = estimate
 
             reply = (
                 f"Món **{estimate['name']}** (ước tính 1 khẩu phần):\n"
                 f"- Calories: {estimate['calories']} kcal\n"
                 f"- Protein: {estimate['protein']}g\n"
                 f"- Carbs: {estimate['carbs']}g\n"
-                f"- Fat: {estimate['fat']}g\n\n"
+                f"- Fat: {estimate['fat']}g\n"
+                f"- Ảnh minh họa: {estimate['image_url']}\n\n"
                 f"👉 Bạn có muốn thêm món này vào danh sách không? Trả lời `đồng ý` để thêm."
             )
             return JSONResponse({"reply": reply})
 
         except Exception as e:
-            print("Gemini error:", e)
-            return JSONResponse({"reply": "❌ Không thể ước tính thành phần dinh dưỡng lúc này."})
+            prfloat("Gemini error:", e)
+            return JSONResponse({"reply": "❌ Không thể lấy thông tin món ăn từ Gemini lúc này."})
 
-    # Nếu người dùng đồng ý sau khi được gợi ý
+    # ✅ Người dùng xác nhận muốn thêm món vào database
     if last_msg in ["đồng ý", "yes", "ok", "thêm"]:
         if chatbot_temp_cache:
             latest = list(chatbot_temp_cache.values())[-1]
@@ -902,9 +909,9 @@ async def chatbot_endpoint(request: Request):
             chatbot_temp_cache.clear()
             return JSONResponse({"reply": f"✅ Đã thêm món **{latest['name']}** vào danh sách!"})
         else:
-            return JSONResponse({"reply": "Không có món nào để thêm."})
+            return JSONResponse({"reply": "❌ Không có món nào đang chờ thêm."})
 
-    # Nếu không rơi vào trường hợp đặc biệt -> fallback về Gemini như cũ
+    # ❓ Không khớp gì đặc biệt → fallback: hỏi Gemini như bình thường
     try:
         model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
         meal_list = "\n".join([f"- {m['name']} (Calories: {m['calories']}, Protein: {m['protein']}g, Carbs: {m['carbs']}g, Fat: {m['fat']}g)" for m in meals])
@@ -928,9 +935,10 @@ async def chatbot_endpoint(request: Request):
         )
         response = model.generate_content(prompt)
         return JSONResponse({"reply": response.text})
+
     except Exception as e:
-        print("Gemini fallback error:", e)
-        return JSONResponse({"reply": "Lỗi không xác định xảy ra."})
+        prfloat("Gemini fallback error:", e)
+        return JSONResponse({"reply": "⚠️ Lỗi không xác định khi gọi Gemini."})
 
 
 @app.get("/export-csv")

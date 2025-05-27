@@ -65,6 +65,9 @@
   class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   📝 <span>Ghi nhật ký</span>
 </button>
+    <button onclick="openAddMealModal()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold shadow transition flex items-center gap-2">
+      ➕ <span>Thêm món ăn</span>
+    </button>
 <button onclick="openActivityModal()"
   class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
   🏃 <span>Hoạt động thể chất</span>
@@ -79,8 +82,6 @@
       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
       👥 <span>Quản lý người dùng</span>
     </button>
-    {% endif %}
-      {% if user.role == 'admin' %}
   <button onclick="openActivityLogModal()"
     class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
     📜 <span>Nhật ký hoạt động</span>

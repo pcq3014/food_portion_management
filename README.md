@@ -25,6 +25,7 @@
 - 🧠 Phân tích BMR / TDEE dựa theo chiều cao, cân nặng, tuổi, giới tính
 - 🍽️ Quản lý món ăn: thêm, sửa, xoá kèm thông tin dinh dưỡng và hình ảnh
 - 🧾 Ghi nhật ký ăn uống theo ngày, thống kê và phân tích
+- 🧾 Ghi nhật ký hoạt động thể chất, tính toán lượng kcal tiêu thụ
 - 🧮 Gợi ý món ăn theo chất dinh dưỡng còn thiếu (calories, protein, carbs, fat)
 - 📊 Biểu đồ phân tích bằng Chart.js
 - 📤 Xuất dữ liệu nhật ký ra `.csv` (theo ngày hoặc tất cả)

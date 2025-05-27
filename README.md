@@ -1,11 +1,9 @@
-
 <p align="center">
-  <img src="/assets/icon.png" width="120" alt="SmartCalories logo">
+  <img src="/assets/icon.png" width="100" alt="SmartCalories logo">
 </p>
 
 <h1 align="center">🥗 SmartCalories</h1>
-
-<p align="center"><strong>Ứng dụng quản lý khẩu phần ăn và phân tích dinh dưỡng hằng ngày</strong></p>
+<p align="center"><strong>Ứng dụng theo dõi khẩu phần ăn, phân tích dinh dưỡng & hoạt động thể chất hằng ngày</strong></p>
 <p align="center">
   <a href="https://nhat-ky-an-uong.onrender.com/" target="_blank"><strong>🌐 Truy cập bản demo</strong></a>
 </p>
@@ -19,103 +17,115 @@
 
 ---
 
-## 🚀 Tính năng
+## 🚀 Tính năng nổi bật
 
-- 👤 Đăng ký / đăng nhập người dùng (có phân quyền `admin` / `user`)
-- 🧠 Phân tích BMR / TDEE dựa theo chiều cao, cân nặng, tuổi, giới tính
-- 🍽️ Quản lý món ăn: thêm, sửa, xoá kèm thông tin dinh dưỡng và hình ảnh
-- 🧾 Ghi nhật ký ăn uống theo ngày, thống kê và phân tích
-- 🧾 Ghi nhật ký hoạt động thể chất, tính toán lượng kcal tiêu thụ
-- 🧮 Gợi ý món ăn theo chất dinh dưỡng còn thiếu (calories, protein, carbs, fat)
-- 📊 Biểu đồ phân tích bằng Chart.js
-- 📤 Xuất dữ liệu nhật ký ra `.csv` (theo ngày hoặc tất cả)
-- ☁️ Upload ảnh đại diện lên Cloudinary
-- 🔐 Quản lý phiên đăng nhập bằng cookie và mã phiên
-- 🔑 Đặt lại mật khẩu qua email với FastAPI-Mail
-- 👮‍♀️ Admin: quản lý người dùng, khóa tài khoản, theo dõi nhật ký hoạt động và đăng nhập
-- 📸 Giao diện hiện đại bằng TailwindCSS
+- 👤 Đăng ký / đăng nhập người dùng (phân quyền `admin` / `user`)
+- 🔒 Bảo mật phiên đăng nhập với token & cookie
+- 🔑 Quên mật khẩu? Hỗ trợ đặt lại qua email (FastAPI-Mail)
+- 🍽️ Quản lý món ăn: thêm / sửa / xoá kèm thông tin dinh dưỡng và ảnh
+- 📝 Ghi nhật ký ăn uống mỗi ngày
+- ⚙️ Tự động tính tổng lượng calories, protein, carbs, fat trong ngày
+- 🧠 Phân tích BMR, TDEE theo cân nặng, chiều cao, tuổi, giới tính
+- 🥗 Gợi ý món ăn dựa trên dưỡng chất còn thiếu
+- 📊 Biểu đồ phân tích dinh dưỡng (Chart.js)
+- 🏃 Ghi lại hoạt động thể chất, tính kcal tiêu thụ (MET-based)
+- 📤 Xuất dữ liệu nhật ký ăn uống ra file `.csv`
+- 👨‍💼 Chế độ admin: quản lý người dùng, khóa tài khoản, xem log đăng nhập & hoạt động
+- 🤖 Chatbot tích hợp trợ lý Gemini hỗ trợ người dùng hỏi về dinh dưỡng
 
 ---
 
-## 🛠️ Cài đặt
+## 🛠️ Hướng dẫn cài đặt
 
 ### ✅ Yêu cầu
 
 - Python 3.8+
-- MongoDB đã khởi chạy
-- Tài khoản Cloudinary (để upload avatar)
-- SMTP email (ví dụ Gmail để gửi mail đặt lại mật khẩu)
+- MongoDB đang hoạt động
+- Tài khoản Cloudinary (để lưu ảnh)
+- SMTP (ví dụ: Gmail cho việc gửi mail)
 
-### 📥 Cài đặt local
+---
+
+### 📦 Cài đặt local
 
 ```bash
 git clone https://github.com/your-username/smartcalories.git
 cd smartcalories
 pip install -r requirements.txt
-```
-
-📌 Tạo file `.env` (nếu cần) để chứa thông tin nhạy cảm (mail, cloudinary, v.v.)
-
-```bash
-uvicorn main:app --reload
-```
-
-👉 Truy cập tại: [http://localhost:8000](http://localhost:8000)
 
 ---
 
-## 🧰 Thư viện sử dụng
+### Tạo file .env để lưu cấu hình bảo mật:
+env
+Sao chép
+Chỉnh sửa
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
 
-- `fastapi`, `uvicorn`, `pymongo`, `jinja2`, `python-dotenv`
-- `passlib[bcrypt]`, `bcrypt`, `python-multipart`
-- `pytz`, `fastapi-mail`, `httpx`, `cloudinary`
-- `apscheduler` (tự động hóa hoặc gửi thông báo định kỳ)
-- `Chart.js` và `TailwindCSS` (frontend)
+---
+
+### Chạy ứng dụng:
+
+bash
+Sao chép
+Chỉnh sửa
+uvicorn main:app --reload
+👉 Truy cập tại: http://localhost:8000
+
+---
+
+## 🧰 Công nghệ sử dụng
+Backend: FastAPI, uvicorn, pymongo, jinja2, apscheduler
+
+Auth: passlib, bcrypt, secrets
+
+Email: fastapi-mail
+
+UI: TailwindCSS, Chart.js, Jinja2
+
+Others: pytz, cloudinary, httpx, dotenv
 
 ---
 
 ## 📁 Cấu trúc thư mục
-
-```
+csharp
+Sao chép
+Chỉnh sửa
 smartcalories/
 ├── app/
-│   ├── templates/         # HTML sử dụng Jinja2
-│   ├── static/            # Ảnh, CSS, JS, favicon, logo
-│   ├── database.py        # Kết nối MongoDB
-│   └── main.py            # FastAPI endpoints
-├── assets/
-│   └── icon.png
+│   ├── templates/         # Giao diện HTML
+│   ├── static/            # Ảnh, CSS, JS
+│   └── database.py        # Kết nối MongoDB
+├── main.py                # FastAPI app chính
 ├── requirements.txt
 └── README.md
-```
-
----
-
-## 🖼️ Giao diện minh họa
-
-**📋 Danh sách món ăn**
+🖼️ Giao diện minh họa
+📋 Danh sách món ăn
 
 <p align="center"><img src="/assets/demo.png" width="600"></p>
-
-**📈 Nhật ký & Phân tích**
+📈 Phân tích nhật ký ăn uống
 
 <p align="center"><img src="/assets/analysis.png" width="600"></p>
 
 ---
 
-## 📤 Xuất CSV
+## 📤 Xuất dữ liệu
+Trong thanh bên, chọn "📤 Xuất CSV" để tải về:
 
-Chọn **"Xuất CSV"** từ menu, chọn xuất hôm nay hoặc tất cả lịch sử nhật ký ăn uống.
+Nhật ký hôm nay (?mode=today)
 
----
-
-## 📄 Giấy phép
-
-Phát hành dưới giấy phép **MIT**.
+Toàn bộ lịch sử (?mode=all)
 
 ---
 
-## 💡 Góp ý & Hỗ trợ
+## 📜 Giấy phép
+Phát hành theo giấy phép MIT.
 
-Bạn có thể tạo issue hoặc gửi pull request để đóng góp cho dự án.  
-**Cảm ơn bạn đã sử dụng SmartCalories!**
+---
+
+## 💡 Đóng góp
+Gửi ý kiến qua Issues hoặc Pull Request — mọi đóng góp đều được hoan nghênh!
+Cảm ơn bạn đã sử dụng SmartCalories ❤️

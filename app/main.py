@@ -8,6 +8,7 @@ import time
 import pytz
 import secrets
 import threading
+import requests 
 from datetime import datetime, timedelta
 from threading import Lock
 
@@ -121,13 +122,17 @@ def format_vn_datetime(dt_str):
         return dt_str
     
 # Hàm ghi log đăng nhập bất đồng bộ
-def log_login_async(db, user_fullname, ip, time_str):
+def log_login_async(db, user_fullname, ip, time_str, lat=None, lon=None):
     def task():
-        db["login_logs"].insert_one({
+        doc = {
             "time": time_str,
             "user": user_fullname,
             "ip": ip
-        })
+        }
+        if lat is not None and lon is not None:
+            doc["lat"] = lat
+            doc["lon"] = lon
+        db["login_logs"].insert_one(doc)
     threading.Thread(target=task, daemon=True).start()
 
 # --- 3. ROUTES ---
@@ -258,7 +263,9 @@ def login_user(
         db,
         user.get("fullname", ""),
         request.client.host if request.client else "",
-        now_vn.strftime("%Y-%m-%d %H:%M:%S")
+        now_vn.strftime("%Y-%m-%d %H:%M:%S"),
+        lat=lat,
+        lon=lon
     )
     return response
 reset_tokens = {}
@@ -893,11 +900,29 @@ async def login_log(request: Request, user_id: str = Cookie(None)):
         logs = list(db["login_logs"].find().sort("time", -1).limit(50))
     if not logs:
         return HTMLResponse("<div class='text-gray-500'>Chưa có nhật ký đăng nhập nào.</div>")
-    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>IP</th></tr></thead><tbody>"
+    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>IP</th><th>Địa chỉ</th><th>Nhà mạng</th><th>Tọa độ</th></tr></thead><tbody>"
+    ip_cache = {}
     for log in logs:
-        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{log.get('ip','')}</td></tr>"
+        ip = log.get('ip', '')
+        if ip in ip_cache:
+            data = ip_cache[ip]
+        else:
+            try:
+                resp = requests.get(f"http://ip-api.com/json/{ip}?fields=status,message,city,regionName,country,isp,lat,lon", timeout=2)
+                data = resp.json()
+            except Exception:
+                data = {}
+            ip_cache[ip] = data
+        if data.get("status") == "success":
+            location = f"{data.get('regionName','')}, {data.get('country','')}"
+            isp = data.get('isp', '')
+            latlon = f"{log.get('lat','')},{log.get('lon','')}" if log.get('lat') and log.get('lon') else (f"{data.get('lat','')},{data.get('lon','')}" if data.get("status") == "success" else "")
+        else:
+            location = isp = latlon = ""
+        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{ip}</td><td>{location}</td><td>{isp}</td><td>{latlon}</td></tr>"
     html += "</tbody></table>"
     return HTMLResponse(html)
+
 
 # --- 7. SCHEDULER & FAVICON ---
 

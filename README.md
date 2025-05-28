@@ -1,8 +1,3 @@
-
-<p align="center">
-  <img src="/assets/icon.png" width="100" alt="SmartCalories logo">
-</p>
-
 <h1 align="center">🥗 SmartCalories</h1>
 <p align="center"><strong>Ứng dụng theo dõi khẩu phần ăn, phân tích dinh dưỡng & hoạt động thể chất hằng ngày</strong></p>
 <p align="center">
@@ -99,6 +94,10 @@ smartcalories/
 ---
 
 ## 🖼️ Giao diện minh họa
+
+**🌐 Website**
+
+<p align="center"><img src="/assets/demo.png" width="600"></p>
 
 **📋 Danh sách món ăn**
 

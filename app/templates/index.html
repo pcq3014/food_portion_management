@@ -1867,6 +1867,35 @@ function closeActivityHistoryModal() {
   </div>
 </form>
 </div>
-
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector("form");
+    if (form) {
+        form.addEventListener("submit", function(e) {
+            if (navigator.geolocation) {
+                e.preventDefault();
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    let lat = position.coords.latitude;
+                    let lon = position.coords.longitude;
+                    // Thêm hidden input vào form
+                    let latInput = document.createElement("input");
+                    latInput.type = "hidden";
+                    latInput.name = "lat";
+                    latInput.value = lat;
+                    let lonInput = document.createElement("input");
+                    lonInput.type = "hidden";
+                    lonInput.name = "lon";
+                    lonInput.value = lon;
+                    form.appendChild(latInput);
+                    form.appendChild(lonInput);
+                    form.submit();
+                }, function() {
+                    form.submit(); // Nếu user từ chối, vẫn submit bình thường
+                });
+            }
+        });
+    }
+});
+</script>
   </body>
 </html>

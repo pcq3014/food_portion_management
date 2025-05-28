@@ -25,8 +25,8 @@
         alt="Avatar"
         class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow" />
       <span class="hidden sm:inline text-white font-semibold text-base sm:text-lg truncate max-w-[180px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[600px]">
-  {{ fullname }}
-</span>
+        {{ fullname }}
+      </span>
       <a href="/logout"
         class="bg-white/20 hover:bg-white/40 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-xl font-bold shadow transition flex items-center gap-2 text-base sm:text-lg">
         <span>🚪</span> <span class="hidden xs:inline">Đăng xuất</span>
@@ -178,9 +178,12 @@
     <h3 class="text-lg font-semibold mb-4 text-gray-700">📈 Dinh dưỡng tổng</h3>
     <canvas id="nutritionChart" class="h-64 w-full"></canvas>
   </div>
-  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
-    <h3 class="text-lg font-semibold mb-4 text-gray-700">🥗 Phân bố chất</h3>
-    <canvas id="macroPieChart" class="max-w-full h-64"></canvas>
+<div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
+  <h3 class="text-lg font-semibold mb-4 text-gray-700">🥗 Phân bố chất</h3>
+<div class="flex justify-center items-center w-full" style="min-height:320px;">
+  <canvas id="macroPieChart" width="320" height="320" style="max-width:100%;max-height:320px;"></canvas>
+</div>
+</div>
   </div>
 </div>
         </div>
@@ -313,7 +316,9 @@
       }
     }
   }
+  
 });
+
 </script>
     <!-- Modal Ghi Nhật Ký -->
   <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
@@ -1106,16 +1111,20 @@ function submitGoalsForm(event) {
     document.getElementById('profileEmail').value = userProfile.email || '';
     document.getElementById('profileAvatarFile').value = '';
   }
-document.getElementById('profileAvatarFile').addEventListener('change', function (e) {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function (ev) {
-      document.getElementById('viewAvatar').src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
+  const avatarInput = document.getElementById('profileAvatarFile');
+  if (avatarInput && !avatarInput.dataset.bound) {
+    avatarInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          document.getElementById('viewAvatar').src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    avatarInput.dataset.bound = "1";
   }
-});
   function switchToViewProfile() {
     document.getElementById('profileViewMode').classList.remove('hidden');
     document.getElementById('profileForm').classList.add('hidden');

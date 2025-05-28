@@ -122,17 +122,13 @@ def format_vn_datetime(dt_str):
         return dt_str
     
 # Hàm ghi log đăng nhập bất đồng bộ
-def log_login_async(db, user_fullname, ip, time_str, lat=None, lon=None):
+def log_login_async(db, user_fullname, ip, time_str):
     def task():
         doc = {
             "time": time_str,
             "user": user_fullname,
             "ip": ip
         }
-        if lat is not None and lon is not None:
-            doc["lat"] = lat
-            doc["lon"] = lon
-        db["login_logs"].insert_one(doc)
     threading.Thread(target=task, daemon=True).start()
 
 # --- 3. ROUTES ---
@@ -216,9 +212,7 @@ def login_form(request: Request):
 def login_user(
     request: Request,
     username: str = Form(...),
-    password: str = Form(...),
-    lat: float = Form(None),
-    lon: float = Form(None)
+    password: str = Form(...)
 ):
     user = users_col.find_one({"username": username})
     if not user or not bcrypt.verify(password, user["hashed_password"]):
@@ -266,8 +260,7 @@ def login_user(
         user.get("fullname", ""),
         request.client.host if request.client else "",
         now_vn.strftime("%Y-%m-%d %H:%M:%S"),
-        lat=lat,
-        lon=lon
+
     )
     return response
 reset_tokens = {}
@@ -918,7 +911,7 @@ async def login_log(request: Request, user_id: str = Cookie(None)):
         if data.get("status") == "success":
             location = f"{data.get('regionName','')}, {data.get('country','')}"
             isp = data.get('isp', '')
-            latlon = f"{log.get('lat','')},{log.get('lon','')}" if log.get('lat') and log.get('lon') else (f"{data.get('lat','')},{data.get('lon','')}" if data.get("status") == "success" else "")
+            latlon = f"{data.get('lat','')}, {data.get('lon','')}"
         else:
             location = isp = latlon = ""
         html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{ip}</td><td>{location}</td><td>{isp}</td><td>{latlon}</td></tr>"

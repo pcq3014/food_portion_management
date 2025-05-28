@@ -50,5 +50,34 @@
       <a href="/register" class="text-indigo-600 font-medium hover:underline transition">Đăng ký ngay</a>
     </p>
   </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.querySelector("form");
+    if (form) {
+        form.addEventListener("submit", function(e) {
+            if (navigator.geolocation) {
+                e.preventDefault();
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    let lat = position.coords.latitude;
+                    let lon = position.coords.longitude;
+                    let latInput = document.createElement("input");
+                    latInput.type = "hidden";
+                    latInput.name = "lat";
+                    latInput.value = lat;
+                    let lonInput = document.createElement("input");
+                    lonInput.type = "hidden";
+                    lonInput.name = "lon";
+                    lonInput.value = lon;
+                    form.appendChild(latInput);
+                    form.appendChild(lonInput);
+                    form.submit();
+                }, function() {
+                    form.submit(); 
+                });
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>

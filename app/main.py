@@ -1,41 +1,98 @@
-from fastapi import FastAPI, Request, Form, Cookie, HTTPException, Response, Query, Body
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi import UploadFile, File
-from threading import Lock
-from dotenv import load_dotenv
-import re
+# --- 1. IMPORTS ---
 import os
-from app.database import meals_col, logs_col, users_col, activities_col
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
-from apscheduler.schedulers.background import BackgroundScheduler
-import google.generativeai as genai
-import secrets
-from bson import ObjectId
-import threading
-import pytz
-import csv
+import re
 import io
+import csv
 import json
 import time
-from passlib.hash import bcrypt
+import pytz
+import secrets
+import threading
 from datetime import datetime, timedelta
+from threading import Lock
+
+from fastapi import (
+    FastAPI, Request, Form, Cookie, HTTPException, Response, Query, Body, UploadFile, File
+)
+from fastapi.responses import (
+    HTMLResponse, RedirectResponse, StreamingResponse, FileResponse, JSONResponse
+)
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+
+from dotenv import load_dotenv
+from passlib.hash import bcrypt
+from bson import ObjectId
+from apscheduler.schedulers.background import BackgroundScheduler
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+
 import cloudinary
 import cloudinary.uploader
+import google.generativeai as genai
+
+from app.database import meals_col, logs_col, users_col, activities_col
+
+# --- 2. CONFIG & GLOBALS ---
+
+# Chạy .env để lấy biến môi trường
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# Khởi tạo Cloudinary
+cloudinary.config(
+    cloud_name="df4esejf8",
+    api_key="673739585779132",
+    api_secret="_s-PaBNgEJuBLdtRrRE62gQm4n0"
+)
+
+# Cấu hình email
+conf = ConnectionConfig(
+    MAIL_USERNAME="smartcalories.vn@gmail.com",
+    MAIL_PASSWORD="zpln zcew qcti koba",
+    MAIL_FROM="smartcalories.vn@gmail.com",
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_STARTTLS=True,      
+    MAIL_SSL_TLS=False,     
+    USE_CREDENTIALS=True
+)
+
+# Khởi tạo cache và lock
 chatbot_temp_cache = {}
-
-# Đăng ký
-@app.get("/register")
-def register_form(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
-
 last_register_time = {}
 register_lock = Lock()
+reset_tokens = {}
+
+# Bảng chuyển đổi hoạt động thể chất sang MET
+activity_met_table = {
+    "walking": 3.5,
+    "running": 7.5,
+    "cycling": 6.8,
+    "swimming": 8.0,
+    "yoga": 2.5,
+    "weightlifting": 3.0,
+    "jumping_rope": 10.0,
+}
+
+# Hàm tính toán lượng calo đốt cháy dựa trên MET
+def fix_objectid(obj):
+    if isinstance(obj, list):
+        return [fix_objectid(item) for item in obj]
+    if isinstance(obj, dict):
+        return {k: (str(v) if isinstance(v, ObjectId) else fix_objectid(v)) for k, v in obj.items()}
+    return obj
+
+# Hàm hỗ trợ lấy user hiện tại
+def get_current_user_id(user_id: str = Cookie(None)) -> ObjectId:
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Chưa đăng nhập")
+    return ObjectId(user_id)
+
+# Kiểm tra thao tác quá nhanh
 def is_too_fast(user, action, seconds=3):
     now = time.time()
     last_time = user.get(f"last_{action}_time", 0)
@@ -43,6 +100,44 @@ def is_too_fast(user, action, seconds=3):
         return True
     users_col.update_one({"_id": user["_id"]}, {"$set": {f"last_{action}_time": now}})
     return False
+
+# Hàm tính BMR/TDEE
+def calculate_bmr(weight, height, age, gender):
+    if gender == "male":
+        return 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)
+    else:
+        return 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)
+
+def calculate_tdee(bmr, activity_level=1.55):
+    return float(bmr * activity_level)
+
+# Formatter thời gian Việt Nam
+def format_vn_datetime(dt_str):
+    # dt_str dạng "YYYY-MM-DD HH:MM:SS"
+    try:
+        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+        return dt.strftime("%H:%M %d/%m/%Y")
+    except Exception:
+        return dt_str
+    
+# Hàm ghi log đăng nhập bất đồng bộ
+def log_login_async(db, user_fullname, ip, time_str):
+    def task():
+        db["login_logs"].insert_one({
+            "time": time_str,
+            "user": user_fullname,
+            "ip": ip
+        })
+    threading.Thread(target=task, daemon=True).start()
+
+# --- 3. ROUTES ---
+
+# Route đăng ký
+@app.get("/register")
+def register_form(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+
 @app.post("/register")
 def register_user(
     request: Request,
@@ -106,20 +201,11 @@ def register_user(
 
     return RedirectResponse("/login", status_code=302)
 
-
-# Đăng nhập
+# Route đăng nhập
 @app.get("/login")
 def login_form(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-def log_login_async(db, user_fullname, ip, time_str):
-    def task():
-        db["login_logs"].insert_one({
-            "time": time_str,
-            "user": user_fullname,
-            "ip": ip
-        })
-    threading.Thread(target=task, daemon=True).start()
 
 @app.post("/login")
 def login_user(
@@ -177,6 +263,14 @@ def login_user(
     return response
 reset_tokens = {}
 
+# Route đăng xuất
+@app.get("/logout")
+def logout():
+    response = RedirectResponse("/login", status_code=302)
+    response.delete_cookie("user_id", path="/")
+    return response
+
+# Route quên mật khẩu
 @app.get("/forgot-password", response_class=HTMLResponse)
 def forgot_password_form(request: Request):
     return templates.TemplateResponse("forgot-password.html", {"request": request})
@@ -240,6 +334,7 @@ async def forgot_password_submit(request: Request, email: str = Form(...)):
         {"request": request, "message": message}
     )
 
+# Route đặt lại mật khẩu
 @app.get("/reset-password", response_class=HTMLResponse)
 def reset_password_form(request: Request, token: str = ""):
     info = reset_tokens.get(token)
@@ -278,30 +373,8 @@ def reset_password_submit(
         {"request": request, "message": "Đặt lại mật khẩu thành công, hãy đăng nhập lại!"}
     )
 
-conf = ConnectionConfig(
-    MAIL_USERNAME="smartcalories.vn@gmail.com",
-    MAIL_PASSWORD="zpln zcew qcti koba",
-    MAIL_FROM="smartcalories.vn@gmail.com",
-    MAIL_PORT=587,
-    MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=True,      
-    MAIL_SSL_TLS=False,     
-    USE_CREDENTIALS=True
-)
-
-# Hàm hỗ trợ lấy user hiện tại
-def get_current_user_id(user_id: str = Cookie(None)) -> ObjectId:
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Not logged in")
-    return ObjectId(user_id)
-
-def fix_objectid(obj):
-    if isinstance(obj, list):
-        return [fix_objectid(item) for item in obj]
-    if isinstance(obj, dict):
-        return {k: (str(v) if isinstance(v, ObjectId) else fix_objectid(v)) for k, v in obj.items()}
-    return obj
-
+# --- 4. MAIN PAGE, MEAL CRUD, GOALS, LOG ---
+# Route trang chính
 @app.api_route("/", methods=["GET", "HEAD"], response_class=HTMLResponse)
 async def home(
     request: Request,
@@ -449,113 +522,8 @@ async def home(
         "users": users,
         "activities": activities,
     })
-# tạo favicon
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    return FileResponse("app/static/favicon.ico")
 
-# Các route thêm, sửa, xóa món ăn, ghi nhật ký... giữ nguyên không đổi
-
-activity_met_table = {
-    "walking": 3.5,
-    "running": 7.5,
-    "cycling": 6.8,
-    "swimming": 8.0,
-    "yoga": 2.5,
-    "weightlifting": 3.0,
-    "jumping_rope": 10.0,
-}
-def calculate_burned_calories(weight_kg: float, duration_min: float, met: float) -> float:
-    return round(met * weight_kg * (duration_min / 60.0), 2)
-
-# Hiển thị form nhập hoạt động thể chất
-@app.get("/activity", response_class=HTMLResponse)
-def activity_form(request: Request, user_id: str = Cookie(None)):
-    if not user_id:
-        return RedirectResponse("/login", status_code=302)
-    return templates.TemplateResponse("activity.html", {
-        "request": request,
-        "activities": activity_met_table.keys()
-    })
-
-@app.post("/activity")
-async def add_activity(
-    request: Request,
-    activity: str = Form(...),
-    duration: float = Form(...),
-    user_id: str = Cookie(None)
-):
-    if not user_id:
-        return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
-    user = users_col.find_one({"_id": ObjectId(user_id)})
-    if is_too_fast(user, "activity"):
-        return JSONResponse({"error": "Bạn thao tác quá nhanh, vui lòng thử lại sau."}, status_code=429)
-    if not user:
-        return JSONResponse({"error": "Không tìm thấy user"}, status_code=404)
-    weight = user.get("weight", 60)
-    met = activity_met_table.get(activity)
-    if not met:
-        return JSONResponse({"error": "Hoạt động không hợp lệ"}, status_code=400)
-    calories_burned = calculate_burned_calories(weight, duration, met)
-    vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-    now_vn = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(vn_tz)
-    activities_col.insert_one({
-        "user_id": ObjectId(user_id),
-        "fullname": user.get("fullname", ""), 
-        "activity": activity,
-        "duration": duration,
-        "calories_burned": calories_burned,
-        "timestamp": now_vn.strftime("%Y-%m-%d %H:%M:%S")
-    })
-    return {"success": True, "calories_burned": calories_burned}
-
-@app.get("/activity-history")
-async def activity_history(user_id: str = Cookie(None)):
-    if not user_id:
-        return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
-
-    activities = list(activities_col.find({"user_id": ObjectId(user_id)}).sort("timestamp", -1).limit(30))
-
-    # Sửa toàn bộ ObjectId trong document
-    activities = [fix_objectid(act) for act in activities]
-
-    result = [
-        {
-            "fullname": act.get("fullname", ""),
-            "activity": act.get("activity", ""),
-            "timestamp": format_vn_datetime(act.get("timestamp", "")),
-            "calories_burned": act.get("calories_burned", 0)
-        }
-        for act in activities
-    ]
-    return JSONResponse(result)
-
-def format_vn_datetime(dt_str):
-    # dt_str dạng "YYYY-MM-DD HH:MM:SS"
-    try:
-        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
-        return dt.strftime("%H:%M %d/%m/%Y")
-    except Exception:
-        return dt_str
-
-def format_vn_datetime(dt_str):
-    # dt_str dạng "YYYY-MM-DD HH:MM:SS"
-    try:
-        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
-        return dt.strftime("%H:%M %d/%m/%Y")
-    except Exception:
-        return dt_str
-
-def reset_logs_job():
-    db = meals_col.database
-    db["activity_logs"].delete_many({})
-    db["login_logs"].delete_many({})
-    activities_col.delete_many({}) 
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(reset_logs_job, 'cron', day=1, hour=0, minute=1)
-scheduler.start()
-
+# Route thêm món ăn
 @app.post("/add-meal")
 async def add_meal(
     name: str = Form(...),
@@ -588,7 +556,51 @@ async def add_meal(
     })
     return RedirectResponse(url="/?view=meals", status_code=303)
 
+# Route chỉnh sửa món ăn
+@app.post("/edit-meal/{meal_id}")
+async def update_meal(
+    meal_id: str,
+    name: str = Form(...),
+    calories: float = Form(...),
+    carbs: float = Form(...),
+    protein: float = Form(...),
+    fat: float = Form(...),
+    image_url: str = Form(None)  
+):
+    meals_col.update_one(
+        {"_id": ObjectId(meal_id)},
+        {"$set": {
+            "name": name,
+            "calories": calories,
+            "carbs": carbs,
+            "protein": protein,
+            "fat": fat,
+            "image_url": image_url  
+        }}
+    )
+    return RedirectResponse(url="/?view=meals", status_code=303)
 
+# Route xóa món ăn
+@app.post("/delete-meal/{meal_id}")
+async def delete_meal(meal_id: str, user_id: str = Cookie(None)):
+    if not user_id:
+        return RedirectResponse("/login", status_code=302)
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    fullname = user.get("fullname", "") if user else ""
+    if not user or user.get("role") != "admin":
+        return JSONResponse({"error": "Bạn không có quyền xóa!"}, status_code=403)
+    meal = meals_col.find_one({"_id": ObjectId(meal_id)})  # Lấy thông tin món ăn trước khi xóa
+    meals_col.delete_one({"_id": ObjectId(meal_id)})
+    # Ghi log hoạt động
+    db = meals_col.database
+    db["activity_logs"].insert_one({
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "user": fullname,
+        "action": f"Xóa món ăn: {meal.get('name', '') if meal else meal_id}"
+    })
+    return RedirectResponse(url="/?view=meals", status_code=303)
+
+# Route xem chi tiết món ăn
 @app.post("/log-meal")
 async def log_meal(
     request: Request,
@@ -619,6 +631,7 @@ async def log_meal(
     })
     return RedirectResponse(url="/?view=log", status_code=303)
 
+# Route đặt mục tiêu
 @app.post("/set-goals")
 async def set_goals(
     request: Request,
@@ -698,121 +711,74 @@ async def set_goals(
         "suggested_meals": suggested_by_nutrient
     })
 
-cloudinary.config(
-    cloud_name="df4esejf8",
-    api_key="673739585779132",
-    api_secret="_s-PaBNgEJuBLdtRrRE62gQm4n0"
-)
+# --- 5. ACTIVITY ROUTES ---
 
-@app.post("/edit-meal/{meal_id}")
-async def update_meal(
-    meal_id: str,
-    name: str = Form(...),
-    calories: float = Form(...),
-    carbs: float = Form(...),
-    protein: float = Form(...),
-    fat: float = Form(...),
-    image_url: str = Form(None)  
-):
-    meals_col.update_one(
-        {"_id": ObjectId(meal_id)},
-        {"$set": {
-            "name": name,
-            "calories": calories,
-            "carbs": carbs,
-            "protein": protein,
-            "fat": fat,
-            "image_url": image_url  
-        }}
-    )
-    return RedirectResponse(url="/?view=meals", status_code=303)
-
-@app.post("/delete-meal/{meal_id}")
-async def delete_meal(meal_id: str, user_id: str = Cookie(None)):
+# Route hoạt động thể chất
+@app.get("/activity", response_class=HTMLResponse)
+def activity_form(request: Request, user_id: str = Cookie(None)):
     if not user_id:
         return RedirectResponse("/login", status_code=302)
-    user = users_col.find_one({"_id": ObjectId(user_id)})
-    fullname = user.get("fullname", "") if user else ""
-    if not user or user.get("role") != "admin":
-        return JSONResponse({"error": "Bạn không có quyền xóa!"}, status_code=403)
-    meal = meals_col.find_one({"_id": ObjectId(meal_id)})  # Lấy thông tin món ăn trước khi xóa
-    meals_col.delete_one({"_id": ObjectId(meal_id)})
-    # Ghi log hoạt động
-    db = meals_col.database
-    db["activity_logs"].insert_one({
-        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "user": fullname,
-        "action": f"Xóa món ăn: {meal.get('name', '') if meal else meal_id}"
+    return templates.TemplateResponse("activity.html", {
+        "request": request,
+        "activities": activity_met_table.keys()
     })
-    return RedirectResponse(url="/?view=meals", status_code=303)
 
-# Hàm tính BMR/TDEE
-def calculate_bmr(weight, height, age, gender):
-    if gender == "male":
-        return 88.36 + (13.4 * weight) + (4.8 * height) - (5.7 * age)
-    else:
-        return 447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)
-
-def calculate_tdee(bmr, activity_level=1.55):
-    return float(bmr * activity_level)
-
-# Trang thông tin cá nhân
-@app.post("/profile")
-async def update_profile(
+@app.post("/activity")
+async def add_activity(
     request: Request,
-    height: float = Form(...),
-    weight: float = Form(...),
-    age: float = Form(...),
-    gender: str = Form(...),
-    email: str = Form(...),
-    avatar_file: UploadFile = File(None),
+    activity: str = Form(...),
+    duration: float = Form(...),
     user_id: str = Cookie(None)
 ):
     if not user_id:
-        return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
-
+        return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
     user = users_col.find_one({"_id": ObjectId(user_id)})
-    if users_col.find_one({"email": email, "_id": {"$ne": ObjectId(user_id)}}):
-        return JSONResponse({"success": False, "message": "Email đã được sử dụng!"}, status_code=400)
-
-    avatar_url = ""
-    if avatar_file:
-        # Upload lên Cloudinary
-        result = cloudinary.uploader.upload(await avatar_file.read(), folder="avatars")
-        avatar_url = result["secure_url"]
-
-    update_data = {
-        "height": height,
-        "weight": weight,
-        "age": age,
-        "gender": gender,
-        "email": email
-    }
-    if avatar_url:
-        update_data["avatar_url"] = avatar_url
-
-    users_col.update_one(
-        {"_id": ObjectId(user_id)},
-        {"$set": update_data}
-    )
-
-    bmr = calculate_bmr(weight, height, age, gender)
-    tdee = calculate_tdee(bmr)
-    return JSONResponse({
-        "success": True,
-        "message": "Cập nhật thông tin thành công!",
-        "data": {
-            "height": height,
-            "weight": weight,
-            "age": age,
-            "gender": gender,
-            "email": email,
-            "avatar_url": avatar_url,
-            "bmr": float(bmr),
-            "tdee": float(tdee)
-        }
+    if is_too_fast(user, "activity"):
+        return JSONResponse({"error": "Bạn thao tác quá nhanh, vui lòng thử lại sau."}, status_code=429)
+    if not user:
+        return JSONResponse({"error": "Không tìm thấy user"}, status_code=404)
+    weight = user.get("weight", 60)
+    met = activity_met_table.get(activity)
+    if not met:
+        return JSONResponse({"error": "Hoạt động không hợp lệ"}, status_code=400)
+    calories_burned = calculate_burned_calories(weight, duration, met)
+    vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+    now_vn = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(vn_tz)
+    activities_col.insert_one({
+        "user_id": ObjectId(user_id),
+        "fullname": user.get("fullname", ""), 
+        "activity": activity,
+        "duration": duration,
+        "calories_burned": calories_burned,
+        "timestamp": now_vn.strftime("%Y-%m-%d %H:%M:%S")
     })
+    return {"success": True, "calories_burned": calories_burned}
 
+# Route xem lịch sử hoạt động
+@app.get("/activity-history")
+async def activity_history(user_id: str = Cookie(None)):
+    if not user_id:
+        return JSONResponse({"error": "Chưa đăng nhập"}, status_code=401)
+
+    activities = list(activities_col.find({"user_id": ObjectId(user_id)}).sort("timestamp", -1).limit(30))
+
+    # Sửa toàn bộ ObjectId trong document
+    activities = [fix_objectid(act) for act in activities]
+
+    result = [
+        {
+            "fullname": act.get("fullname", ""),
+            "activity": act.get("activity", ""),
+            "timestamp": format_vn_datetime(act.get("timestamp", "")),
+            "calories_burned": act.get("calories_burned", 0)
+        }
+        for act in activities
+    ]
+    return JSONResponse(result)
+
+# --- 6. ADMIN ROUTES ---
+
+# Route chặn người dùng
 @app.post("/ban-user")
 async def ban_user(
     request: Request,
@@ -841,11 +807,101 @@ async def ban_user(
     else:
         return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không thay đổi"})
 
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Route đổi quyền người dùng
+@app.post("/change-role")
+async def change_role(
+    request: Request,
+    user_id: str = Cookie(None),
+    data: dict = Body(...)
+):
+    # Kiểm tra đăng nhập
+    if not user_id:
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"})
+    admin = users_col.find_one({"_id": ObjectId(user_id)})
+    if not admin or admin.get("role") != "admin":
+        return JSONResponse({"success": False, "message": "Bạn không có quyền"})
+    target_id = data.get("user_id")
+    new_role = data.get("role")
+    if not target_id or not new_role:
+        return JSONResponse({"success": False, "message": "Thiếu thông tin"})
+    if str(target_id) == str(user_id):
+        return JSONResponse({"success": False, "message": "Không thể đổi quyền chính mình!"})
+    user = users_col.find_one({"_id": ObjectId(target_id)})
+    if not user:
+        return JSONResponse({"success": False, "message": "Không tìm thấy user!"})
+    users_col.update_one({"_id": ObjectId(target_id)}, {"$set": {"role": new_role}})
+    return JSONResponse({"success": True, "message": "Đã đổi quyền thành công!"})
 
+# Route xóa người dùng
+@app.post("/delete-user")
+async def delete_user(
+    request: Request,
+    user_id: str = Cookie(None),
+    data: dict = Body(...)
+):
+    # Kiểm tra đăng nhập và quyền admin
+    if not user_id:
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"})
+    admin = users_col.find_one({"_id": ObjectId(user_id)})
+    if not admin or admin.get("role") != "admin":
+        return JSONResponse({"success": False, "message": "Bạn không có quyền"})
+    target_id = data.get("user_id")
+    if not target_id:
+        return JSONResponse({"success": False, "message": "Thiếu user_id"})
+    if str(target_id) == str(user_id):
+        return JSONResponse({"success": False, "message": "Không thể tự xóa chính mình!"})
+    result = users_col.delete_one({"_id": ObjectId(target_id)})
+    if result.deleted_count == 1:
+        return JSONResponse({"success": True, "message": "Đã xóa người dùng thành công!"})
+    else:
+        return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không xóa được!"})
+    
+# Route xem nhật ký hoạt động
+@app.get("/activity-log", response_class=HTMLResponse)
+async def activity_log(request: Request, user_id: str = Cookie(None)):
+    # Chỉ cho admin xem
+    if not user_id:
+        return HTMLResponse("<div class='text-red-500'>Chưa đăng nhập</div>")
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    if not user or user.get("role") != "admin":
+        return HTMLResponse("<div class='text-red-500'>Bạn không có quyền xem nhật ký này</div>")
+    # Lấy database từ một collection bất kỳ
+    db = meals_col.database
+    logs = []
+    if "activity_logs" in db.list_collection_names():
+        logs = list(db["activity_logs"].find().sort("time", -1).limit(50))
+    if not logs:
+        return HTMLResponse("<div class='text-gray-500'>Chưa có nhật ký hoạt động nào.</div>")
+    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th></tr></thead><tbody>"
+    for log in logs:
+        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{log.get('action','')}</td></tr>"
+    html += "</tbody></table>"
+    return HTMLResponse(html)
 
+# Route xem nhật ký đăng nhập
+@app.get("/login-log", response_class=HTMLResponse)
+async def login_log(request: Request, user_id: str = Cookie(None)):
+    # Chỉ cho admin xem
+    if not user_id:
+        return HTMLResponse("<div class='text-red-500'>Chưa đăng nhập</div>")
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    if not user or user.get("role") != "admin":
+        return HTMLResponse("<div class='text-red-500'>Bạn không có quyền xem nhật ký này</div>")
+    db = meals_col.database
+    logs = []
+    if "login_logs" in db.list_collection_names():
+        logs = list(db["login_logs"].find().sort("time", -1).limit(50))
+    if not logs:
+        return HTMLResponse("<div class='text-gray-500'>Chưa có nhật ký đăng nhập nào.</div>")
+    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>IP</th></tr></thead><tbody>"
+    for log in logs:
+        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{log.get('ip','')}</td></tr>"
+    html += "</tbody></table>"
+    return HTMLResponse(html)
 
+# --- 7. SCHEDULER & FAVICON ---
+
+# Route chatbot
 @app.post("/chatbot")
 async def chatbot_endpofloat(request: Request):
     data = await request.json()
@@ -939,8 +995,8 @@ async def chatbot_endpofloat(request: Request):
     except Exception as e:
         prfloat("Gemini fallback error:", e)
         return JSONResponse({"reply": "⚠️ Lỗi không xác định khi gọi Gemini."})
-
-
+    
+# Route xuất CSV nhật ký
 @app.get("/export-csv")
 def export_csv(
     request: Request,
@@ -1011,95 +1067,93 @@ def export_csv(
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
-#Đổi quyền người dùng
-@app.post("/change-role")
-async def change_role(
-    request: Request,
-    user_id: str = Cookie(None),
-    data: dict = Body(...)
-):
-    # Kiểm tra đăng nhập
-    if not user_id:
-        return JSONResponse({"success": False, "message": "Chưa đăng nhập"})
-    admin = users_col.find_one({"_id": ObjectId(user_id)})
-    if not admin or admin.get("role") != "admin":
-        return JSONResponse({"success": False, "message": "Bạn không có quyền"})
-    target_id = data.get("user_id")
-    new_role = data.get("role")
-    if not target_id or not new_role:
-        return JSONResponse({"success": False, "message": "Thiếu thông tin"})
-    if str(target_id) == str(user_id):
-        return JSONResponse({"success": False, "message": "Không thể đổi quyền chính mình!"})
-    user = users_col.find_one({"_id": ObjectId(target_id)})
-    if not user:
-        return JSONResponse({"success": False, "message": "Không tìm thấy user!"})
-    users_col.update_one({"_id": ObjectId(target_id)}, {"$set": {"role": new_role}})
-    return JSONResponse({"success": True, "message": "Đã đổi quyền thành công!"})
+# --- 8. MISC ROUTES ---
 
-@app.post("/delete-user")
-async def delete_user(
-    request: Request,
-    user_id: str = Cookie(None),
-    data: dict = Body(...)
-):
-    # Kiểm tra đăng nhập và quyền admin
-    if not user_id:
-        return JSONResponse({"success": False, "message": "Chưa đăng nhập"})
-    admin = users_col.find_one({"_id": ObjectId(user_id)})
-    if not admin or admin.get("role") != "admin":
-        return JSONResponse({"success": False, "message": "Bạn không có quyền"})
-    target_id = data.get("user_id")
-    if not target_id:
-        return JSONResponse({"success": False, "message": "Thiếu user_id"})
-    if str(target_id) == str(user_id):
-        return JSONResponse({"success": False, "message": "Không thể tự xóa chính mình!"})
-    result = users_col.delete_one({"_id": ObjectId(target_id)})
-    if result.deleted_count == 1:
-        return JSONResponse({"success": True, "message": "Đã xóa người dùng thành công!"})
-    else:
-        return JSONResponse({"success": False, "message": "Không tìm thấy user hoặc không xóa được!"})
+# tạo favicon
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("app/static/favicon.ico")
 
-@app.get("/activity-log", response_class=HTMLResponse)
-async def activity_log(request: Request, user_id: str = Cookie(None)):
-    # Chỉ cho admin xem
-    if not user_id:
-        return HTMLResponse("<div class='text-red-500'>Chưa đăng nhập</div>")
-    user = users_col.find_one({"_id": ObjectId(user_id)})
-    if not user or user.get("role") != "admin":
-        return HTMLResponse("<div class='text-red-500'>Bạn không có quyền xem nhật ký này</div>")
-    # Lấy database từ một collection bất kỳ
+def calculate_burned_calories(weight_kg: float, duration_min: float, met: float) -> float:
+    return round(met * weight_kg * (duration_min / 60.0), 2)
+
+def format_vn_datetime(dt_str):
+    # dt_str dạng "YYYY-MM-DD HH:MM:SS"
+    try:
+        dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+        return dt.strftime("%H:%M %d/%m/%Y")
+    except Exception:
+        return dt_str
+
+def reset_logs_job():
     db = meals_col.database
-    logs = []
-    if "activity_logs" in db.list_collection_names():
-        logs = list(db["activity_logs"].find().sort("time", -1).limit(50))
-    if not logs:
-        return HTMLResponse("<div class='text-gray-500'>Chưa có nhật ký hoạt động nào.</div>")
-    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th></tr></thead><tbody>"
-    for log in logs:
-        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{log.get('action','')}</td></tr>"
-    html += "</tbody></table>"
-    return HTMLResponse(html)
+    db["activity_logs"].delete_many({})
+    db["login_logs"].delete_many({})
+    activities_col.delete_many({}) 
 
-@app.get("/login-log", response_class=HTMLResponse)
-async def login_log(request: Request, user_id: str = Cookie(None)):
-    # Chỉ cho admin xem
+scheduler = BackgroundScheduler()
+scheduler.add_job(reset_logs_job, 'cron', day=1, hour=0, minute=1)
+scheduler.start()
+
+# --- 9. PROFILE & SESSION ROUTES ---
+
+# Trang thông tin cá nhân
+@app.post("/profile")
+async def update_profile(
+    request: Request,
+    height: float = Form(...),
+    weight: float = Form(...),
+    age: float = Form(...),
+    gender: str = Form(...),
+    email: str = Form(...),
+    avatar_file: UploadFile = File(None),
+    user_id: str = Cookie(None)
+):
     if not user_id:
-        return HTMLResponse("<div class='text-red-500'>Chưa đăng nhập</div>")
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
+
     user = users_col.find_one({"_id": ObjectId(user_id)})
-    if not user or user.get("role") != "admin":
-        return HTMLResponse("<div class='text-red-500'>Bạn không có quyền xem nhật ký này</div>")
-    db = meals_col.database
-    logs = []
-    if "login_logs" in db.list_collection_names():
-        logs = list(db["login_logs"].find().sort("time", -1).limit(50))
-    if not logs:
-        return HTMLResponse("<div class='text-gray-500'>Chưa có nhật ký đăng nhập nào.</div>")
-    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>IP</th></tr></thead><tbody>"
-    for log in logs:
-        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{log.get('ip','')}</td></tr>"
-    html += "</tbody></table>"
-    return HTMLResponse(html)
-     
+    if users_col.find_one({"email": email, "_id": {"$ne": ObjectId(user_id)}}):
+        return JSONResponse({"success": False, "message": "Email đã được sử dụng!"}, status_code=400)
+
+    avatar_url = ""
+    if avatar_file:
+        # Upload lên Cloudinary
+        result = cloudinary.uploader.upload(await avatar_file.read(), folder="avatars")
+        avatar_url = result["secure_url"]
+
+    update_data = {
+        "height": height,
+        "weight": weight,
+        "age": age,
+        "gender": gender,
+        "email": email
+    }
+    if avatar_url:
+        update_data["avatar_url"] = avatar_url
+
+    users_col.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_data}
+    )
+
+    bmr = calculate_bmr(weight, height, age, gender)
+    tdee = calculate_tdee(bmr)
+    return JSONResponse({
+        "success": True,
+        "message": "Cập nhật thông tin thành công!",
+        "data": {
+            "height": height,
+            "weight": weight,
+            "age": age,
+            "gender": gender,
+            "email": email,
+            "avatar_url": avatar_url,
+            "bmr": float(bmr),
+            "tdee": float(tdee)
+        }
+    })
+
 # Kiểm tra phiên đăng nhập
 @app.get("/check-session")
 def check_session(user_id: str = Cookie(None), session_token: str = Cookie(None)):
@@ -1120,10 +1174,3 @@ def reset_logs_job():
 scheduler = BackgroundScheduler()
 scheduler.add_job(reset_logs_job, 'cron', hour=0, minute=1)  
 scheduler.start()
-
-# Đăng xuất
-@app.get("/logout")
-def logout():
-    response = RedirectResponse("/login", status_code=302)
-    response.delete_cookie("user_id", path="/")
-    return response

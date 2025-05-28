@@ -178,11 +178,9 @@
     <h3 class="text-lg font-semibold mb-4 text-gray-700">📈 Dinh dưỡng tổng</h3>
     <canvas id="nutritionChart" class="h-64 w-full"></canvas>
   </div>
-<div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition flex flex-col items-center justify-center">
-  <h3 class="text-lg font-semibold mb-4 text-gray-700 w-full">🥗 Phân bố chất</h3>
-  <div class="relative w-full flex flex-col items-center justify-center" style="height:260px;max-width:340px;">
-    <canvas id="macroPieChart" class="!w-full !h-full"></canvas>
-    <div id="macroPieLegend" class="w-full flex justify-center"></div>
+  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
+    <h3 class="text-lg font-semibold mb-4 text-gray-700">🥗 Phân bố chất</h3>
+    <canvas id="macroPieChart" class="max-w-full h-64"></canvas>
   </div>
 </div>
         </div>
@@ -275,7 +273,7 @@
 
 
   // Macro Pie Chart
-const macroPie = new Chart(document.getElementById("macroPieChart"), {
+  new Chart(document.getElementById("macroPieChart"), {
   type: 'doughnut',
   data: {
     labels: ['Protein', 'Carbs', 'Fat'],
@@ -293,10 +291,16 @@ const macroPie = new Chart(document.getElementById("macroPieChart"), {
   },
   options: {
     responsive: true,
-    maintainAspectRatio: false,
     cutout: '65%',
     plugins: {
-      legend: { display: false }, // Ẩn legend mặc định
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          font: { size: 15, weight: 'bold' },
+          color: '#374151'
+        }
+      },
       tooltip: {
         callbacks: {
           label: function(ctx) {
@@ -310,19 +314,7 @@ const macroPie = new Chart(document.getElementById("macroPieChart"), {
     }
   }
 });
-
-// Custom legend
-const legendColors = ['#2563eb', '#ca8a04', '#059669'];
-const legendLabels = ['Protein', 'Carbs', 'Fat'];
-const legendDiv = document.getElementById('macroPieLegend');
-legendDiv.innerHTML = legendLabels.map((label, i) => `
-  <span class="flex items-center mx-2 text-base font-semibold">
-    <span style="display:inline-block;width:18px;height:18px;background:${legendColors[i]};border-radius:4px;margin-right:6px;"></span>
-    ${label}
-  </span>
-`).join('');
 </script>
-
     <!-- Modal Ghi Nhật Ký -->
   <div id="logMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
     <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
@@ -560,25 +552,6 @@ legendDiv.innerHTML = legendLabels.map((label, i) => `
 </script>
 <!-- Chatbot Floating Button & Modal -->
 <style>
-#macroPieChart {
-  max-width: 420px;
-  max-height: 320px;
-}
-#macroPieLegend {
-  margin-top: 16px;
-  flex-wrap: wrap;
-  gap: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-@media (max-width: 600px) {
-  #macroPieLegend {
-    margin-top: 10px !important;
-    gap: 6px;
-    font-size: 14px;
-  }
-}
 #chatbot-float-btn {
   position: fixed;
   bottom: 28px;
@@ -985,21 +958,21 @@ chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
   }
 
   window.onload = () => {
-  const params = new URLSearchParams(window.location.search);
-  const view = params.get("view");
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get("view");
 
-  document.getElementById("mealsView").classList.add("hidden");
-  document.getElementById("logView").classList.add("hidden");
-  //document.getElementById("welcomeView").classList.add("hidden");
+    document.getElementById("mealsView").classList.add("hidden");
+    document.getElementById("logView").classList.add("hidden");
+    document.getElementById("welcomeView").classList.add("hidden");
 
-  if (view === "log") {
-    switchView("log");
-  } else if (view === "meals") {
-    switchView("meals");
-  } else {
-    document.getElementById("welcomeView").classList.remove("hidden");
-  }
-};
+    if (view === "log") {
+      switchView("log");
+    } else if (view === "meals") {
+      switchView("meals");
+    } else {
+      document.getElementById("welcomeView").classList.remove("hidden");
+    }
+  };
 </script>
 <script>
 function submitGoalsForm(event) {

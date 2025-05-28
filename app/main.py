@@ -216,7 +216,9 @@ def login_form(request: Request):
 def login_user(
     request: Request,
     username: str = Form(...),
-    password: str = Form(...)
+    password: str = Form(...),
+    lat: float = Form(None),
+    lon: float = Form(None)
 ):
     user = users_col.find_one({"username": username})
     if not user or not bcrypt.verify(password, user["hashed_password"]):

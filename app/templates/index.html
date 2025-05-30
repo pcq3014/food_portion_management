@@ -2,33 +2,62 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Nhật Ký Ăn Uống</title>
+  <title>SmartCalories - Nhật Ký Ăn Uống</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="/static/logo.png" type="image/png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Quicksand -->
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Quicksand', 'Segoe UI', Arial, sans-serif; }
+    .glass {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.12);
+    }
+    .header-gradient {
+      background: linear-gradient(90deg, #fbc3bc);
+    }
+    .header-shadow {
+      box-shadow: 0 4px 24px 0 rgba(96,165,250,0.10);
+    }
+    .header-logo {
+      box-shadow: 0 2px 8px #60a5fa33;
+      border: 3px solid #fff;
+    }
+    .header-btn {
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .header-btn:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 4px 16px #60a5fa33;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 font-sans">
-<header class="relative flex flex-col items-center px-2 md:px-8 py-2 md:py-4 bg-[#fbc3bc] shadow-lg sticky top-0 z-40">
+<body class="bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 min-h-screen text-gray-800">
+<header class="header-gradient header-shadow relative flex flex-col items-center px-2 md:px-8 py-3 md:py-5 sticky top-0 z-40 glass">
   <button id="sidebarToggleBtn"
     class="md:hidden text-white text-4xl absolute top-7 left-3 ml-2"
     onclick="toggleSidebar()">☰</button>
   <div class="flex flex-col w-full md:flex-row md:items-center md:justify-between">
-    <div class="flex items-center gap-2 md:gap-4 justify-center md:justify-start w-full md:w-auto">
-      <img src="/static/logo.png" class="block w-10 h-10 sm:w-12 sm:h-12 rounded-full border-4 border-white shadow" alt="Logo" />
+    <div class="flex items-center gap-3 md:gap-5 justify-center md:justify-start w-full md:w-auto">
+      <img src="/static/logo.png" class="header-logo block w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white" alt="Logo" />
       <button onclick="goHome()"
-        class="text-3xl sm:text-5xl font-extrabold text-white tracking-wide focus:outline-none">
-        SmartCalories
+        class="text-3xl sm:text-5xl font-extrabold text-white tracking-wide focus:outline-none drop-shadow-lg hover:scale-105 transition-all duration-200">
+        <span class="bg-gradient-to-r from-blue-500 to-pink-400 bg-clip-text text-transparent">SmartCalories</span>
       </button>
     </div>
     <div class="flex items-center gap-2 sm:gap-4 justify-center md:justify-end mt-2 md:mt-0 w-full md:w-auto">
       <img src="{{ user.avatar_url or '/static/default-avatar.png' }}"
         alt="Avatar"
-        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow" />
-      <span class="hidden sm:inline text-white font-semibold text-base sm:text-lg truncate max-w-[180px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[600px]">
+        class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white shadow-lg ring-2 ring-blue-300" />
+      <span class="hidden sm:inline text-white font-semibold text-base sm:text-lg truncate max-w-[180px] sm:max-w-[320px] md:max-w-[400px] lg:max-w-[600px] drop-shadow">
         {{ fullname }}
       </span>
       <a href="/logout"
-        class="bg-white/20 hover:bg-white/40 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-xl font-bold shadow transition flex items-center gap-2 text-base sm:text-lg">
+        class="header-btn bg-white/30 hover:bg-white/60 text-blue-700 px-4 sm:px-5 py-2 rounded-xl font-bold shadow transition flex items-center gap-2 text-base sm:text-lg border border-blue-200">
         <span>🚪</span> <span class="hidden xs:inline">Đăng xuất</span>
       </a>
     </div>
@@ -37,64 +66,85 @@
   <!-- Dashboard layout -->
   <main class="flex flex-col md:flex-row h-auto md:h-[calc(100vh-80px)] transition-all duration-300 ease-in-out">
     <!-- Sidebar -->
-<aside id="sidebar" class="w-full md:w-64 bg-[#fbc3bc] text-gray-800 p-4 space-y-2 shadow-lg fixed md:static top-0 left-0 h-screen md:h-auto z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
-      style="max-width:100vw;">
-  <div class="relative w-full">
-    <button id="sidebarToggleBtn" class="md:hidden mb-4 mt-2 text-white text-4xl absolute right-4 top-0 z-20" onclick="toggleSidebar()">☰</button>
-  </div>
-  <nav class="flex flex-col gap-1 pt-12">
+<aside id="sidebar"
+  class="w-full md:w-64 bg-gradient-to-b from-[#fbc3bc] via-blue-100 to-blue-50 text-gray-800 p-4 space-y-2 shadow-2xl fixed md:static top-0 left-0 h-screen md:h-auto z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out rounded-r-3xl md:rounded-none border-r-2 border-blue-200"
+  style="max-width:100vw;">
+<div class="relative w-full flex items-center justify-between px-2">
+<!-- Nút chỉ hiển thị ở desktop -->
+<button
+  id="sidebarCollapseBtn"
+  class="hidden md:flex absolute top-4 right-[-1.25rem] z-50 w-10 h-10 bg-white border border-pink-200 text-pink-600 rounded-full shadow-md items-center justify-center hover:bg-pink-100 transition"
+  onclick="toggleSidebarCollapse()"
+  title="Thu gọn/mở rộng sidebar"
+>
+  <svg id="sidebarToggleIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+  </svg>
+</button>
+
+  <!-- Giữ nguyên cho mobile -->
+<button
+  id="sidebarMobileBtn"
+  class="md:hidden mb-4 mt-2 text-pink-600 text-4xl absolute right-4 top-0 z-20"
+  onclick="toggleSidebar()"
+>
+  ☰
+</button>
+</div>
+  <nav class="flex flex-col gap-2 pt-12">
     <button onclick="switchView('meals')" id="btn-meals"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-      📋 <span>Danh sách món</span>
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">📋</span> <span class="sidebar-text">Danh sách món</span>
     </button>
     {% if user.role != 'admin' %}
     <button onclick="switchView('log')" id="btn-log"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-      📖 <span>Nhật ký & Phân tích</span>
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">📖</span> <span class="sidebar-text">Nhật ký & Phân tích</span>
     </button>
-<button onclick="openSuggestModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-  🥗 <span>Gợi ý món ăn</span>
-</button>
-<button onclick="openLogMealModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-  📝 <span>Ghi nhật ký</span>
-</button>
-    <button onclick="openAddMealModal()" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-      ➕ <span>Thêm món ăn</span>
+    <button onclick="openSuggestModal()"
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">🥗</span> <span class="sidebar-text">Gợi ý món ăn</span>
     </button>
-<button onclick="openActivityModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-  🏃 <span>Hoạt động thể chất</span>
-</button>
-{% endif %}
+    <button onclick="openLogMealModal()"
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">📝</span> <span class="sidebar-text">Ghi nhật ký</span>
+    </button>
+    <button onclick="openAddMealModal()" class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">➕</span> <span class="sidebar-text">Thêm món ăn</span>
+    </button>
+    <button onclick="openActivityModal()"
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">🏃</span> <span class="sidebar-text">Hoạt động thể chất</span>
+    </button>
+    {% endif %}
     <button onclick="openProfileModal()"
-  class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-  👤 <span>Thông tin cá nhân</span>
-</button>
-{% if user.role == 'admin' %}
-    <button onclick="openUserModal()"
-      class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-      👥 <span>Quản lý người dùng</span>
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">👤</span> <span class="sidebar-text">Thông tin cá nhân</span>
     </button>
-  <button onclick="openActivityLogModal()"
-    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-    📜 <span>Nhật ký hoạt động</span>
-  </button>
-  <button onclick="openLoginLogModal()"
-    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none">
-    🔑 <span>Xem đăng nhập</span>
-  </button>
-{% endif %}
+    {% if user.role == 'admin' %}
+    <button onclick="openUserModal()"
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">👥</span> <span class="sidebar-text">Quản lý người dùng</span>
+    </button>
+    <button onclick="openActivityLogModal()"
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">📜</span> <span class="sidebar-text">Nhật ký hoạt động</span>
+    </button>
+    <button onclick="openLoginLogModal()"
+      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
+      <span class="text-2xl">🔑</span> <span class="sidebar-text">Xem đăng nhập</span>
+    </button>
+    {% endif %}
     <div class="relative group">
-  <button class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium focus:outline-none w-full">
-    📤 <span>Xuất CSV</span>
-  </button>
-  <div class="absolute left-0 mt-1 hidden group-hover:block bg-white text-gray-800 shadow-lg rounded-lg overflow-hidden z-10 w-48">
-    <a href="/export-csv?mode=today" class="block px-4 py-2 hover:bg-blue-100">📆 Xuất hôm nay</a>
-    <a href="/export-csv?mode=all" class="block px-4 py-2 hover:bg-blue-100">📦 Xuất tất cả</a>
-  </div>
-</div>
+      <button class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none w-full">
+        <span class="text-2xl">📤</span> <span class="sidebar-text">Xuất CSV</span>
+      </button>
+      <div class="absolute left-0 mt-1 hidden group-hover:block bg-white text-gray-800 shadow-lg rounded-lg overflow-hidden z-10 w-48">
+        <a href="/export-csv?mode=today" class="block px-4 py-2 hover:bg-blue-100">📆 Xuất hôm nay</a>
+        <a href="/export-csv?mode=all" class="block px-4 py-2 hover:bg-blue-100">📦 Xuất tất cả</a>
+      </div>
+    </div>
   </nav>
 </aside>
  <!-- Lớp phủ cho thanh bên trên thiết bị di động -->
@@ -682,17 +732,134 @@
     .sm\:px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
   }
 @media (max-width: 900px) {
-  header {
-    max-width: 100vw !important;
-    min-width: 0 !important;
+  header .flex.items-center.gap-2,
+  header .flex.items-center.gap-4 {
+    gap: 0.5rem !important;
   }
-  header .max-w-xs,
-  header .max-w-md,
-  header .max-w-lg,
-  header .max-w-xl,
-  header .max-w-2xl {
-    max-width: 100vw !important;
+  header span.truncate {
+    max-width: 100px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: middle;
   }
+}
+@media (max-width: 768px) {
+  header .flex.items-center.gap-2,
+  header .flex.items-center.gap-4 {
+    gap: 0.25rem !important;
+  }
+  header span.truncate {
+    max-width: 70px !important;
+  }
+}
+#sidebar {
+  background: linear-gradient(to bottom, #fbc3bc) !important;
+  border-right: 2px solid #f9a8d4 !important;
+  padding: 1rem 0.5rem;
+  box-shadow: 2px 0 8px rgba(249, 168, 212, 0.2);
+  position: relative;
+}
+
+#sidebar {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #fbcfe8 transparent;
+}
+#sidebar {
+  transition: width 0.35s cubic-bezier(.4,0,.2,1), padding 0.35s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
+}
+.sidebar-text {
+  transition: opacity 0.2s, width 0.2s;
+}
+#sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+#sidebar::-webkit-scrollbar-thumb {
+  background-color: #fbcfe8;
+  border-radius: 4px;
+}
+
+.sidebar-btn {
+  background: #fcd5ce !important;
+  color: #9d174d !important;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(252, 213, 206, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-btn:hover,
+.sidebar-btn:focus {
+  background: #ffe4e6 !important;
+  color: #be185d !important;
+  box-shadow: 0 4px 12px rgba(252, 213, 206, 0.7);
+  transform: translateY(-1px);
+}
+
+.sidebar-btn.active,
+.sidebar-btn.bg-white {
+  background: #fff !important;
+  color: #be185d !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 10px rgba(249, 168, 212, 0.6);
+  border-left: 4px solid #f472b6;
+}
+
+.sidebar-text {
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+#sidebar.collapsed {
+  width: 4rem !important;
+  padding: 0.5rem 0.25rem !important;
+  overflow: hidden !important;
+  box-shadow: none;
+}
+
+#sidebar.collapsed .sidebar-text {
+  display: none !important;
+}
+
+#sidebar.collapsed .sidebar-btn {
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+}
+#sidebarCollapseBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem; /* Đặt nút nằm trong sidebar */
+  z-index: 50;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #fff;
+  color: #ec4899;
+  border: 2px solid #fbcfe8;
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px rgba(249, 168, 212, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(.4,0,.2,1); /* Thêm hiệu ứng mượt */
+}
+#sidebarCollapseBtn:hover {
+  background: #fcd5ce;
+  color: #be185d;
+  box-shadow: 0 4px 10px rgba(249, 168, 212, 0.8);
+  border-color: #f472b6;
+  transform: scale(1.07);
 }
 </style>
 {% if user.role != 'admin' %}
@@ -821,12 +988,6 @@ chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 </script>
 {% endif %}
 <style>
-.sidebar.collapsed > *:not(#sidebarToggleBtn):not(.w-full) {
-  display: none !important;
-}
-.sidebar.collapsed .w-full > *:not(img) {
-  display: none !important;
-}
 .sidebar.collapsed .w-full img {
   width: 2.5rem !important;
   height: 2.5rem !important;
@@ -836,9 +997,6 @@ chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
   padding-left: 0.5rem !important;
   padding-right: 0.5rem !important;
   overflow: hidden !important;
-}
-.sidebar.collapsed nav {
-  display: none !important;
 }
 .sidebar.collapsed button[onclick*="toggleSidebar"] {
   left: 40px !important;
@@ -872,13 +1030,6 @@ chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
-.sidebar.collapsed .w-full > *:not(img) {
-  display: none !important;
-}
-.sidebar.collapsed .w-full img {
-  width: 2.5rem !important;
-  height: 2.5rem !important;
-}
 .sidebar.collapsed {
   width: 4rem !important;
   padding-left: 0.5rem !important;
@@ -890,10 +1041,13 @@ chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 }
 
 #sidebar.collapsed {
-  width: 4rem;
+  width: 4rem !important;
+  padding: 0.5rem 0.25rem !important;
+  overflow: hidden !important;
+  box-shadow: none;
 }
 #sidebar.collapsed .sidebar-text {
-  display: none;
+  display: none !important;
 }
   .sidebar-btn {
     @apply flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium transition-all duration-200 ease-in-out hover:bg-blue-500/50 focus:outline-none;
@@ -1538,6 +1692,7 @@ document.getElementById('confirmDeleteUserBtn').onclick = function() {
     .sm\:px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
   }
 @media (max-width: 767px) {
+  #sidebarCollapseBtn { display: none !important; }
   header > div > div:first-child {
     margin-bottom: 8px;
   }
@@ -1806,6 +1961,16 @@ data.forEach(act => {
 function closeActivityHistoryModal() {
   document.getElementById('activityHistoryModal').classList.add('hidden');
 }
+function toggleSidebarCollapse() {
+  const sidebar = document.getElementById('sidebar');
+  const icon = document.getElementById('sidebarToggleIcon');
+  sidebar.classList.toggle('collapsed');
+  icon.innerHTML = sidebar.classList.contains('collapsed')
+    ? `<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />`
+    : `<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />`;
+}
+
+
 </script>
 <!-- Modal Thông tin cá nhân -->
 <div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">

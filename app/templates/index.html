@@ -177,11 +177,14 @@
 </ul>
     <div class="mt-4 flex gap-3">
   {% if user.role == 'admin' %}
-    <button class="editMealBtn text-blue-600"
-        data-id="{{ meal._id }}"
-        data-name="{{ meal.name }}"
-        data-calories="{{ meal.calories }}"
-        data-date="{{ meal.date }}">
+<button class="editMealBtn text-blue-600"
+    data-id="{{ meal._id }}"
+    data-name="{{ meal.name }}"
+    data-calories="{{ meal.calories }}"
+    data-protein="{{ meal.protein }}"
+    data-carbs="{{ meal.carbs }}"
+    data-fat="{{ meal.fat }}"
+    data-image-url="{{ meal.image_url }}">
     ✏️ Sửa
 </button>
     <button onclick="openModal('{{ meal._id }}')" class="text-red-600">🗑️ Xoá</button>
@@ -403,7 +406,7 @@
   <div id="addMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
   <div class="bg-white p-0 sm:p-0 rounded-3xl shadow-2xl w-full max-w-xl relative overflow-hidden">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-400 to-pink-300 px-8 py-5 flex items-center gap-3 rounded-t-3xl border-b border-blue-100">
+    <div class="bg-[#fbc3bc] px-6 py-4 flex items-center justify-between border-b border-blue-200">
       <span class="text-3xl">🍽️</span>
       <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wide flex-1">Thêm món ăn mới</h2>
       <button type="button" onclick="closeAddMealModal()" class="text-3xl text-white hover:text-red-200 font-bold transition">&times;</button>
@@ -455,47 +458,56 @@
       document.getElementById('addMealModal').classList.add('hidden');
     }
   </script>
-  <!-- Modal sửa món ăn -->
-  <div id="editMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
-      <h2 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
-        <span>✏️</span> Sửa món ăn
+<!-- Modal Sửa Món Ăn -->
+<div id="editMealModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
+  <div class="bg-white rounded-3xl shadow-xl w-full max-w-xl overflow-hidden border border-blue-100">
+    <div class="bg-[#fbc3bc] px-6 py-4 flex items-center justify-between border-b border-blue-200">
+      <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+        ✏️ Sửa món ăn
       </h2>
-      <form id="editMealForm" method="POST" class="space-y-3">
-        <input type="hidden" name="meal_id" id="editMealId" />
-        <div>
-          <label for="editName" class="block mb-1 font-medium text-gray-700">Tên món</label>
-          <input type="text" id="editName" name="name" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required />
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="editCalories" class="block mb-1 font-medium text-gray-700">Calories</label>
-            <input type="number" id="editCalories" name="calories" step="any" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required />
-          </div>
-          <div>
-            <label for="editProtein" class="block mb-1 font-medium text-gray-700">Protein (g)</label>
-            <input type="number" id="editProtein" name="protein" step="any" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required />
-          </div>
-          <div>
-            <label for="editCarbs" class="block mb-1 font-medium text-gray-700">Carbs (g)</label>
-            <input type="number" id="editCarbs" name="carbs" step="any" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required />
-          </div>
-          <div>
-            <label for="editFat" class="block mb-1 font-medium text-gray-700">Fat (g)</label>
-            <input type="number" id="editFat" name="fat" step="any" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required />
-          </div>
-        </div>
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="closeEditMealModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
-          <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Lưu</button>
-        </div>
-        <div>
-  <label for="editImageUrl" class="block mb-1 font-medium text-gray-700">Link ảnh (tuỳ chọn)</label>
-  <input type="url" id="editImageUrl" name="image_url" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-</div>
-      </form>
+      <button type="button" onclick="closeEditMealModal()" class="text-2xl font-bold text-gray-700 hover:text-red-500 transition">&times;</button>
     </div>
+    <form id="editMealForm" method="POST" class="bg-blue-50 p-6 space-y-6">
+      <input type="hidden" name="meal_id" id="editMealId" />
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="editName" class="block mb-1 font-semibold text-gray-700">Tên món *</label>
+          <input name="name" id="editName" class="w-full border border-blue-200 p-3 rounded-lg bg-white focus:ring-2 focus:ring-blue-300" required>
+        </div>
+        <div>
+          <label for="editImageUrl" class="block mb-1 font-semibold text-gray-700">Link ảnh (tuỳ chọn)</label>
+          <input name="image_url" id="editImageUrl" type="url" class="w-full border border-pink-200 p-3 rounded-lg bg-white focus:ring-2 focus:ring-pink-300">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div>
+          <label for="editCalories" class="block mb-1 font-medium text-gray-700">Calories *</label>
+          <input type="number" step="any" id="editCalories" name="calories" class="w-full border border-blue-200 p-2 rounded-lg bg-white focus:ring-2 focus:ring-blue-300" required>
+        </div>
+        <div>
+          <label for="editProtein" class="block mb-1 font-medium text-gray-700">Protein *</label>
+          <input type="number" step="any" id="editProtein" name="protein" class="w-full border border-blue-200 p-2 rounded-lg bg-white focus:ring-2 focus:ring-blue-300" required>
+        </div>
+        <div>
+          <label for="editCarbs" class="block mb-1 font-medium text-gray-700">Carbs *</label>
+          <input type="number" step="any" id="editCarbs" name="carbs" class="w-full border border-blue-200 p-2 rounded-lg bg-white focus:ring-2 focus:ring-blue-300" required>
+        </div>
+        <div>
+          <label for="editFat" class="block mb-1 font-medium text-gray-700">Fat *</label>
+          <input type="number" step="any" id="editFat" name="fat" class="w-full border border-blue-200 p-2 rounded-lg bg-white focus:ring-2 focus:ring-blue-300" required>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="closeEditMealModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold">Huỷ</button>
+        <button type="submit" class="bg-[#fbc3bc] px-6 py-4 flex items-center hover:bg-pink-300 text-white px-6 py-2 rounded-lg font-bold shadow">Lưu</button>
+      </div>
+    </form>
   </div>
+</div>
+
   <script>
     function openEditMealModal(meal) {
       document.getElementById('editMealId').value = meal._id;
@@ -510,10 +522,18 @@
     }
     document.querySelectorAll('.editMealBtn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const meal = JSON.parse(btn.dataset.meal);
-        openEditMealModal(meal);
-      });
-    });
+        const meal = {
+          _id: btn.dataset.id,
+          name: btn.dataset.name,
+          calories: btn.dataset.calories,
+          protein: btn.dataset.protein,
+          carbs: btn.dataset.carbs,
+          fat: btn.dataset.fat,
+          image_url: btn.dataset.imageUrl || ""
+    };
+    openEditMealModal(meal);
+  });
+});
     function closeEditMealModal() {
       document.getElementById('editMealModal').classList.add('hidden');
     }

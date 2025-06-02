@@ -1367,16 +1367,16 @@ function submitGoalsForm(event) {
 <!-- Modal Quản lý người dùng (chỉ admin) đặt trước </body> -->
 {% if user.role == 'admin' %}
 <div id="userModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col border-[4px] border-[#fbc3bc]">
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-blue-700 flex items-center gap-2">
+      <h2 class="text-2xl font-bold text-[#fbc3bc] flex items-center gap-2">
         👥 Danh sách người dùng
       </h2>
-      <button onclick="closeUserModal()" class="text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
+      <button onclick="closeUserModal()" class="text-[#fbc3bc] hover:text-red-400 text-3xl font-bold">&times;</button>
     </div>
-    <div class="overflow-y-auto max-h-[70vh] scrollbar-thin scrollbar-thumb-rounded" style="scrollbar-color: #60a5fa #f3f4f6;">
-  <table class="min-w-full text-base">
-        <thead class="bg-gradient-to-r from-blue-600 to-blue-400 text-white font-semibold">
+    <div class="overflow-y-auto max-h-[70vh] scrollbar-thin scrollbar-thumb-rounded" style="scrollbar-color: #fbc3bc #f3f4f6;">
+      <table class="min-w-full text-base">
+        <thead class="bg-[#fbc3bc] text-white font-semibold">
           <tr>
             <th class="p-3 text-center">Avatar</th>
             <th class="p-3 text-left">Tên</th>
@@ -1388,47 +1388,47 @@ function submitGoalsForm(event) {
         </thead>
         <tbody>
           {% for u in users %}
-          <tr class="even:bg-blue-50 odd:bg-white hover:bg-blue-100 transition">
+          <tr class="even:bg-[#fff7f6] odd:bg-white hover:bg-[#ffe2dd] transition">
             <td class="p-3 text-center">
-              <img src="{{ u.avatar_url or '/static/default-avatar.png' }}" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-blue-300 mx-auto shadow" />
+              <img src="{{ u.avatar_url or '/static/default-avatar.png' }}" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-[#fbc3bc] mx-auto shadow" />
             </td>
-            <td class="p-3 font-semibold text-blue-800">{{ u.fullname }}</td>
-            <td class="p-3 text-gray-700">{{ u.email }}</td>
+            <td class="p-3 font-semibold text-gray-800">{{ u.fullname }}</td>
+            <td class="p-3 text-gray-600">{{ u.email }}</td>
             <td class="p-3 text-center">
               {% if u.role == 'admin' %}
-                <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded font-bold text-xs">Admin</span>
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-xs">Admin</span>
               {% else %}
-                <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-xs">User</span>
+              <span class="border border-[#fbc3bc] text-[#fbc3bc] px-2 py-1 rounded font-bold text-xs">User</span>
               {% endif %}
             </td>
             <td class="p-3 text-center">
               {% if u.is_banned %}
-                <span class="bg-red-100 text-red-600 px-2 py-1 rounded font-bold text-xs">Banned</span>
+              <span class="bg-red-100 text-red-600 px-2 py-1 rounded font-bold text-xs">Banned</span>
               {% else %}
-                <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-xs">Active</span>
+              <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-bold text-xs">Active</span>
               {% endif %}
             </td>
             <td class="p-3 text-center">
-  <div class="flex justify-center gap-3">
-    {% if u.is_banned %}
-      <button onclick="toggleBan('{{ u._id }}', false)" class="bg-green-500 hover:bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Unban">
-        <span class="text-xl">🔓</span>
-      </button>
-    {% else %}
-      <button onclick="toggleBan('{{ u._id }}', true)" class="bg-red-500 hover:bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Ban">
-        <span class="text-xl">🔒</span>
-      </button>
-    {% endif %}
-    {% if u._id != user._id %}
-      <button onclick="toggleRole('{{ u._id }}', '{{ u.role }}')" class="bg-yellow-400 hover:bg-yellow-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Đổi quyền">
-        <span class="text-xl">🔄</span>
-      </button>
-      <button onclick="confirmDeleteUser('{{ u._id }}')" class="bg-red-400 hover:bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Xóa người dùng">
-        <span class="text-xl">🗑️</span>
-      </button>
-    {% endif %}
-  </div>
-</td>
+              <div class="flex justify-center gap-3">
+                {% if u.is_banned %}
+                <button onclick="toggleBan('{{ u._id }}', false)" class="bg-[#fbc3bc] hover:opacity-80 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Unban">
+                  🔓
+                </button>
+                {% else %}
+                <button onclick="toggleBan('{{ u._id }}', true)" class="bg-[#fbc3bc] hover:opacity-80 text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Ban">
+                  🔒
+                </button>
+                {% endif %}
+                {% if u._id != user._id %}
+                <button onclick="toggleRole('{{ u._id }}', '{{ u.role }}')" class="border border-[#fbc3bc] text-[#fbc3bc] bg-white hover:bg-[#fbc3bc] hover:text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Đổi quyền">
+                  🔄
+                </button>
+                <button onclick="confirmDeleteUser('{{ u._id }}')" class="border border-red-400 text-red-400 bg-white hover:bg-red-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center shadow transition" title="Xóa người dùng">
+                  🗑️
+                </button>
+                {% endif %}
+              </div>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -1812,38 +1812,49 @@ document.querySelectorAll('#sidebar nav button').forEach(btn => {
 </script>
 <!-- Modal nhật ký hoạt động -->
 <div id="activityLogModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-8 flex flex-col animate-fade-in">
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold text-blue-700 flex items-center gap-2">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden border-[3px] border-[#fbc3bc] animate-fade-in">
+    <div class="flex justify-between items-center bg-[#fbc3bc] px-6 py-4 border-b border-[#fbc3bc]">
+      <h2 class="text-xl font-semibold text-white flex items-center gap-2">
         📜 Nhật ký hoạt động
       </h2>
-      <button onclick="closeActivityLogModal()" class="text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
+      <button onclick="closeActivityLogModal()" class="text-white hover:text-red-200 text-3xl font-bold leading-none">
+        &times;
+      </button>
     </div>
-    <div id="activityLogContent" class="text-gray-700 text-base min-h-[200px] overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-rounded" style="scrollbar-color: #60a5fa #f3f4f6;">
-  <div class="flex justify-center items-center h-32 text-gray-400">Đang tải...</div>
-</div>
-  </div>
-</div>
-<!-- Modal nhật ký đăng nhập -->
-<div id="loginLogModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
-    <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
-      <h2 class="text-2xl font-bold text-green-700 flex items-center gap-2">
-        🔑 Nhật ký đăng nhập
-      </h2>
-      <button onclick="closeLoginLogModal()" class="text-gray-500 hover:text-red-500 text-3xl font-bold leading-none">&times;</button>
-    </div>
-    <div id="loginLogContent" class="flex-1 text-gray-700 text-base overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-green-400 scrollbar-track-gray-100">
+    <div id="activityLogContent" class="flex-1 text-gray-800 text-sm overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-[#fbc3bc] scrollbar-track-gray-100">
       <div class="flex justify-center items-center h-32 text-gray-400 animate-pulse">
-        <svg class="w-6 h-6 mr-2 animate-spin text-green-500" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        <svg class="w-5 h-5 mr-2 animate-spin text-[#fbc3bc]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
         </svg>
         Đang tải...
       </div>
     </div>
   </div>
 </div>
+<!-- Modal nhật ký đăng nhập -->
+<div id="loginLogModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden border-[3px] border-[#a0e7a0] animate-fade-in">
+    <div class="flex justify-between items-center bg-[#a0e7a0] px-6 py-4">
+      <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+        🔑 Nhật ký đăng nhập
+      </h2>
+      <button onclick="closeLoginLogModal()" class="text-white hover:text-red-200 text-3xl font-bold leading-none">
+        &times;
+      </button>
+    </div>
+    <div id="loginLogContent" class="flex-1 text-gray-800 text-sm overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-[#a0e7a0] scrollbar-track-gray-100">
+      <div class="flex justify-center items-center h-32 text-gray-400 animate-pulse">
+        <svg class="w-5 h-5 mr-2 animate-spin text-[#4caf50]" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+        </svg>
+        Đang tải...
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 function openActivityLogModal() {
   document.getElementById('activityLogModal').classList.remove('hidden');

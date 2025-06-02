@@ -401,44 +401,52 @@
   </script>
   <!-- Modal Thêm Món Ăn -->
   <div id="addMealModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">
-    <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-md space-y-4">
-      <h2 class="text-2xl font-bold text-blue-600 flex items-center gap-2">
-        <span>➕</span> Thêm món ăn
-      </h2>
-      <form action="/add-meal" method="POST" class="space-y-3">
-        <div>
-          <label for="addName" class="block mb-1 font-medium text-gray-700">Tên món</label>
-          <input name="name" id="addName" placeholder="Tên món ăn" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="addCalories" class="block mb-1 font-medium text-gray-700">Calories</label>
-            <input name="calories" id="addCalories" type="number" step="any" placeholder="Calories" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
-          </div>
-          <div>
-            <label for="addProtein" class="block mb-1 font-medium text-gray-700">Protein (g)</label>
-            <input name="protein" id="addProtein" type="number" step="any" placeholder="Protein (g)" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
-          </div>
-          <div>
-            <label for="addCarbs" class="block mb-1 font-medium text-gray-700">Carbs (g)</label>
-            <input name="carbs" id="addCarbs" type="number" step="any" placeholder="Carbs (g)" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
-          </div>
-          <div>
-            <label for="addFat" class="block mb-1 font-medium text-gray-700">Fat (g)</label>
-            <input name="fat" id="addFat" type="number" step="any" placeholder="Fat (g)" class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" required>
-          </div>
-        </div>
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="closeAddMealModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold transition">Huỷ</button>
-          <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold transition">Thêm</button>
-        </div>
-        <div>
-  <label for="addImageUrl" class="block mb-1 font-medium text-gray-700">Link ảnh (tuỳ chọn)</label>
-  <input name="image_url" id="addImageUrl" type="url" placeholder="https://..." class="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition">
-</div>
-      </form>
+  <div class="bg-white p-0 sm:p-0 rounded-3xl shadow-2xl w-full max-w-xl relative overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-400 to-pink-300 px-8 py-5 flex items-center gap-3 rounded-t-3xl border-b border-blue-100">
+      <span class="text-3xl">🍽️</span>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-wide flex-1">Thêm món ăn mới</h2>
+      <button type="button" onclick="closeAddMealModal()" class="text-3xl text-white hover:text-red-200 font-bold transition">&times;</button>
     </div>
+    <!-- Form -->
+    <form action="/add-meal" method="POST" class="p-6 sm:p-8 space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label for="addName" class="block mb-2 font-semibold text-blue-700">Tên món <span class="text-red-500">*</span></label>
+          <input name="name" id="addName" placeholder="Tên món ăn" class="w-full border-2 border-blue-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base font-semibold bg-blue-50" required>
+        </div>
+        <div>
+          <label for="addImageUrl" class="block mb-2 font-semibold text-blue-700">Link ảnh (tuỳ chọn)</label>
+          <input name="image_url" id="addImageUrl" type="url" placeholder="https://..." class="w-full border-2 border-pink-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300 transition text-base bg-pink-50">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <div>
+          <label for="addCalories" class="block mb-2 font-semibold text-blue-700">Calories <span class="text-red-500">*</span></label>
+          <input name="calories" id="addCalories" type="number" step="any" placeholder="Calories" class="w-full border-2 border-blue-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base bg-blue-50 font-semibold" required>
+        </div>
+        <div>
+          <label for="addProtein" class="block mb-2 font-semibold text-blue-700">Protein (g) <span class="text-red-500">*</span></label>
+          <input name="protein" id="addProtein" type="number" step="any" placeholder="Protein" class="w-full border-2 border-blue-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base bg-blue-50 font-semibold" required>
+        </div>
+        <div>
+          <label for="addCarbs" class="block mb-2 font-semibold text-blue-700">Carbs (g) <span class="text-red-500">*</span></label>
+          <input name="carbs" id="addCarbs" type="number" step="any" placeholder="Carbs" class="w-full border-2 border-blue-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base bg-blue-50 font-semibold" required>
+        </div>
+        <div>
+          <label for="addFat" class="block mb-2 font-semibold text-blue-700">Fat (g) <span class="text-red-500">*</span></label>
+          <input name="fat" id="addFat" type="number" step="any" placeholder="Fat" class="w-full border-2 border-blue-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base bg-blue-50 font-semibold" required>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="closeAddMealModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-xl font-semibold transition text-base shadow">Huỷ</button>
+        <button type="submit" class="bg-gradient-to-r from-blue-500 to-pink-400 hover:from-pink-400 hover:to-blue-500 text-white px-8 py-2 rounded-xl font-bold shadow-lg transition text-base flex items-center gap-2">
+          <span class="text-xl">➕</span> Thêm món
+        </button>
+      </div>
+    </form>
   </div>
+</div>
   <script>
     function openAddMealModal() {
       document.getElementById('addMealModal').classList.remove('hidden');

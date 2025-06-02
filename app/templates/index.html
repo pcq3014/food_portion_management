@@ -153,93 +153,178 @@
 <section class="flex-1 overflow-y-auto p-2 sm:px-6 sm:py-4 mt-2 md:mt-0">
   <!-- Meals View -->
 <div id="mealsView" class="hidden">
-  <h2 class="text-2xl font-bold mb-4">📋 Danh sách món ăn</h2>
-  <form method="get" action="/" class="w-full flex flex-col sm:flex-row gap-2 mb-4">
+  <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+    <span class="text-3xl">📋</span> Danh sách món ăn
+  </h2>
+  <form method="get" action="/" class="w-full flex flex-col sm:flex-row gap-2 mb-6">
     <input type="text" name="search" placeholder="Tìm món ăn..." value="{{ search | default('') }}"
-      class="flex-1 min-w-0 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
+      class="flex-1 min-w-0 border border-blue-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base shadow-sm bg-blue-50" />
     <input type="hidden" name="view" value="meals" />
-    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Tìm kiếm</button>
+    <button type="submit" class="bg-gradient-to-r from-blue-500 to-pink-400 text-white px-6 py-3 rounded-xl font-bold hover:from-pink-400 hover:to-blue-500 transition shadow-lg flex items-center gap-2">
+      <span class="text-xl">🔍</span> Tìm kiếm
+    </button>
   </form>
-<div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-      {% for meal in meals %}
-  <div class="bg-white p-4 rounded-xl shadow">
-    {% if meal.image_url %}
-      <img src="{{ meal.image_url }}" alt="{{ meal.name }}" class="w-full h-40 object-cover rounded-lg mb-3" />
-    {% else %}
-      <div class="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center mb-3 text-gray-500">Không có ảnh</div>
-    {% endif %}
-    <h3 class="text-lg font-semibold">{{ meal.name }}</h3>
-<ul class="flex flex-wrap gap-2 text-sm mt-2 text-gray-600">
-  <li>🔥 Calories: {{ ("%.2f"|format(meal.calories)).rstrip('0').rstrip('.') }}</li>
-  <li>💪 Protein: {{ ("%.2f"|format(meal.protein)).rstrip('0').rstrip('.') }}g</li>
-  <li>🍞 Carbs: {{ ("%.2f"|format(meal.carbs)).rstrip('0').rstrip('.') }}g</li>
-  <li>🥑 Fat: {{ ("%.2f"|format(meal.fat)).rstrip('0').rstrip('.') }}g</li>
-</ul>
-    <div class="mt-4 flex gap-3">
-  {% if user.role == 'admin' %}
-<button class="editMealBtn text-blue-600"
-    data-id="{{ meal._id }}"
-    data-name="{{ meal.name }}"
-    data-calories="{{ meal.calories }}"
-    data-protein="{{ meal.protein }}"
-    data-carbs="{{ meal.carbs }}"
-    data-fat="{{ meal.fat }}"
-    data-image-url="{{ meal.image_url }}">
-    ✏️ Sửa
-</button>
-    <button onclick="openModal('{{ meal._id }}')" class="text-red-600">🗑️ Xoá</button>
-  {% endif %}
-</div>
-  </div>
-  {% endfor %}
-</div>
-        </div>
-
-        <!-- Logs and Analytics View -->
-        <div id="logView" class="hidden">
-  <h2 class="text-3xl font-extrabold text-blue-700 mb-4 flex items-center gap-2">🗓️ Nhật ký hôm nay</h2>
-  <div class="bg-white rounded-xl shadow overflow-x-auto">
-    <table class="min-w-full text-sm text-gray-700">
-              <thead class="bg-gradient-to-r from-blue-600 to-blue-400 text-white text-base font-semibold">
-  <tr>
-    <th class="p-3 text-center border border-blue-800">Món</th>
-    <th class="p-3 text-center border border-blue-800">Số lượng</th>
-    <th class="p-3 text-center border border-blue-800">Calories</th>
-    <th class="p-3 text-center border border-blue-800">Protein</th>
-    <th class="p-3 text-center border border-blue-800">Carbs</th>
-    <th class="p-3 text-center border border-blue-800">Fat</th>
-  </tr>
-</thead>
-<tbody>
-  {% for log in logs %}
-  <tr class="odd:bg-white even:bg-blue-50 hover:bg-blue-100 transition-all">
-    <td class="p-3 text-center border border-blue-100 whitespace-nowrap font-medium">{{ log.meal.name }}</td>
-<td class="p-3 text-center border border-blue-100">{{ ("%.2f"|format(log.quantity)).rstrip('0').rstrip('.') }}</td>
-<td class="p-3 text-center border border-blue-100">{{ ("%.2f"|format(log.meal.calories * log.quantity)).rstrip('0').rstrip('.') }}</td>
-<td class="p-3 text-center border border-blue-100">{{ ("%.2f"|format(log.meal.protein * log.quantity)).rstrip('0').rstrip('.') }}</td>
-<td class="p-3 text-center border border-blue-100">{{ ("%.2f"|format(log.meal.carbs * log.quantity)).rstrip('0').rstrip('.') }}</td>
-<td class="p-3 text-center border border-blue-100">{{ ("%.2f"|format(log.meal.fat * log.quantity)).rstrip('0').rstrip('.') }}</td>
-  </tr>
-  {% endfor %}
-</tbody>
-            </table>
+  <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+    {% for meal in meals %}
+    <div class="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-200 p-0 flex flex-col overflow-hidden border border-blue-100 group">
+      {% if meal.image_url %}
+        <div class="relative">
+          <img src="{{ meal.image_url }}" alt="{{ meal.name }}" class="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-200" />
+          <div class="absolute top-2 right-2 flex gap-2">
+            {% if user.role == 'admin' %}
+              <button class="editMealBtn bg-white/80 hover:bg-blue-100 text-blue-600 rounded-full p-2 shadow transition"
+                data-id="{{ meal._id }}"
+                data-name="{{ meal.name }}"
+                data-calories="{{ meal.calories }}"
+                data-protein="{{ meal.protein }}"
+                data-carbs="{{ meal.carbs }}"
+                data-fat="{{ meal.fat }}"
+                data-image-url="{{ meal.image_url }}"
+                title="Sửa món">
+                ✏️
+              </button>
+              <button onclick="openModal('{{ meal._id }}')" class="bg-white/80 hover:bg-red-100 text-red-600 rounded-full p-2 shadow transition" title="Xoá món">🗑️</button>
+            {% endif %}
           </div>
-
-          <h2 class="text-3xl font-extrabold text-green-700 mt-10 mb-4 flex items-center gap-2">📊 Phân tích hôm nay</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-  <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
-    <h3 class="text-lg font-semibold mb-4 text-gray-700">📈 Dinh dưỡng tổng</h3>
-    <canvas id="nutritionChart" class="h-64 w-full"></canvas>
-  </div>
-<div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition">
-  <h3 class="text-lg font-semibold mb-4 text-gray-700">🥗 Phân bố chất</h3>
-<div class="flex justify-center items-center w-full" style="min-height:320px;">
-  <canvas id="macroPieChart" width="320" height="320" style="max-width:100%;max-height:320px;"></canvas>
-</div>
-</div>
-  </div>
-</div>
         </div>
+      {% else %}
+        <div class="w-full h-44 bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center text-4xl text-gray-400 font-bold">
+          <span>🍽️</span>
+          {% if user.role == 'admin' %}
+            <div class="absolute top-2 right-2 flex gap-2">
+              <button class="editMealBtn bg-white/80 hover:bg-blue-100 text-blue-600 rounded-full p-2 shadow transition"
+                data-id="{{ meal._id }}"
+                data-name="{{ meal.name }}"
+                data-calories="{{ meal.calories }}"
+                data-protein="{{ meal.protein }}"
+                data-carbs="{{ meal.carbs }}"
+                data-fat="{{ meal.fat }}"
+                data-image-url="{{ meal.image_url }}"
+                title="Sửa món">
+                ✏️
+              </button>
+              <button onclick="openModal('{{ meal._id }}')" class="bg-white/80 hover:bg-red-100 text-red-600 rounded-full p-2 shadow transition" title="Xoá món">🗑️</button>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+      <div class="flex-1 flex flex-col justify-between p-4">
+        <h3 class="text-lg font-bold text-blue-700 mb-2 truncate" title="{{ meal.name }}">{{ meal.name }}</h3>
+        <ul class="flex flex-wrap gap-2 text-sm mt-1 text-gray-600 mb-2">
+          <li class="bg-blue-50 px-2 py-1 rounded font-semibold flex items-center gap-1"><span>🔥</span> {{ ("%.2f"|format(meal.calories)).rstrip('0').rstrip('.') }} kcal</li>
+          <li class="bg-green-50 px-2 py-1 rounded font-semibold flex items-center gap-1"><span>💪</span> {{ ("%.2f"|format(meal.protein)).rstrip('0').rstrip('.') }}g</li>
+          <li class="bg-yellow-50 px-2 py-1 rounded font-semibold flex items-center gap-1"><span>🍞</span> {{ ("%.2f"|format(meal.carbs)).rstrip('0').rstrip('.') }}g</li>
+          <li class="bg-pink-50 px-2 py-1 rounded font-semibold flex items-center gap-1"><span>🥑</span> {{ ("%.2f"|format(meal.fat)).rstrip('0').rstrip('.') }}g</li>
+        </ul>
+        {% if user.role == 'admin' %}
+        <div class="mt-2 flex gap-2 sm:hidden">
+          <button class="editMealBtn flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg py-1 font-semibold transition"
+            data-id="{{ meal._id }}"
+            data-name="{{ meal.name }}"
+            data-calories="{{ meal.calories }}"
+            data-protein="{{ meal.protein }}"
+            data-carbs="{{ meal.carbs }}"
+            data-fat="{{ meal.fat }}"
+            data-image-url="{{ meal.image_url }}">
+            ✏️ Sửa
+          </button>
+          <button onclick="openModal('{{ meal._id }}')" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg py-1 font-semibold transition">🗑️ Xoá</button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<!-- Logs and Analytics View -->
+<div id="logView" class="hidden">
+  <!-- Nhật ký hôm nay -->
+  <div class="bg-gradient-to-r from-blue-100 to-pink-100 rounded-2xl shadow-lg p-6 mb-8">
+    <h2 class="text-3xl font-extrabold text-blue-700 mb-4 flex items-center gap-2">
+      <span class="text-4xl">🗓️</span> Nhật ký hôm nay
+    </h2>
+    <div class="overflow-x-auto rounded-xl border border-blue-200 bg-white shadow-inner">
+      <table class="min-w-full text-sm text-gray-700">
+        <thead class="bg-gradient-to-r from-blue-600 to-blue-400 text-white text-base font-semibold">
+          <tr>
+            <th class="p-3 text-center border-b border-blue-800">Món</th>
+            <th class="p-3 text-center border-b border-blue-800">Số lượng</th>
+            <th class="p-3 text-center border-b border-blue-800">Calories</th>
+            <th class="p-3 text-center border-b border-blue-800">Protein</th>
+            <th class="p-3 text-center border-b border-blue-800">Carbs</th>
+            <th class="p-3 text-center border-b border-blue-800">Fat</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr class="odd:bg-white even:bg-blue-50 hover:bg-blue-100 transition-all">
+            <td class="p-3 text-center border-b border-blue-100 whitespace-nowrap font-semibold text-blue-700">{{ log.meal.name }}</td>
+            <td class="p-3 text-center border-b border-blue-100">{{ ("%.2f"|format(log.quantity)).rstrip('0').rstrip('.') }}</td>
+            <td class="p-3 text-center border-b border-blue-100 text-pink-600 font-bold">{{ ("%.2f"|format(log.meal.calories * log.quantity)).rstrip('0').rstrip('.') }}</td>
+            <td class="p-3 text-center border-b border-blue-100 text-green-700">{{ ("%.2f"|format(log.meal.protein * log.quantity)).rstrip('0').rstrip('.') }}</td>
+            <td class="p-3 text-center border-b border-blue-100 text-yellow-700">{{ ("%.2f"|format(log.meal.carbs * log.quantity)).rstrip('0').rstrip('.') }}</td>
+            <td class="p-3 text-center border-b border-blue-100 text-emerald-700">{{ ("%.2f"|format(log.meal.fat * log.quantity)).rstrip('0').rstrip('.') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if logs|length == 0 %}
+      <div class="text-center text-gray-400 py-8 text-lg">Chưa có món nào được ghi nhận hôm nay.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Phân tích hôm nay -->
+  <div class="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl shadow-lg p-6">
+    <h2 class="text-3xl font-extrabold text-green-700 mb-6 flex items-center gap-2">
+      <span class="text-4xl">📊</span> Phân tích hôm nay
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Dinh dưỡng tổng -->
+      <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition flex flex-col items-center">
+        <h3 class="text-lg font-semibold mb-4 text-gray-700 flex items-center gap-2">
+          <span class="text-2xl">📈</span> Dinh dưỡng tổng
+        </h3>
+        <canvas id="nutritionChart" class="h-64 w-full"></canvas>
+        <div class="flex justify-between w-full mt-4 text-sm">
+          <div class="flex flex-col items-center flex-1">
+            <span class="font-bold text-pink-600">{{ summary.total_calories|default(0) }}</span>
+            <span class="text-gray-500">Kcal</span>
+          </div>
+          <div class="flex flex-col items-center flex-1">
+            <span class="font-bold text-blue-600">{{ summary.total_protein|default(0) }}</span>
+            <span class="text-gray-500">Protein</span>
+          </div>
+          <div class="flex flex-col items-center flex-1">
+            <span class="font-bold text-yellow-600">{{ summary.total_carbs|default(0) }}</span>
+            <span class="text-gray-500">Carbs</span>
+          </div>
+          <div class="flex flex-col items-center flex-1">
+            <span class="font-bold text-green-600">{{ summary.total_fat|default(0) }}</span>
+            <span class="text-gray-500">Fat</span>
+          </div>
+        </div>
+      </div>
+      <!-- Phân bố chất -->
+      <div class="bg-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transition flex flex-col items-center">
+        <h3 class="text-lg font-semibold mb-4 text-gray-700 flex items-center gap-2">
+          <span class="text-2xl">🥗</span> Phân bố chất
+        </h3>
+        <div class="flex justify-center items-center w-full" style="min-height:320px;">
+          <canvas id="macroPieChart" width="320" height="320" style="max-width:100%;max-height:320px;"></canvas>
+        </div>
+        <div class="mt-4 w-full">
+          <div class="flex justify-between text-xs text-gray-600">
+            <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block rounded-full bg-blue-400"></span> Protein</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block rounded-full bg-yellow-300"></span> Carbs</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 inline-block rounded-full bg-green-400"></span> Fat</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
         <div id="welcomeView" class="flex flex-col items-center justify-center h-full text-center text-gray-700 space-y-4">
   <img src="/static/trangchu.png" alt="Welcome" class="w-40 h-40">
   <h1 class="text-3xl font-bold">Chào mừng đến với SmartCalories!</h1>

@@ -129,6 +129,7 @@ def log_login_async(db, user_fullname, ip, time_str):
             "user": user_fullname,
             "ip": ip
         }
+        db["login_logs"].insert_one(doc)
     threading.Thread(target=task, daemon=True).start()
 
 # --- 3. ROUTES ---

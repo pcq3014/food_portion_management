@@ -570,10 +570,10 @@
     <!-- Thông báo lượng còn thiếu -->
     <div class="mb-3 text-sm text-gray-700">
       Đang thiếu:
-      <span class="font-semibold text-red-600" id="missingCalories">Calories: {{ missing.calories }}</span>,
-      <span class="font-semibold text-blue-600" id="missingProtein">Protein: {{ missing.protein }}</span>,
-      <span class="font-semibold text-yellow-600" id="missingCarbs">Carbs: {{ missing.carbs }}</span>,
-      <span class="font-semibold text-green-600" id="missingFat">Fat: {{ missing.fat }}</span>
+  <span class="font-semibold text-red-600" id="missingCalories">Calories: {{ "%.0f"|format(missing.calories) }}</span>,
+  <span class="font-semibold text-blue-600" id="missingProtein">Protein: {{ "%.0f"|format(missing.protein) }}</span>,
+  <span class="font-semibold text-yellow-600" id="missingCarbs">Carbs: {{ "%.0f"|format(missing.carbs) }}</span>,
+  <span class="font-semibold text-green-600" id="missingFat">Fat: {{ "%.0f"|format(missing.fat) }}</span>
     </div>
     <!-- Gợi ý món ăn -->
     <div class="overflow-y-auto space-y-4 pr-2" id="suggestedMealGroups" style="max-height: 40vh;"></div>

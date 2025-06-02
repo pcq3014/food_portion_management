@@ -1232,111 +1232,6 @@ function submitGoalsForm(event) {
   return false;
 }
 </script>
-<script>
-  // Lấy thông tin user từ backend (Jinja2)
-  const userProfile = {
-  fullname: "{{ fullname }}",
-  email: "{{ user.email or '' }}",
-  height: {{ user.height if user and user.height is defined else 'null' }},
-  weight: {{ user.weight if user and user.weight is defined else 'null' }},
-  age: {{ user.age if user and user.age is defined else 'null' }},
-  gender: "{{ user.gender if user and user.gender is defined else '' }}",
-  bmr: {{ bmr if bmr is defined and bmr else 'null' }},
-  tdee: {{ tdee if tdee is defined and tdee else 'null' }},
-  avatar_url: "{{ user.avatar_url or '' }}"
-  };
-
-  function openProfileModal() {
-  document.getElementById('profileModal').classList.remove('hidden');
-  switchToViewProfile();
-  document.getElementById('viewFullname').textContent = userProfile.fullname || '';
-  document.getElementById('viewHeight').textContent = userProfile.height || 'Chưa cập nhật';
-  document.getElementById('viewWeight').textContent = userProfile.weight || 'Chưa cập nhật';
-  document.getElementById('viewAge').textContent = userProfile.age || 'Chưa cập nhật';
-  document.getElementById('viewGender').textContent = userProfile.gender === 'male' ? 'Nam' : (userProfile.gender === 'female' ? 'Nữ' : 'Chưa cập nhật');
-  document.getElementById('viewEmail').textContent = userProfile.email || 'Chưa cập nhật';
-  document.getElementById('viewBmr').textContent = userProfile.bmr || 'Chưa có';
-  document.getElementById('viewTdee').textContent = userProfile.tdee || 'Chưa có';
-  document.getElementById('viewAvatar').src = userProfile.avatar_url || '';
-
-}
-  function closeProfileModal() {
-    document.getElementById('profileModal').classList.add('hidden');
-  }
-  function switchToEditProfile() {
-    document.getElementById('profileViewMode').classList.add('hidden');
-    document.getElementById('profileForm').classList.remove('hidden');
-    document.getElementById('profileHeight').value = userProfile.height || '';
-    document.getElementById('profileWeight').value = userProfile.weight || '';
-    document.getElementById('profileAge').value = userProfile.age || '';
-    document.getElementById('profileGender').value = userProfile.gender || 'male';
-    document.getElementById('profileEmail').value = userProfile.email || '';
-    document.getElementById('profileAvatarFile').value = '';
-  }
-  const avatarInput = document.getElementById('profileAvatarFile');
-  if (avatarInput && !avatarInput.dataset.bound) {
-    avatarInput.addEventListener('change', function (e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (ev) {
-          document.getElementById('viewAvatar').src = ev.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-    avatarInput.dataset.bound = "1";
-  }
-  function switchToViewProfile() {
-    document.getElementById('profileViewMode').classList.remove('hidden');
-    document.getElementById('profileForm').classList.add('hidden');
-  }
-  // Gửi form cập nhật thông tin cá nhân bằng fetch (AJAX)
-  function showProfileNotice(message, success = true) {
-  const notice = document.getElementById('profileNotice');
-  notice.textContent = message;
-  notice.className = 'mb-2 px-4 py-2 rounded font-semibold ' + (success ? 'bg-green-500' : 'bg-red-500');
-  notice.style.display = '';
-  setTimeout(() => { notice.style.display = 'none'; }, 2500);
-}
-
-function submitProfileForm(event) {
-    event.preventDefault();
-    const form = document.getElementById('profileForm');
-    const formData = new FormData(form);
-
-    // Nếu có file, thêm vào formData
-    const fileInput = document.getElementById('profileAvatarFile');
-    if (fileInput.files.length > 0) {
-      formData.append('avatar_file', fileInput.files[0]);
-    }
-
-    fetch('/profile', {
-      method: 'POST',
-      body: formData,
-      credentials: 'same-origin'
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        userProfile.height = data.data.height;
-        userProfile.weight = data.data.weight;
-        userProfile.age = data.data.age;
-        userProfile.gender = data.data.gender;
-        userProfile.email = data.data.email;
-        userProfile.bmr = data.data.bmr;
-        userProfile.tdee = data.data.tdee;
-        userProfile.avatar_url = data.data.avatar_url || '';
-        switchToViewProfile();
-        openProfileModal();
-        showProfileNotice(data.message, true);
-      } else {
-        showProfileNotice(data.message || "Có lỗi xảy ra!", false);
-      }
-    });
-    return false;
-  }
-</script>
 <!-- Modal Quản lý người dùng (chỉ admin) đặt trước </body> -->
 {% if user.role == 'admin' %}
 <div id="userModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
@@ -1983,19 +1878,20 @@ function toggleSidebarCollapse() {
     ? `<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />`
     : `<path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />`;
 }
-
-
 </script>
 <!-- Modal Thông tin cá nhân -->
 <div id="profileModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
   <div class="bg-white p-4 sm:p-8 rounded-xl shadow space-y-3 sm:space-y-4 w-full max-w-xs sm:max-w-md relative">
     <button onclick="closeProfileModal()" class="absolute top-2 right-3 text-2xl text-gray-400 hover:text-red-500 font-bold">&times;</button>
-    <h2 class="text-2xl font-bold mb-4">Thông tin cá nhân</h2>
-    <!-- Chế độ chỉ đọc -->
+    <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+      <span>👤</span> Thông tin cá nhân
+    </h2>
+    <!-- Thông báo -->
     <div id="profileNotice" class="hidden mb-2 px-4 py-2 rounded text-white font-semibold"></div>
+    <!-- Chế độ chỉ đọc -->
     <div id="profileViewMode">
       <div class="mb-4 flex justify-center">
-      <img id="viewAvatar" src="{{ user.avatar_url or '' }}" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-blue-300 shadow" />
+        <img id="viewAvatar" src="{{ user.avatar_url or '/static/default-avatar.png' }}" alt="Avatar" class="w-24 h-24 rounded-full border-4 border-blue-300 shadow" />
       </div>
       <div class="mb-2"><b>Họ tên:</b> <span id="viewFullname">{{ fullname }}</span></div>
       <div class="mb-2"><b>Email:</b> <span id="viewEmail">{{ user.email or "Chưa cập nhật" }}</span></div>
@@ -2010,41 +1906,154 @@ function toggleSidebarCollapse() {
       <button onclick="switchToEditProfile()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded font-bold w-full">Chỉnh sửa</button>
     </div>
     <!-- Chế độ chỉnh sửa -->
-<form id="profileForm" method="post"
-  class="space-y-2 sm:space-y-3 hidden px-1 py-2 sm:px-0 sm:py-0 max-w-xs w-full mx-auto"
-  onsubmit="return submitProfileForm(event)" enctype="multipart/form-data">
-  <div>
-    <label class="block mb-1">Chiều cao (cm):</label>
-    <input type="number" name="height" id="profileHeight" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
+    <form id="profileForm" method="post"
+      class="space-y-2 sm:space-y-3 hidden px-1 py-2 sm:px-0 sm:py-0 max-w-xs w-full mx-auto"
+      onsubmit="return submitProfileForm(event)" enctype="multipart/form-data">
+      <div class="mb-3 flex justify-center">
+        <img id="editAvatarPreview" src="{{ user.avatar_url or '/static/default-avatar.png' }}" alt="Avatar Preview" class="w-20 h-20 rounded-full border-2 border-blue-200 shadow" />
+      </div>
+      <div>
+        <label class="block mb-1">Họ tên:</label>
+        <input type="text" name="fullname" id="profileFullname" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
+      </div>
+      <div>
+        <label class="block mb-1">Chiều cao (cm):</label>
+        <input type="number" name="height" id="profileHeight" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
+      </div>
+      <div>
+        <label class="block mb-1">Cân nặng (kg):</label>
+        <input type="number" name="weight" id="profileWeight" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
+      </div>
+      <div>
+        <label class="block mb-1">Tuổi:</label>
+        <input type="number" name="age" id="profileAge" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
+      </div>
+      <div>
+        <label class="block mb-1">Giới tính:</label>
+        <select name="gender" id="profileGender" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full">
+          <option value="male">Nam</option>
+          <option value="female">Nữ</option>
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1">Email:</label>
+        <input type="email" name="email" id="profileEmail" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
+      </div>
+      <div>
+        <label class="block mb-1">Chọn ảnh đại diện:</label>
+        <input type="file" id="profileAvatarFile" accept="image/*" class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="bg-blue-500 text-white px-3 py-2 rounded font-bold w-full text-sm sm:text-base">Lưu</button>
+        <button type="button" onclick="switchToViewProfile()" class="bg-gray-300 text-gray-800 px-3 py-2 rounded font-bold w-full text-sm sm:text-base">Hủy</button>
+      </div>
+    </form>
   </div>
-  <div>
-    <label class="block mb-1">Cân nặng (kg):</label>
-    <input type="number" name="weight" id="profileWeight" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
-  </div>
-  <div>
-    <label class="block mb-1">Tuổi:</label>
-    <input type="number" name="age" id="profileAge" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
-  </div>
-  <div>
-    <label class="block mb-1">Giới tính:</label>
-    <select name="gender" id="profileGender" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full">
-      <option value="male">Nam</option>
-      <option value="female">Nữ</option>
-    </select>
-  </div>
-  <div>
-    <label class="block mb-1">Email:</label>
-    <input type="email" name="email" id="profileEmail" required class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
-  </div>
-  <div>
-    <label class="block mb-1">Chọn ảnh đại diện:</label>
-    <input type="file" id="profileAvatarFile" accept="image/*" class="border rounded px-2 py-1 sm:px-3 sm:py-2 w-full" />
-  </div>
-  <div class="flex gap-2">
-    <button type="submit" class="bg-blue-500 text-white px-3 py-2 rounded font-bold w-full text-sm sm:text-base">Lưu</button>
-    <button type="button" onclick="switchToViewProfile()" class="bg-gray-300 text-gray-800 px-3 py-2 rounded font-bold w-full text-sm sm:text-base">Hủy</button>
-  </div>
-</form>
 </div>
+<script>
+  // Lấy thông tin user từ backend (Jinja2)
+  const userProfile = {
+  fullname: "{{ fullname }}",
+  email: "{{ user.email or '' }}",
+  height: {{ user.height if user and user.height is defined else 'null' }},
+  weight: {{ user.weight if user and user.weight is defined else 'null' }},
+  age: {{ user.age if user and user.age is defined else 'null' }},
+  gender: "{{ user.gender if user and user.gender is defined else '' }}",
+  bmr: {{ bmr if bmr is defined and bmr else 'null' }},
+  tdee: {{ tdee if tdee is defined and tdee else 'null' }},
+  avatar_url: "{{ user.avatar_url or '' }}"
+  };
+
+  function openProfileModal() {
+    document.getElementById('profileModal').classList.remove('hidden');
+    switchToViewProfile();
+    document.getElementById('viewFullname').textContent = userProfile.fullname || '';
+    document.getElementById('viewHeight').textContent = userProfile.height || 'Chưa cập nhật';
+    document.getElementById('viewWeight').textContent = userProfile.weight || 'Chưa cập nhật';
+    document.getElementById('viewAge').textContent = userProfile.age || 'Chưa cập nhật';
+    document.getElementById('viewGender').textContent = userProfile.gender === 'male' ? 'Nam' : (userProfile.gender === 'female' ? 'Nữ' : 'Chưa cập nhật');
+    document.getElementById('viewEmail').textContent = userProfile.email || 'Chưa cập nhật';
+    document.getElementById('viewBmr').textContent = userProfile.bmr || 'Chưa có';
+    document.getElementById('viewTdee').textContent = userProfile.tdee || 'Chưa có';
+    document.getElementById('viewAvatar').src = userProfile.avatar_url || "{{ user.avatar_url or '/static/default-avatar.png' }}";
+  }
+  function closeProfileModal() {
+    document.getElementById('profileModal').classList.add('hidden');
+  }
+  function switchToEditProfile() {
+    document.getElementById('profileViewMode').classList.add('hidden');
+    document.getElementById('profileForm').classList.remove('hidden');
+    document.getElementById('profileFullname').value = userProfile.fullname || '';
+    document.getElementById('profileHeight').value = userProfile.height || '';
+    document.getElementById('profileWeight').value = userProfile.weight || '';
+    document.getElementById('profileAge').value = userProfile.age || '';
+    document.getElementById('profileGender').value = userProfile.gender || 'male';
+    document.getElementById('profileEmail').value = userProfile.email || '';
+    document.getElementById('profileAvatarFile').value = '';
+    document.getElementById('editAvatarPreview').src = userProfile.avatar_url || "{{ user.avatar_url or '/static/default-avatar.png' }}";
+  }
+  // Xem trước ảnh đại diện khi chọn file mới
+  const avatarInput = document.getElementById('profileAvatarFile');
+  if (avatarInput && !avatarInput.dataset.bound) {
+    avatarInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          document.getElementById('editAvatarPreview').src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    avatarInput.dataset.bound = "1";
+  }
+  function switchToViewProfile() {
+    document.getElementById('profileViewMode').classList.remove('hidden');
+    document.getElementById('profileForm').classList.add('hidden');
+  }
+  // Gửi form cập nhật thông tin cá nhân bằng fetch (AJAX)
+  function showProfileNotice(message, success = true) {
+    const notice = document.getElementById('profileNotice');
+    notice.textContent = message;
+    notice.className = 'mb-2 px-4 py-2 rounded font-semibold ' + (success ? 'bg-green-500' : 'bg-red-500');
+    notice.style.display = '';
+    setTimeout(() => { notice.style.display = 'none'; }, 2500);
+  }
+  function submitProfileForm(event) {
+    event.preventDefault();
+    const form = document.getElementById('profileForm');
+    const formData = new FormData(form);
+    // Nếu có file, thêm vào formData
+    const fileInput = document.getElementById('profileAvatarFile');
+    if (fileInput.files.length > 0) {
+      formData.append('avatar_file', fileInput.files[0]);
+    }
+    fetch('/profile', {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        userProfile.fullname = data.data.fullname;
+        userProfile.height = data.data.height;
+        userProfile.weight = data.data.weight;
+        userProfile.age = data.data.age;
+        userProfile.gender = data.data.gender;
+        userProfile.email = data.data.email;
+        userProfile.bmr = data.data.bmr;
+        userProfile.tdee = data.data.tdee;
+        userProfile.avatar_url = data.data.avatar_url || '';
+        switchToViewProfile();
+        openProfileModal();
+        showProfileNotice(data.message, true);
+      } else {
+        showProfileNotice(data.message || "Có lỗi xảy ra!", false);
+      }
+    });
+    return false;
+  }
+</script>
   </body>
 </html>

@@ -4041,7 +4041,9 @@ window.onload = () => {
     switchView("meals");
   } else {
     // Hiện welcome view mặc định
-    goHome();
+    document.getElementById("welcomeView").classList.remove("hidden");
+    document.getElementById("mealsView").classList.add("hidden");
+    document.getElementById("logView").classList.add("hidden");
   }
 };
 </script>
@@ -5099,12 +5101,11 @@ function toggleSidebarCollapse() {
   }
 }
 
-// Enhanced event handlers
 document.addEventListener('DOMContentLoaded', function() {
   // Auto-close sidebar on mobile when clicking nav items
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      closeSidebarOnMobile();
+  document.querySelectorAll('.sidebar-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
   });
   
@@ -5169,23 +5170,26 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   
   // Enhanced home function
-  window.goHome = function() {
-    // Hide all views
-    document.getElementById("mealsView").classList.add("hidden");
-    document.getElementById("logView").classList.add("hidden");
-    document.getElementById("welcomeView").classList.remove("hidden");
-    
-    // Remove active states
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    
-    // Close sidebar on mobile
-    closeSidebarOnMobile();
-    
-    // Smooth scroll to top
-    smoothScrollToTop();
-  };
+window.goHome = function() {
+  // Hide all views
+  document.getElementById("mealsView").classList.add("hidden");
+  document.getElementById("logView").classList.add("hidden");
+  document.getElementById("welcomeView").classList.remove("hidden");
+  
+  // Remove active states
+  document.querySelectorAll('.sidebar-btn').forEach(btn => {
+    btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
+    btn.classList.add("text-white");
+  });
+  
+  // Close sidebar on mobile
+  if (window.innerWidth < 768) {
+    closeSidebar();
+  }
+  
+  // Smooth scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 });
 
 // Touch gesture support for mobile sidebar

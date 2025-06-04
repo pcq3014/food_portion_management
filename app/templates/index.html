@@ -1334,7 +1334,6 @@
   display: inline-block;
 }
 </style>
-
 <div id="welcomeView" class="flex flex-col items-center justify-center min-h-[70vh] text-center text-gray-700 space-y-8 p-4 md:p-8">
   <!-- Enhanced Welcome Card -->
   <div class="bg-gradient-to-br from-pink-50 via-blue-50 to-purple-50 rounded-3xl p-8 md:p-12 shadow-2xl border-2 border-[#fbc3bc] relative overflow-hidden max-w-4xl w-full">
@@ -1346,8 +1345,11 @@
       <!-- Welcome Image with enhanced styling -->
       <div class="relative mb-8">
         <div class="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto relative">
-          <img src="/static/trangchu.png" alt="SmartCalories Logo" class="w-full h-full rounded-full shadow-2xl border-4 border-white animate-float" />
-          <div class="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full animate-ping"></div>
+          <img src="/static/trangchu.png" alt="Welcome" class="w-full h-full object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
+          <!-- Floating animation circles -->
+          <div class="absolute -top-2 -right-2 w-6 h-6 bg-pink-400 rounded-full animate-bounce opacity-60"></div>
+          <div class="absolute -bottom-3 -left-3 w-4 h-4 bg-blue-400 rounded-full animate-pulse opacity-70"></div>
+          <div class="absolute top-1/2 -right-4 w-3 h-3 bg-purple-400 rounded-full animate-ping opacity-50"></div>
         </div>
       </div>
 
@@ -1372,73 +1374,83 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-10 max-w-4xl mx-auto">
         <!-- Meals Card -->
         <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-pink-200 hover:border-pink-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="switchView('meals')">
-          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🍽️</div>
-          <h3 class="text-lg font-bold text-gray-800 mb-2">Danh sách món ăn</h3>
-          <p class="text-sm text-gray-600">Khám phá và quản lý món ăn yêu thích</p>
+          <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">🍽️</div>
+          <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2 group-hover:text-pink-600 transition-colors">Danh sách món</h3>
+          <p class="text-sm md:text-base text-gray-600">Khám phá và quản lý các món ăn yêu thích</p>
         </div>
 
         {% if user.role != 'admin' %}
         <!-- Analytics Card -->
         <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="switchView('log')">
-          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📊</div>
-          <h3 class="text-lg font-bold text-gray-800 mb-2">Phân tích dinh dưỡng</h3>
-          <p class="text-sm text-gray-600">Xem báo cáo và thống kê chi tiết</p>
+          <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📊</div>
+          <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">Nhật ký & Phân tích</h3>
+          <p class="text-sm md:text-base text-gray-600">Theo dõi tiến trình và phân tích dinh dưỡng</p>
         </div>
 
         <!-- Quick Log Card -->
         <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-green-200 hover:border-green-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="openLogMealModal()">
-          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📝</div>
-          <h3 class="text-lg font-bold text-gray-800 mb-2">Ghi nhật ký</h3>
-          <p class="text-sm text-gray-600">Thêm nhanh món ăn vào nhật ký</p>
+          <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📝</div>
+          <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition-colors">Ghi nhật ký</h3>
+          <p class="text-sm md:text-base text-gray-600">Nhanh chóng ghi lại bữa ăn của bạn</p>
         </div>
         {% else %}
         <!-- Admin User Management Card -->
         <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="openUserModal()">
-          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">👥</div>
-          <h3 class="text-lg font-bold text-gray-800 mb-2">Quản lý người dùng</h3>
-          <p class="text-sm text-gray-600">Xem và quản lý tài khoản người dùng</p>
+          <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">👥</div>
+          <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors">Quản lý người dùng</h3>
+          <p class="text-sm md:text-base text-gray-600">Quản lý tài khoản và phân quyền</p>
         </div>
 
         <!-- Admin Activity Log Card -->
         <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-orange-200 hover:border-orange-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="openActivityLogModal()">
-          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📜</div>
-          <h3 class="text-lg font-bold text-gray-800 mb-2">Nhật ký hoạt động</h3>
-          <p class="text-sm text-gray-600">Theo dõi hoạt động của hệ thống</p>
+          <div class="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📜</div>
+          <h3 class="text-lg md:text-xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors">Nhật ký hoạt động</h3>
+          <p class="text-sm md:text-base text-gray-600">Theo dõi hoạt động của người dùng</p>
         </div>
         {% endif %}
       </div>
 
       <!-- Additional Features Showcase -->
       <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-        <div class="feature-highlight bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-pink-200 text-center">
-          <div class="text-2xl mb-2">🎯</div>
-          <h4 class="text-sm font-bold text-gray-800 mb-1">Đặt mục tiêu</h4>
-          <p class="text-xs text-gray-600">Theo dõi tiến trình dinh dưỡng</p>
+        <div class="feature-highlight text-center p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-pink-200">
+          <div class="text-2xl md:text-3xl mb-2">🤖</div>
+          <div class="text-xs md:text-sm font-semibold text-gray-700">AI Assistant</div>
         </div>
         
-        <div class="feature-highlight bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-blue-200 text-center">
-          <div class="text-2xl mb-2">📈</div>
-          <h4 class="text-sm font-bold text-gray-800 mb-1">Phân tích</h4>
-          <p class="text-xs text-gray-600">Báo cáo chi tiết về sức khỏe</p>
+        <div class="feature-highlight text-center p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-blue-200">
+          <div class="text-2xl md:text-3xl mb-2">📈</div>
+          <div class="text-xs md:text-sm font-semibold text-gray-700">Smart Analytics</div>
         </div>
         
-        <div class="feature-highlight bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-green-200 text-center">
-          <div class="text-2xl mb-2">🤖</div>
-          <h4 class="text-sm font-bold text-gray-800 mb-1">AI Chatbot</h4>
-          <p class="text-xs text-gray-600">Hỗ trợ tư vấn dinh dưỡng</p>
+        <div class="feature-highlight text-center p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-green-200">
+          <div class="text-2xl md:text-3xl mb-2">🎯</div>
+          <div class="text-xs md:text-sm font-semibold text-gray-700">Goal Tracking</div>
         </div>
         
-        <div class="feature-highlight bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-purple-200 text-center">
-          <div class="text-2xl mb-2">📱</div>
-          <h4 class="text-sm font-bold text-gray-800 mb-1">Responsive</h4>
-          <p class="text-xs text-gray-600">Sử dụng mọi thiết bị</p>
+        <div class="feature-highlight text-center p-4 rounded-xl bg-white/50 backdrop-blur-sm border border-purple-200">
+          <div class="text-2xl md:text-3xl mb-2">🏃</div>
+          <div class="text-xs md:text-sm font-semibold text-gray-700">Activity Log</div>
         </div>
       </div>
 
       <!-- Welcome Message for User -->
       <div class="mt-8 p-4 md:p-6 bg-white/60 backdrop-blur-sm rounded-2xl border border-[#fbc3bc] max-w-2xl mx-auto">
-        <p class="text-lg font-semibold text-gray-700 mb-2">Xin chào, {{ fullname }}! 👋</p>
-        <p class="text-gray-600">Chúc bạn có một ngày tuyệt vời với SmartCalories. Hãy bắt đầu hành trình quản lý dinh dưỡng khoa học ngay hôm nay!</p>
+        <div class="flex items-center justify-center gap-3 mb-3">
+          <img src="{{ user.avatar_url or '/static/default-avatar.png' }}" alt="User Avatar" class="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-[#fbc3bc] shadow-lg" />
+          <div class="text-left">
+            <div class="text-lg md:text-xl font-bold text-gray-800">{{ fullname }}</div>
+            <div class="text-sm md:text-base text-gray-600">
+              {% if user.role == 'admin' %}
+              🔑 Quản trị viên
+              {% else %}
+              👤 Người dùng
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <p class="text-sm md:text-base text-gray-600 italic">
+          "Hành trình sức khỏe của bạn bắt đầu từ đây. Hãy cùng SmartCalories theo dõi và cải thiện chế độ ăn uống mỗi ngày!"
+        </p>
       </div>
     </div>
   </div>
@@ -1459,13 +1471,14 @@
       </div>
       
       <div class="tip-card bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-green-200 text-center">
-        <div class="text-3xl md:text-4xl mb-3">🏆</div>
-        <h4 class="text-lg font-bold text-gray-800 mb-2">Thành tựu</h4>
-        <p class="text-sm text-gray-600">Duy trì thói quen ghi chép để đạt được kết quả tốt nhất</p>
+        <div class="text-3xl md:text-4xl mb-3">🎉</div>
+        <h4 class="text-lg font-bold text-gray-800 mb-2">Khuyến khích</h4>
+        <p class="text-sm text-gray-600">Ghi nhật ký đều đặn để xây dựng thói quen ăn uống lành mạnh</p>
       </div>
     </div>
   </div>
 </div>
+
 <style>
 /* Enhanced Welcome View Styles với responsive tối ưu */
 #welcomeView {
@@ -3972,7 +3985,43 @@ chatbotModal.addEventListener('click', function(e) {
   }
 }
 .fe-bold { font-weight: bold; color: #FF6F61; }
+/* Thêm vào phần style của app/templates/index.html */
+.sidebar-btn {
+  transition: all 0.2s ease-in-out !important;
+  pointer-events: auto;
+  transform: translateZ(0); /* Hardware acceleration */
+}
 
+.sidebar-btn:disabled,
+.sidebar-btn[data-switching="true"] {
+  pointer-events: none !important;
+  opacity: 0.6;
+  transform: scale(0.98);
+}
+
+/* Ngăn chặn multiple transitions */
+#mealsView, #logView, #welcomeView {
+  transition: opacity 0.3s ease-in-out;
+  will-change: auto;
+}
+
+/* Tối ưu performance */
+.sidebar-btn,
+#mealsView,
+#logView, 
+#welcomeView {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Mobile touch optimization */
+@media (max-width: 768px) {
+  .sidebar-btn {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+}
   @media (max-width: 400px) {
     .text-3xl { font-size: 1.75rem; }
     .sm\:text-5xl { font-size: 2rem !important; }
@@ -3984,14 +4033,83 @@ chatbotModal.addEventListener('click', function(e) {
 </style>
 <script>
 function switchView(view) {
-  // Ẩn tất cả view
-  document.getElementById("welcomeView").classList.add("hidden");
-  document.getElementById("mealsView").classList.add("hidden");
-  document.getElementById("logView").classList.add("hidden");
+  // Ngăn chặn click liên tiếp
+  if (isViewSwitching) {
+    console.log('View đang switching, bỏ qua request');
+    return;
+  }
+  
+  // Clear timeout cũ nếu có
+  if (switchViewTimeout) {
+    clearTimeout(switchViewTimeout);
+  }
+  
+  // Set flag đang xử lý
+  isViewSwitching = true;
+  
+  // Debounce với 200ms
+  switchViewTimeout = setTimeout(() => {
+    try {
+      console.log('Switching to view:', view);
+      
+      // Ẩn tất cả view
+      document.getElementById("welcomeView").classList.add("hidden");
+      document.getElementById("mealsView").classList.add("hidden");
+      document.getElementById("logView").classList.add("hidden");
 
-  // Hiện view tương ứng
-  document.getElementById(view + "View").classList.remove("hidden");
+      // Hiện view tương ứng
+      const targetView = document.getElementById(view + "View");
+      if (targetView) {
+        targetView.classList.remove("hidden");
+      }
 
+      // Cập nhật trạng thái active cho sidebar buttons
+      document.querySelectorAll(".sidebar-btn").forEach(btn => {
+        btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
+        btn.classList.add("text-white");
+      });
+      
+      const activeBtn = document.getElementById("btn-" + view);
+      if (activeBtn) {
+        activeBtn.classList.add("bg-white", "text-blue-700", "font-semibold", "shadow-md");
+        activeBtn.classList.remove("text-white");
+      }
+
+      // Đóng sidebar trên mobile sau khi chọn
+      if (window.innerWidth < 768) {
+        closeSidebar();
+      }
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+    } catch (error) {
+      console.error('Error in switchView:', error);
+    } finally {
+      // Reset flag sau khi hoàn thành
+      setTimeout(() => {
+        isViewSwitching = false;
+      }, 100);
+    }
+  }, 200);
+}
+// Thêm function xử lý lỗi
+function handleViewSwitchError(error, view) {
+  console.error(`Error switching to ${view}:`, error);
+  
+  // Show user-friendly error
+  showNotice(`Lỗi khi chuyển đến ${view}. Vui lòng thử lại.`, false);
+  
+  // Reset state
+  isViewSwitching = false;
+  
+  // Reset all buttons
+  document.querySelectorAll('.sidebar-btn').forEach(btn => {
+    if (btn.hasAttribute('data-original-text')) {
+      hideSwitchingState(btn);
+    }
+  });
+}
   // Cập nhật trạng thái active cho sidebar buttons
   document.querySelectorAll(".sidebar-btn").forEach(btn => {
     btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
@@ -4003,7 +4121,29 @@ function switchView(view) {
     activeBtn.classList.add("bg-white", "text-blue-700", "font-semibold", "shadow-md");
     activeBtn.classList.remove("text-white");
   }
+// Thêm function này sau handleViewSwitchError (dòng 4122):
+function hideSwitchingState(button) {
+  const originalText = button.getAttribute('data-original-text');
+  if (originalText) {
+    button.innerHTML = originalText;
+  }
+  button.disabled = false;
+  button.removeAttribute('data-original-text');
+  button.style.pointerEvents = 'auto';
+  button.style.opacity = '1';
+}
 
+function showSwitchingState(button) {
+  const originalText = button.innerHTML;
+  button.setAttribute('data-original-text', originalText);
+  button.innerHTML = `
+    <span class="text-2xl animate-spin">⚙️</span> 
+    <span class="sidebar-text">Đang tải...</span>
+  `;
+  button.disabled = true;
+  button.style.pointerEvents = 'none';
+  button.style.opacity = '0.7';
+}
   // Đóng sidebar trên mobile sau khi chọn
   if (window.innerWidth < 768) {
     closeSidebar();
@@ -4012,28 +4152,26 @@ function switchView(view) {
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+  function goHome() {
+    // Ẩn tất cả
+    document.getElementById("mealsView").classList.add("hidden");
+    document.getElementById("logView").classList.add("hidden");
+    document.getElementById("welcomeView").classList.remove("hidden");
 
-function goHome() {
-  // Ẩn tất cả view khác
-  document.getElementById("mealsView").classList.add("hidden");
-  document.getElementById("logView").classList.add("hidden");
-  
-  // Hiện welcome view
-  document.getElementById("welcomeView").classList.remove("hidden");
-  
-  // Xoá trạng thái active của tất cả sidebar buttons
-  document.querySelectorAll(".sidebar-btn").forEach(btn => {
-    btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
-    btn.classList.add("text-white");
-  });
-  
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+    // Xoá trạng thái active
+    document.querySelectorAll("aside button").forEach(btn => {
+      btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
+    });
+  }
 
 window.onload = () => {
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
+
+  // Ẩn tất cả view ban đầu
+  document.getElementById("mealsView").classList.add("hidden");
+  document.getElementById("logView").classList.add("hidden");
+  document.getElementById("welcomeView").classList.add("hidden");
 
   if (view === "log") {
     switchView("log");
@@ -4042,8 +4180,6 @@ window.onload = () => {
   } else {
     // Hiện welcome view mặc định
     document.getElementById("welcomeView").classList.remove("hidden");
-    document.getElementById("mealsView").classList.add("hidden");
-    document.getElementById("logView").classList.add("hidden");
   }
 };
 </script>
@@ -5101,13 +5237,76 @@ function toggleSidebarCollapse() {
   }
 }
 
+// Enhanced event handlers
+// Thêm vào phần script quản lý sidebar buttons
 document.addEventListener('DOMContentLoaded', function() {
-  // Auto-close sidebar on mobile when clicking nav items
-  document.querySelectorAll('.sidebar-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  let clickTimeout = null;
+  const CLICK_DELAY = 300; // 300ms debounce
+  
+  // Debounce function cho sidebar buttons
+  function debounceClick(element, callback, delay = CLICK_DELAY) {
+    element.addEventListener('click', function(e) {
+      e.preventDefault();
       e.stopPropagation();
+      
+      // Disable button tạm thời
+      this.style.pointerEvents = 'none';
+      this.style.opacity = '0.7';
+      
+      // Clear timeout cũ
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+      }
+      
+      // Set timeout mới
+      clickTimeout = setTimeout(() => {
+        callback();
+        // Re-enable button
+        this.style.pointerEvents = 'auto';
+        this.style.opacity = '1';
+      }, delay);
     });
-  });
+  }
+  // Thêm vào document.addEventListener('DOMContentLoaded')
+document.addEventListener('DOMContentLoaded', function() {
+  let clickTimeout = null;
+  const CLICK_DELAY = 300;
+  
+  function debounceClick(element, callback, delay = CLICK_DELAY) {
+    if (!element) return;
+    
+    element.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Disable button tạm thời
+      this.style.pointerEvents = 'none';
+      this.style.opacity = '0.7';
+      
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+      }
+      
+      clickTimeout = setTimeout(() => {
+        callback();
+        // Re-enable button
+        this.style.pointerEvents = 'auto';
+        this.style.opacity = '1';
+      }, delay);
+    });
+  }
+  // Áp dụng debounce cho các nút sidebar
+  const mealsBtn = document.getElementById('btn-meals');
+  const logBtn = document.getElementById('btn-log');
+  
+  if (mealsBtn) {
+    debounceClick(mealsBtn, () => switchView('meals'));
+  }
+  
+  if (logBtn) {
+    debounceClick(logBtn, () => switchView('log'));
+  }
+});
   
   // Handle window resize
   window.addEventListener('resize', () => {
@@ -5170,26 +5369,23 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   
   // Enhanced home function
-window.goHome = function() {
-  // Hide all views
-  document.getElementById("mealsView").classList.add("hidden");
-  document.getElementById("logView").classList.add("hidden");
-  document.getElementById("welcomeView").classList.remove("hidden");
-  
-  // Remove active states
-  document.querySelectorAll('.sidebar-btn').forEach(btn => {
-    btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
-    btn.classList.add("text-white");
-  });
-  
-  // Close sidebar on mobile
-  if (window.innerWidth < 768) {
-    closeSidebar();
-  }
-  
-  // Smooth scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+  window.goHome = function() {
+    // Hide all views
+    document.getElementById("mealsView").classList.add("hidden");
+    document.getElementById("logView").classList.add("hidden");
+    document.getElementById("welcomeView").classList.remove("hidden");
+    
+    // Remove active states
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Close sidebar on mobile
+    closeSidebarOnMobile();
+    
+    // Smooth scroll to top
+    smoothScrollToTop();
+  };
 });
 
 // Touch gesture support for mobile sidebar

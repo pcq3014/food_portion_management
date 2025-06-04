@@ -1370,12 +1370,6 @@
 
       <!-- Quick Action Cards for better UX -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-10 max-w-4xl mx-auto">
-        <!-- Meals Card -->
-        <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-pink-200 hover:border-pink-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="switchView('meals')">
-          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🍽️</div>
-          <h3 class="text-lg font-bold text-gray-800 mb-2">Danh sách món ăn</h3>
-          <p class="text-sm text-gray-600">Khám phá và quản lý món ăn yêu thích</p>
-        </div>
 
         {% if user.role != 'admin' %}
         <!-- Analytics Card -->

@@ -66,83 +66,116 @@
 <!-- Dashboard layout -->
 <main class="flex flex-col md:flex-row h-auto md:h-[calc(100vh-80px)] transition-all duration-300 ease-in-out">
     <!-- Sidebar -->
+<!-- Sidebar - Phần cần thay thế trong file index.html -->
 <aside id="sidebar"
-  class="w-full md:w-64 bg-[#fbc3bc]  text-gray-800 p-4 space-y-2 shadow-2xl fixed md:static top-0 left-0 h-screen md:h-auto z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out rounded-r-3xl md:rounded-none border-r-2 border-blue-200"
+  class="sidebar w-full md:w-64 bg-[#fbc3bc] text-gray-800 p-4 space-y-2 shadow-2xl fixed md:static top-0 left-0 h-screen md:h-auto z-50 md:z-auto transform -translate-x-full md:translate-x-0 transition-all duration-300 ease-in-out rounded-r-3xl md:rounded-none border-r-2 border-blue-200"
   style="max-width:100vw;">
-<div class="relative w-full flex items-center justify-between px-2">
-<!-- Nút chỉ hiển thị ở desktop -->
-<button
-  id=""
-  class="hidden md:flex absolute top-0 right-[0.4rem] z-50 w-10 h-10 bg-white border border-pink-200 text-pink-600 rounded-full shadow-md items-center justify-center hover:bg-pink-100 transition"
-  onclick="toggleSidebarCollapse()"
-  title="Thu gọn/mở rộng sidebar"
->
-  <svg id="sidebarToggleIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-  </svg>
-</button>
 
-  <!-- Giữ nguyên cho mobile -->
-<button
-  id="sidebarMobileBtn"
-  class="md:hidden mb-4 mt-2 text-pink-600 text-4xl absolute right-4 top-0 z-20"
-  onclick="toggleSidebar()"
->
-  ☰
-</button>
-</div>
-  <nav class="flex flex-col gap-2 pt-12">
-    <button onclick="switchView('meals')" id="btn-meals"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">📋</span> <span class="sidebar-text">Danh sách món</span>
+  <!-- Toggle buttons container -->
+  <div class="relative w-full flex items-center justify-between px-2 mb-4">
+    <!-- Desktop collapse button -->
+    <button
+      id="sidebarCollapseBtn"
+      class="hidden md:flex absolute top-0 right-[-0.5rem] z-50 w-10 h-10 bg-white border-2 border-pink-200 text-pink-600 rounded-full shadow-md items-center justify-center hover:bg-pink-100 transition-all duration-300 hover:scale-110"
+      onclick="toggleSidebarCollapse()"
+      title="Thu gọn/mở rộng sidebar"
+    >
+      <svg id="sidebarToggleIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
     </button>
+
+    <!-- Mobile close button -->
+    <button
+      id="sidebarMobileCloseBtn"
+      class="md:hidden ml-auto text-pink-600 text-3xl p-2 hover:bg-white/20 rounded-full transition-all duration-200"
+      onclick="closeSidebar()"
+      title="Đóng menu"
+    >
+      ✕
+    </button>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="flex flex-col gap-2">
+    <button onclick="switchView('meals')" id="btn-meals"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">📋</span> 
+      <span class="sidebar-text">Danh sách món</span>
+    </button>
+
     {% if user.role != 'admin' %}
     <button onclick="switchView('log')" id="btn-log"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">📖</span> <span class="sidebar-text">Nhật ký & Phân tích</span>
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">📖</span> 
+      <span class="sidebar-text">Nhật ký & Phân tích</span>
     </button>
-    <button onclick="openSuggestModal()"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">🥗</span> <span class="sidebar-text">Gợi ý món ăn</span>
+
+    <button onclick="openSuggestModal(); closeSidebarOnMobile();"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">🥗</span> 
+      <span class="sidebar-text">Gợi ý món ăn</span>
     </button>
-    <button onclick="openLogMealModal()"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">📝</span> <span class="sidebar-text">Ghi nhật ký</span>
+
+    <button onclick="openLogMealModal(); closeSidebarOnMobile();"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">📝</span> 
+      <span class="sidebar-text">Ghi nhật ký</span>
     </button>
-    <button onclick="openAddMealModal()" class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">➕</span> <span class="sidebar-text">Thêm món ăn</span>
+
+    <button onclick="openAddMealModal(); closeSidebarOnMobile();" 
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">➕</span> 
+      <span class="sidebar-text">Thêm món ăn</span>
     </button>
-    <button onclick="openActivityModal()"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">🏃</span> <span class="sidebar-text">Hoạt động thể chất</span>
+
+    <button onclick="openActivityModal(); closeSidebarOnMobile();"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">🏃</span> 
+      <span class="sidebar-text">Hoạt động thể chất</span>
     </button>
     {% endif %}
-    <button onclick="openProfileModal()"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">👤</span> <span class="sidebar-text">Thông tin cá nhân</span>
+
+    <button onclick="openProfileModal(); closeSidebarOnMobile();"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">👤</span> 
+      <span class="sidebar-text">Thông tin cá nhân</span>
     </button>
+
     {% if user.role == 'admin' %}
-    <button onclick="openUserModal()"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">👥</span> <span class="sidebar-text">Quản lý người dùng</span>
+    <button onclick="openUserModal(); closeSidebarOnMobile();"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">👥</span> 
+      <span class="sidebar-text">Quản lý người dùng</span>
     </button>
-    <button onclick="openActivityLogModal()"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">📜</span> <span class="sidebar-text">Nhật ký hoạt động</span>
+
+    <button onclick="openActivityLogModal(); closeSidebarOnMobile();"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">📜</span> 
+      <span class="sidebar-text">Nhật ký hoạt động</span>
     </button>
-    <button onclick="openLoginLogModal()"
-      class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none">
-      <span class="text-2xl">🔑</span> <span class="sidebar-text">Xem đăng nhập</span>
+
+    <button onclick="openLoginLogModal(); closeSidebarOnMobile();"
+      class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+      <span class="nav-icon text-xl">🔑</span> 
+      <span class="sidebar-text">Xem đăng nhập</span>
     </button>
     {% endif %}
+
+    <!-- CSV Export Dropdown -->
     <div class="relative group">
-      <button class="sidebar-btn flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-blue-500/20 hover:text-blue-700 focus:outline-none w-full">
-        <span class="text-2xl">📤</span> <span class="sidebar-text">Xuất CSV</span>
+      <button class="sidebar-btn nav-btn flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-base transition-all duration-300 hover:bg-white/30 hover:text-gray-800 focus:outline-none w-full bg-white/10 text-gray-700 hover:shadow-md hover:scale-105">
+        <span class="nav-icon text-xl">📤</span> 
+        <span class="sidebar-text">Xuất CSV</span>
       </button>
-      <div class="absolute left-0 mt-1 hidden group-hover:block bg-white text-gray-800 shadow-lg rounded-lg overflow-hidden z-10 w-48">
-        <a href="/export-csv?mode=today" class="block px-4 py-2 hover:bg-blue-100">📆 Xuất hôm nay</a>
-        <a href="/export-csv?mode=all" class="block px-4 py-2 hover:bg-blue-100">📦 Xuất tất cả</a>
+      <div class="dropdown-menu absolute left-0 top-full mt-2 hidden group-hover:block bg-white text-gray-800 shadow-xl rounded-xl overflow-hidden z-20 min-w-[180px] border-2 border-pink-200">
+        <a href="/export-csv?mode=today" class="dropdown-item block px-4 py-3 hover:bg-pink-50 transition-colors border-b border-pink-100 flex items-center gap-2">
+          <span class="text-lg">📆</span> Xuất hôm nay
+        </a>
+        <a href="/export-csv?mode=all" class="dropdown-item block px-4 py-3 hover:bg-pink-50 transition-colors flex items-center gap-2">
+          <span class="text-lg">📦</span> Xuất tất cả
+        </a>
       </div>
     </div>
   </nav>
@@ -3899,101 +3932,258 @@ chatbotModal.addEventListener('click', function(e) {
 </script>
 {% endif %}
 <style>
-.sidebar.collapsed .w-full img {
-  width: 2.5rem !important;
-  height: 2.5rem !important;
+/* Enhanced Sidebar Responsive Styles */
+.sidebar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, width;
 }
+
+/* Desktop Collapsed State */
 .sidebar.collapsed {
   width: 4rem !important;
-  padding-left: 0.5rem !important;
-  padding-right: 0.5rem !important;
-  overflow: hidden !important;
+  padding: 1rem 0.5rem !important;
 }
-.sidebar.collapsed button[onclick*="toggleSidebar"] {
-  left: 40px !important;
-  right: auto !important;
+
+.sidebar.collapsed .sidebar-text {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.2s ease;
+  pointer-events: none;
 }
-  /* Khi sidebar bị collapse */
-  #sidebar.collapsed {
-    width: 4rem; /* w-16 */
+
+.sidebar.collapsed .nav-btn {
+  justify-content: center;
+  padding: 0.75rem !important;
+  min-width: 3rem;
+}
+
+.sidebar.collapsed .nav-icon {
+  margin: 0 !important;
+}
+
+.sidebar.collapsed .dropdown-menu {
+  left: 100%;
+  top: 0;
+  margin-left: 0.5rem;
+  margin-top: 0;
+}
+
+/* Mobile Styles */
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    width: 280px;
+    max-width: 85vw;
+    transform: translateX(-100%);
+    background: #fbc3bc;
+    border-radius: 0 24px 24px 0;
+    padding: 1rem;
   }
-  #sidebar.collapsed .sidebar-text {
-    display: none;
+  
+  .sidebar.open {
+    transform: translateX(0);
   }
-  .sidebar-btn {
-  @apply flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-400 to-green-400 shadow hover:from-green-400 hover:to-blue-400 hover:scale-105 transition-all duration-200;
-  margin-bottom: 0.25rem;
-  border: none;
+  
+  .sidebar .nav-btn {
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    border-radius: 1rem;
+  }
+  
+  .sidebar .nav-btn:hover {
+    transform: translateX(4px) scale(1.02);
+  }
+  
+  .sidebar .nav-icon {
+    font-size: 1.5rem;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .sidebar .dropdown-menu {
+    position: static;
+    display: block;
+    margin-top: 0.5rem;
+    margin-left: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 0.75rem;
+    padding: 0.5rem 0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .sidebar .group:hover .dropdown-menu {
+    display: block;
+  }
+  
+  /* Hide desktop collapse button on mobile */
+  #sidebarCollapseBtn {
+    display: none !important;
+  }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .sidebar {
+    width: 240px;
+  }
+  
+  .sidebar .nav-btn {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .sidebar.collapsed {
+    width: 3.5rem !important;
+  }
+}
+
+/* Enhanced Button Styles */
+.nav-btn {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  color: #4a5568;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
   outline: none;
   cursor: pointer;
+  overflow: hidden;
 }
-.sidebar-btn:active {
-  @apply scale-95;
+
+.nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
 }
-.sidebar-btn .sidebar-text {
-  @apply transition-all duration-200;
+
+.nav-btn:hover::before {
+  left: 100%;
 }
-.sidebar.collapsed .sidebar-text {
-  display: none !important;
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #2d3748;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-.sidebar.collapsed .sidebar-btn {
+
+.nav-btn:active {
+  transform: scale(0.98);
+}
+
+.nav-btn.active {
+  background: rgba(255, 255, 255, 0.9);
+  color: #2d3748;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Enhanced Dropdown Styles */
+.dropdown-menu {
+  transform: translateY(-10px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.group:hover .dropdown-menu {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.dropdown-item {
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background: rgba(251, 195, 188, 0.2) !important;
+  transform: translateX(4px);
+}
+
+/* Sidebar Toggle Icon Animation */
+.sidebar.collapsed #sidebarToggleIcon {
+  transform: rotate(180deg);
+}
+
+/* Enhanced Mobile Close Button */
+#sidebarMobileCloseBtn {
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-}
-.sidebar.collapsed {
-  width: 4rem !important;
-  padding-left: 0.5rem !important;
-  padding-right: 0.5rem !important;
-  overflow: hidden !important;
-}
-.sidebar.collapsed nav {
-  display: block !important;
 }
 
-#sidebar.collapsed {
-  width: 4rem !important;
-  padding: 0.5rem 0.25rem !important;
-  overflow: hidden !important;
-  box-shadow: none;
+#sidebarMobileCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1) rotate(90deg);
 }
-#sidebar.collapsed .sidebar-text {
-  display: none !important;
-}
-  .sidebar-btn {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-white font-medium transition-all duration-200 ease-in-out hover:bg-blue-500/50 focus:outline-none;
-  }
-  .sidebar-btn.active {
-    @apply bg-white text-blue-700 shadow-md font-semibold;
-  }
-  .sidebar-text {
-    @apply whitespace-nowrap;
-  }
-@media (max-width: 640px) {
-  #profileModal .bg-white {
-    max-width: 98vw !important;
-    padding: 0.5rem !important;
-  }
-  #profileForm {
-    padding: 0 !important;
-    max-width: 100vw !important;
-  }
-  #profileForm input,
-  #profileForm select {
-    font-size: 15px !important;
-    padding: 0.5rem !important;
-  }
-}
-.fe-bold { font-weight: bold; color: #FF6F61; }
 
-  @media (max-width: 400px) {
-    .text-3xl { font-size: 1.75rem; }
-    .sm\:text-5xl { font-size: 2rem !important; }
-    .rounded-xl, .rounded-2xl { border-radius: 1rem !important; }
-    .sm\:text-lg { font-size: 1rem !important; }
-    .sm\:px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
-  }
+/* Performance optimizations */
+.nav-btn,
+.dropdown-menu {
+  will-change: transform;
+}
 
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .nav-btn {
+    border-width: 2px;
+    border-color: #4a5568;
+  }
+  
+  .nav-btn:hover {
+    border-color: #2d3748;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .nav-btn,
+  .dropdown-menu,
+  #sidebarToggleIcon {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .nav-btn:hover {
+    transform: none !important;
+  }
+}
+
+/* Focus states for accessibility */
+.nav-btn:focus {
+  outline: 2px solid #fbc3bc;
+  outline-offset: 2px;
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .nav-btn:active {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(0.96);
+  }
+}
 </style>
 <script>
   function switchView(view) {
@@ -5042,25 +5232,180 @@ document.getElementById('confirmDeleteUserBtn').onclick = function() {
 </style>
 {% endif %}
 <script>
+// Enhanced Sidebar Functions
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
-
-  const isOpen = sidebar.classList.contains('open');
-  if (isOpen) {
-    sidebar.classList.remove('open');
-    overlay.classList.add('hidden');
-  } else {
-    sidebar.classList.add('open');
-    overlay.classList.remove('hidden');
+  
+  if (window.innerWidth < 768) {
+    // Mobile behavior
+    const isOpen = sidebar.classList.contains('open');
+    if (isOpen) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
   }
 }
-// Đóng sidebar khi chọn menu (mobile)
-document.querySelectorAll('#sidebar nav button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (window.innerWidth < 767) toggleSidebar();
+
+function openSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  sidebar.classList.add('open');
+  overlay.classList.remove('hidden');
+  document.body.style.overflow = 'hidden'; // Prevent background scroll
+}
+
+function closeSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  
+  sidebar.classList.remove('open');
+  overlay.classList.add('hidden');
+  document.body.style.overflow = ''; // Restore background scroll
+}
+
+function closeSidebarOnMobile() {
+  if (window.innerWidth < 768) {
+    closeSidebar();
+  }
+}
+
+function toggleSidebarCollapse() {
+  if (window.innerWidth >= 768) {
+    const sidebar = document.getElementById('sidebar');
+    const icon = document.getElementById('sidebarToggleIcon');
+    
+    sidebar.classList.toggle('collapsed');
+    
+    // Icon animation with smooth transition
+    if (sidebar.classList.contains('collapsed')) {
+      icon.style.transform = 'rotate(180deg)';
+    } else {
+      icon.style.transform = 'rotate(0deg)';
+    }
+  }
+}
+
+// Enhanced event handlers
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-close sidebar on mobile when clicking nav items
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      closeSidebarOnMobile();
+    });
   });
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+      // Desktop: remove mobile classes and restore scroll
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.add('hidden');
+      document.body.style.overflow = '';
+    } else {
+      // Mobile: remove collapsed state
+      document.getElementById('sidebar').classList.remove('collapsed');
+    }
+  });
+  
+  // Enhanced keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeSidebar();
+    }
+  });
+  
+  // Smooth scroll to top when switching views
+  function smoothScrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+  
+  // Add active state management
+  function setActiveNavButton(viewName) {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    const activeBtn = document.getElementById('btn-' + viewName);
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+    }
+  }
+  
+  // Enhanced view switching with active states
+  window.switchView = function(view) {
+    // Hide all views
+    document.getElementById("welcomeView").classList.add("hidden");
+    document.getElementById("mealsView").classList.add("hidden");
+    document.getElementById("logView").classList.add("hidden");
+    
+    // Show target view
+    document.getElementById(view + "View").classList.remove("hidden");
+    
+    // Set active button
+    setActiveNavButton(view);
+    
+    // Close sidebar on mobile
+    closeSidebarOnMobile();
+    
+    // Smooth scroll to top
+    smoothScrollToTop();
+  };
+  
+  // Enhanced home function
+  window.goHome = function() {
+    // Hide all views
+    document.getElementById("mealsView").classList.add("hidden");
+    document.getElementById("logView").classList.add("hidden");
+    document.getElementById("welcomeView").classList.remove("hidden");
+    
+    // Remove active states
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Close sidebar on mobile
+    closeSidebarOnMobile();
+    
+    // Smooth scroll to top
+    smoothScrollToTop();
+  };
 });
+
+// Touch gesture support for mobile sidebar
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', function(e) {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipeGesture();
+});
+
+function handleSwipeGesture() {
+  if (window.innerWidth < 768) {
+    const swipeThreshold = 50;
+    const sidebar = document.getElementById('sidebar');
+    
+    // Swipe right to open sidebar (from left edge)
+    if (touchEndX - touchStartX > swipeThreshold && touchStartX < 50) {
+      openSidebar();
+    }
+    
+    // Swipe left to close sidebar
+    if (touchStartX - touchEndX > swipeThreshold && sidebar.classList.contains('open')) {
+      closeSidebar();
+    }
+  }
+}
 </script>
 <!-- Modal Nhật ký hoạt động (Admin) -->
 <div id="activityLogModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-opacity duration-300 ease-in-out">

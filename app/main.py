@@ -278,6 +278,7 @@ def logout():
 def forgot_password_form(request: Request):
     return templates.TemplateResponse("forgot-password.html", {"request": request})
 
+
 @app.post("/forgot-password", response_class=HTMLResponse)
 async def forgot_password_submit(request: Request, email: str = Form(...)):
     user = users_col.find_one({"username": email}) or users_col.find_one({"email": email})
@@ -295,37 +296,418 @@ async def forgot_password_submit(request: Request, email: str = Form(...)):
         reset_link = str(request.url_for('reset_password_form')) + f"?token={token}"
 
         email_message = MessageSchema(
-            subject="Yêu cầu đặt lại mật khẩu - SmartCalories",
+            subject="🔐 Yêu cầu đặt lại mật khẩu - SmartCalories",
             recipients=[user["email"]],
             body=f"""
-    <table width="100%" cellpadding="0" cellspacing="0" style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 0;">
-      <tr>
-        <td align="center" style="padding: 40px 0;">
-          <!-- Không có logo -->
-          <table width="420" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0001;">
-            <tr>
-              <td style="padding: 32px 32px 16px 32px;">
-                <h2 style="color: #FF6F61; margin: 0 0 16px 0; text-align:center;">Đặt lại mật khẩu</h2>
-                <p style="font-size: 16px; color: #222;">Xin chào <strong>{user.get('fullname', '')}</strong>,</p>
-                <p style="font-size: 15px; color: #444;">Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản SmartCalories.</p>
-                <p style="font-size: 15px; color: #444;">Nhấn vào nút bên dưới để đặt lại mật khẩu (liên kết có hiệu lực trong 30 phút):</p>
-                <div style="text-align: center; margin: 28px 0;">
-                  <a href="{reset_link}" style="background: linear-gradient(90deg,#FF6F61,#FF8A80); color: #fff; padding: 14px 32px; border-radius: 6px; font-size: 16px; text-decoration: none; font-weight: bold; letter-spacing: 1px; display: inline-block;">Đặt lại mật khẩu</a>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt lại mật khẩu - SmartCalories</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+        }}
+        
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }}
+        
+        .email-card {{
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+        }}
+        
+        .email-card::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }}
+        
+        @keyframes shimmer {{
+            0%, 100% {{ background-position: 0% 50%; }}
+            50% {{ background-position: 100% 50%; }}
+        }}
+        
+        .header {{
+            text-align: center;
+            padding: 48px 40px 32px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        }}
+        
+        .logo-container {{
+            display: inline-block;
+            position: relative;
+            margin-bottom: 24px;
+        }}
+        
+        .logo {{
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            position: relative;
+        }}
+        
+        .logo::after {{
+            content: '🔐';
+            font-size: 32px;
+            color: white;
+        }}
+        
+        .notification-dot {{
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(45deg, #f59e0b, #f97316);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }}
+        
+        @keyframes pulse {{
+            0%, 100% {{ transform: scale(1); }}
+            50% {{ transform: scale(1.1); }}
+        }}
+        
+        .brand-name {{
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }}
+        
+        .subtitle {{
+            color: #64748b;
+            font-size: 16px;
+            margin: 8px 0 0;
+            font-weight: 500;
+        }}
+        
+        .content {{
+            padding: 40px;
+        }}
+        
+        .greeting {{
+            font-size: 18px;
+            color: #1e293b;
+            margin: 0 0 16px;
+            font-weight: 600;
+        }}
+        
+        .message {{
+            color: #475569;
+            font-size: 16px;
+            margin: 0 0 24px;
+            line-height: 1.7;
+        }}
+        
+        .security-notice {{
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 24px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }}
+        
+        .security-icon {{
+            font-size: 20px;
+            margin-top: 2px;
+        }}
+        
+        .security-text {{
+            flex: 1;
+            color: #92400e;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }}
+        
+        .button-container {{
+            text-align: center;
+            margin: 40px 0;
+        }}
+        
+        .reset-button {{
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            padding: 18px 48px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }}
+        
+        .reset-button::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }}
+        
+        .reset-button:hover {{
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }}
+        
+        .reset-button:hover::before {{
+            left: 100%;
+        }}
+        
+        .alternative-link {{
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 24px 0;
+            font-size: 14px;
+            color: #64748b;
+            word-break: break-all;
+        }}
+        
+        .alternative-link strong {{
+            color: #1e293b;
+        }}
+        
+        .info-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 32px 0;
+        }}
+        
+        .info-item {{
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }}
+        
+        .info-icon {{
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }}
+        
+        .info-title {{
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 14px;
+            margin: 0 0 4px;
+        }}
+        
+        .info-desc {{
+            color: #64748b;
+            font-size: 13px;
+            margin: 0;
+        }}
+        
+        .footer {{
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #94a3b8;
+            text-align: center;
+            padding: 32px 40px;
+            font-size: 14px;
+        }}
+        
+        .footer-logo {{
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }}
+        
+        .footer-links {{
+            margin: 16px 0;
+        }}
+        
+        .footer-links a {{
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.3s ease;
+        }}
+        
+        .footer-links a:hover {{
+            color: #764ba2;
+        }}
+        
+        .copyright {{
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 16px;
+        }}
+        
+        @media (max-width: 600px) {{
+            .container {{
+                padding: 20px 10px;
+            }}
+            
+            .content {{
+                padding: 24px 20px;
+            }}
+            
+            .header {{
+                padding: 32px 20px 24px;
+            }}
+            
+            .footer {{
+                padding: 24px 20px;
+            }}
+            
+            .info-grid {{
+                grid-template-columns: 1fr;
+            }}
+            
+            .reset-button {{
+                padding: 14px 32px;
+                font-size: 15px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-card">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo-container">
+                    <div class="logo">
+                        <div class="notification-dot"></div>
+                    </div>
                 </div>
-                <p style="font-size: 14px; color: #888;">Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email.</p>
-                <p style="font-size: 14px; color: #888; margin-top: 32px;">Trân trọng,<br>Đội ngũ <span style="color:#FF6F61;font-weight:bold;">SmartCalories</span></p>
-              </td>
-            </tr>
-            <tr>
-              <td style="background: #f4f4f4; color: #888; text-align: center; font-size: 12px; padding: 18px 0; border-radius: 0 0 12px 12px;">
-                © 2025 SmartCalories. Mọi quyền được bảo lưu.
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-    """,
+                <h1 class="brand-name">SmartCalories</h1>
+                <p class="subtitle">Quản lý dinh dưỡng thông minh</p>
+            </div>
+            
+            <!-- Content -->
+            <div class="content">
+                <h2 class="greeting">Xin chào {user.get('fullname', 'bạn')}! 👋</h2>
+                
+                <p class="message">
+                    Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản SmartCalories của bạn. 
+                    Để đảm bảo tính bảo mật, vui lòng nhấn vào nút bên dưới để tạo mật khẩu mới.
+                </p>
+                
+                <div class="security-notice">
+                    <span class="security-icon">🛡️</span>
+                    <p class="security-text">
+                        <strong>Quan trọng:</strong> Liên kết này chỉ có hiệu lực trong <strong>30 phút</strong> 
+                        và chỉ có thể sử dụng một lần duy nhất để đảm bảo an toàn cho tài khoản của bạn.
+                    </p>
+                </div>
+                
+                <div class="button-container">
+                    <a href="{reset_link}" class="reset-button">
+                        🔐 Đặt lại mật khẩu ngay
+                    </a>
+                </div>
+                
+                <div class="alternative-link">
+                    <strong>Không thể nhấn nút?</strong> Sao chép và dán liên kết sau vào trình duyệt:
+                    <br><br>
+                    {reset_link}
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-icon">⏰</span>
+                        <p class="info-title">Thời gian hiệu lực</p>
+                        <p class="info-desc">30 phút kể từ bây giờ</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">🔒</span>
+                        <p class="info-title">Bảo mật cao</p>
+                        <p class="info-desc">Liên kết mã hóa an toàn</p>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">📱</span>
+                        <p class="info-title">Mọi thiết bị</p>
+                        <p class="info-desc">Hoạt động trên máy tính & điện thoại</p>
+                    </div>
+                </div>
+                
+                <div class="security-notice" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-color: #ef4444;">
+                    <span class="security-icon">⚠️</span>
+                    <p class="security-text" style="color: #dc2626;">
+                        <strong>Lưu ý bảo mật:</strong> Nếu bạn không yêu cầu đặt lại mật khẩu, 
+                        vui lòng bỏ qua email này và liên hệ với chúng tôi ngay lập tức. 
+                        Tài khoản của bạn vẫn hoàn toàn an toàn.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <div class="footer-logo">SmartCalories</div>
+                <p>Cảm ơn bạn đã tin tưởng sử dụng dịch vụ của chúng tôi!</p>
+                
+                <div class="footer-links">
+                    <a href="#" style="color: #667eea;">Trung tâm trợ giúp</a>
+                    <a href="#" style="color: #667eea;">Chính sách bảo mật</a>
+                    <a href="#" style="color: #667eea;">Liên hệ hỗ trợ</a>
+                </div>
+                
+                <p class="copyright">
+                    © 2025 SmartCalories. Mọi quyền được bảo lưu.<br>
+                    Email này được gửi tự động, vui lòng không trả lời.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """,
             subtype="html"
         )
 
@@ -336,6 +718,7 @@ async def forgot_password_submit(request: Request, email: str = Form(...)):
         "forgot-password.html",
         {"request": request, "message": message}
     )
+
 
 # Route đặt lại mật khẩu
 @app.get("/reset-password", response_class=HTMLResponse)

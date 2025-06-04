@@ -129,7 +129,7 @@ def log_login_async(db, user_fullname, ip, time_str):
             "user": user_fullname,
             "ip": ip
         }
-        db["login_logs"].insert_one(doc)
+        db["login_logs"].insert_one(doc)  
     threading.Thread(target=task, daemon=True).start()
 
 # --- 3. ROUTES ---
@@ -868,20 +868,52 @@ async def activity_log(request: Request, user_id: str = Cookie(None)):
     user = users_col.find_one({"_id": ObjectId(user_id)})
     if not user or user.get("role") != "admin":
         return HTMLResponse("<div class='text-red-500'>Bạn không có quyền xem nhật ký này</div>")
+    
     # Lấy database từ một collection bất kỳ
     db = meals_col.database
     logs = []
     if "activity_logs" in db.list_collection_names():
         logs = list(db["activity_logs"].find().sort("time", -1).limit(50))
+    
     if not logs:
-        return HTMLResponse("<div class='text-gray-500'>Chưa có nhật ký hoạt động nào.</div>")
-    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th></tr></thead><tbody>"
+        return HTMLResponse("""
+        <div class='empty-log-state'>
+          <div class='empty-icon'>📋</div>
+          <h3>Chưa có nhật ký hoạt động</h3>
+          <p>Hệ thống chưa ghi nhận hoạt động nào.</p>
+        </div>
+        """)
+    
+    html = """
+    <div class='log-header'>📋 Nhật ký hoạt động hệ thống</div>
+    <table class='activity-log-table'>
+        <thead>
+            <tr>
+                <th>🕐 Thời gian</th>
+                <th>👤 Người dùng</th>
+                <th>⚡ Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
+    
     for log in logs:
-        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{log.get('action','')}</td></tr>"
+        time_formatted = log.get('time', '')
+        user_name = log.get('user', 'Không xác định')
+        action = log.get('action', 'Không có thông tin')
+        
+        html += f"""
+        <tr>
+            <td class='time-cell'>{time_formatted}</td>
+            <td class='user-cell'>{user_name}</td>
+            <td class='action-cell'>{action}</td>
+        </tr>
+        """
+    
     html += "</tbody></table>"
     return HTMLResponse(html)
 
-# Route xem nhật ký đăng nhập
+# Cập nhật route xem nhật ký đăng nhập
 @app.get("/login-log", response_class=HTMLResponse)
 async def login_log(request: Request, user_id: str = Cookie(None)):
     # Chỉ cho admin xem
@@ -890,13 +922,37 @@ async def login_log(request: Request, user_id: str = Cookie(None)):
     user = users_col.find_one({"_id": ObjectId(user_id)})
     if not user or user.get("role") != "admin":
         return HTMLResponse("<div class='text-red-500'>Bạn không có quyền xem nhật ký này</div>")
+    
     db = meals_col.database
     logs = []
     if "login_logs" in db.list_collection_names():
         logs = list(db["login_logs"].find().sort("time", -1).limit(50))
+    
     if not logs:
-        return HTMLResponse("<div class='text-gray-500'>Chưa có nhật ký đăng nhập nào.</div>")
-    html = "<table class='min-w-full text-sm'><thead><tr><th>Thời gian</th><th>Người dùng</th><th>IP</th><th>Địa chỉ</th><th>Nhà mạng</th><th>Tọa độ</th></tr></thead><tbody>"
+        return HTMLResponse("""
+        <div class='empty-log-state'>
+          <div class='empty-icon'>🔑</div>
+          <h3>Chưa có nhật ký đăng nhập</h3>
+          <p>Hệ thống chưa ghi nhận đăng nhập nào.</p>
+        </div>
+        """)
+    
+    html = """
+    <div class='log-header'>🔐 Nhật ký đăng nhập hệ thống</div>
+    <table class='login-log-table'>
+        <thead>
+            <tr>
+                <th>🕐 Thời gian</th>
+                <th>👤 Người dùng</th>
+                <th>🌐 IP Address</th>
+                <th>📍 Địa chỉ</th>
+                <th>🏢 Nhà mạng</th>
+                <th>🗺️ Vị trí bản đồ</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
+    
     ip_cache = {}
     for log in logs:
         ip = log.get('ip', '')
@@ -909,13 +965,39 @@ async def login_log(request: Request, user_id: str = Cookie(None)):
             except Exception:
                 data = {}
             ip_cache[ip] = data
+            
         if data.get("status") == "success":
-            location = f"{data.get('regionName','')}, {data.get('country','')}"
-            isp = data.get('isp', '')
-            latlon = f"{data.get('lat','')}, {data.get('lon','')}"
+            city = data.get('city', '')
+            region = data.get('regionName', '')
+            country = data.get('country', '')
+            location = f"{city}, {region}, {country}".strip(', ')
+            isp = data.get('isp', 'Không xác định')
+            lat = data.get('lat','')
+            lon = data.get('lon','')
+            if lat and lon:
+                latlon = f"<a href='https://maps.google.com/?q={lat},{lon}' target='_blank' class='map-link'>📍 Xem bản đồ</a>"
+            else:
+                latlon = "<span style='color: #ccc;'>Không có</span>"
         else:
-            location = isp = latlon = ""
-        html += f"<tr><td>{log.get('time','')}</td><td>{log.get('user','')}</td><td>{ip}</td><td>{location}</td><td>{isp}</td><td>{latlon}</td></tr>"
+            location = "Không xác định"
+            isp = "Không xác định"
+            latlon = "<span style='color: #ccc;'>Không có</span>"
+            
+        time_formatted = log.get('time', '')
+        user_name = log.get('user', 'Không xác định')
+        ip_formatted = f"<span class='ip-cell'>{ip}</span>" if ip else "<span style='color: #ccc;'>Không có</span>"
+        
+        html += f"""
+        <tr>
+            <td class='time-cell'>{time_formatted}</td>
+            <td class='user-cell'>{user_name}</td>
+            <td>{ip_formatted}</td>
+            <td class='location-cell'>{location}</td>
+            <td class='isp-cell'>{isp}</td>
+            <td>{latlon}</td>
+        </tr>
+        """
+    
     html += "</tbody></table>"
     return HTMLResponse(html)
 
@@ -1016,6 +1098,284 @@ async def chatbot_endpofloat(request: Request):
     except Exception as e:
         prfloat("Gemini fallback error:", e)
         return JSONResponse({"reply": "⚠️ Lỗi không xác định khi gọi Gemini."})
+
+# Thêm route mới để thêm món ăn từ chatbot
+@app.post("/add-meal-from-chatbot")
+async def add_meal_from_chatbot(
+    request: Request,
+    user_id: str = Cookie(None)
+):
+    if not user_id:
+        return JSONResponse({"success": False, "message": "Chưa đăng nhập"}, status_code=401)
+    
+    data = await request.json()
+    user = users_col.find_one({"_id": ObjectId(user_id)})
+    
+    if user and is_too_fast(user, "add_meal"):
+        return JSONResponse({"success": False, "message": "Bạn thao tác quá nhanh, vui lòng thử lại sau."}, status_code=429)
+    
+    fullname = user.get("fullname", "") if user else ""
+    
+    # Validate required fields
+    required_fields = ['name', 'calories', 'protein', 'carbs', 'fat']
+    for field in required_fields:
+        if field not in data:
+            return JSONResponse({"success": False, "message": f"Thiếu thông tin {field}"}, status_code=400)
+    
+    meal_doc = {
+        "name": data["name"],
+        "calories": float(data["calories"]),
+        "protein": float(data["protein"]),
+        "carbs": float(data["carbs"]),
+        "fat": float(data["fat"]),
+        "image_url": data.get("image_url", ""),
+        "created_by": fullname,
+        "source": "chatbot_ai"
+    }
+    
+    result = meals_col.insert_one(meal_doc)
+    
+    # Ghi log hoạt động
+    db = meals_col.database
+    db["activity_logs"].insert_one({
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "user": fullname,
+        "action": f"Thêm món ăn từ AI: {data['name']}"
+    })
+    
+    return JSONResponse({
+        "success": True, 
+        "message": "Thêm món ăn thành công!",
+        "meal_id": str(result.inserted_id)
+    })
+
+# Cập nhật route chatbot với tính năng thông minh hơn
+@app.post("/chatbot")
+async def chatbot_endpoint(request: Request):
+    data = await request.json()
+    messages = data.get("messages", [])
+    meals = data.get("meals", [])
+    logs = data.get("logs", [])
+    summary = data.get("summary", {})
+    activities = data.get("activities", [])
+
+    last_msg = messages[-1]["content"].strip().lower()
+    meal_names = [meal["name"].lower() for meal in meals]
+
+    # 🔍 Tìm kiếm món ăn từ nhiều nguồn
+    search_patterns = [
+        r"tìm\s+(?:kiếm\s+)?(?:món\s+)?(.+)",
+        r"(?:thông\s+tin|calories?|dinh\s+dưỡng)\s+(?:món\s+)?(.+)",
+        r"(.+)\s+(?:có\s+)?(?:bao\s+nhiêu|bao\s+nhiều)\s+(?:calo|calories?)",
+        r"(?:thêm|tạo)\s+món\s+(.+)",
+        r"món\s+(.+?)(?:\s+(?:có|là|gì))?(?:\?|$)",
+    ]
+    
+    potential_name = None
+    for pattern in search_patterns:
+        match = re.search(pattern, last_msg)
+        if match:
+            potential_name = match.group(1).strip()
+            break
+
+    # 🤖 Tích hợp tìm kiếm thông minh từ nhiều nguồn
+    if potential_name and potential_name not in meal_names:
+        try:
+            model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+            
+            # Enhanced prompt với nhiều nguồn dữ liệu
+            enhanced_prompt = f"""
+            Bạn là chuyên gia dinh dưỡng AI. Hãy tìm kiếm và phân tích món ăn "{potential_name}" từ các nguồn đáng tin cậy:
+
+            1. **Tìm kiếm từ cơ sở dữ liệu dinh dưỡng quốc tế:**
+            - USDA Food Database
+            - Nutrition Data từ các nghiên cứu khoa học
+            - Cơ sở dữ liệu dinh dưỡng của các quốc gia
+
+            2. **Tham khảo từ các nguồn ẩm thực:**
+            - Công thức nấu ăn truyền thống
+            - Thông tin từ các nhà hàng uy tín
+            - Dữ liệu từ các ứng dụng theo dõi dinh dưỡng
+
+            3. **Ước tính cho 1 khẩu phần tiêu chuẩn:**
+            - Calories (kcal) - chính xác đến đơn vị
+            - Protein (g) - làm tròn 1 chữ số thập phân
+            - Carbs (g) - làm tròn 1 chữ số thập phân  
+            - Fat (g) - làm tròn 1 chữ số thập phân
+            - Tìm URL hình ảnh thực tế từ internet (ưu tiên hình ảnh chất lượng cao)
+
+            4. **Bổ sung thông tin hữu ích:**
+            - Nguồn gốc món ăn
+            - Lợi ích dinh dưỡng
+            - Gợi ý cách chế biến healthy
+
+            Trả về định dạng JSON chính xác:
+            {{
+                "name": "Tên món ăn (tiếng Việt)",
+                "calories": số_calories,
+                "protein": số_protein,
+                "carbs": số_carbs,
+                "fat": số_fat,
+                "image_url": "URL_hình_ảnh_thực_tế",
+                "origin": "Nguồn gốc món ăn",
+                "benefits": ["Lợi ích 1", "Lợi ích 2"],
+                "cooking_tips": "Gợi ý chế biến healthy"
+            }}
+
+            Hãy đảm bảo thông tin chính xác và đáng tin cậy!
+            """
+            
+            response = model.generate_content(enhanced_prompt)
+            json_text = response.text.strip()
+            
+            # Extract JSON from response
+            json_match = re.search(r'\{.*\}', json_text, re.DOTALL)
+            if json_match:
+                json_text = json_match.group()
+            
+            try:
+                meal_data = json.loads(json_text)
+                
+                # Validate and clean data
+                meal_data["image_url"] = meal_data.get("image_url") or "/static/default-food.jpg"
+                meal_data["calories"] = float(meal_data.get("calories", 0))
+                meal_data["protein"] = float(meal_data.get("protein", 0))
+                meal_data["carbs"] = float(meal_data.get("carbs", 0))
+                meal_data["fat"] = float(meal_data.get("fat", 0))
+                
+                # Store in temp cache
+                chatbot_temp_cache[meal_data["name"].lower()] = meal_data
+                
+                # Create enhanced response
+                reply = f"""🔍 **Đã tìm thấy thông tin món: {meal_data['name']}**
+
+MEAL_INFO:{json.dumps(meal_data)}
+
+📊 **Thông tin dinh dưỡng** (1 khẩu phần):
+• Calories: **{meal_data['calories']} kcal**
+• Protein: **{meal_data['protein']}g**
+• Carbs: **{meal_data['carbs']}g** 
+• Fat: **{meal_data['fat']}g**
+
+🌍 **Nguồn gốc**: {meal_data.get('origin', 'Không xác định')}
+
+💡 **Lợi ích dinh dưỡng**:
+{chr(10).join(['• ' + benefit for benefit in meal_data.get('benefits', ['Cung cấp năng lượng cho cơ thể'])])}
+
+👨‍🍳 **Gợi ý chế biến healthy**: {meal_data.get('cooking_tips', 'Nấu với ít dầu và nhiều rau xanh')}
+
+Bạn có muốn thêm món này vào danh sách không?"""
+                
+                return JSONResponse({
+                    "reply": reply,
+                    "meal_data": meal_data
+                })
+                
+            except json.JSONDecodeError:
+                # Fallback response
+                return JSONResponse({
+                    "reply": f"🔍 Tôi đã tìm kiếm món **{potential_name}** nhưng không thể xử lý dữ liệu. Bạn có thể thử với tên món khác không?"
+                })
+
+        except Exception as e:
+            print(f"Enhanced search error: {e}")
+            return JSONResponse({
+                "reply": f"❌ Không thể tìm kiếm thông tin món **{potential_name}** lúc này. Vui lòng thử lại sau hoặc kiểm tra lại tên món."
+            })
+
+    # ✅ Xác nhận thêm món
+    confirmation_words = ["đồng ý", "yes", "ok", "thêm", "có", "được", "thêm vào"]
+    if any(word in last_msg for word in confirmation_words):
+        if chatbot_temp_cache:
+            latest = list(chatbot_temp_cache.values())[-1]
+            chatbot_temp_cache.clear()
+            return JSONResponse({
+                "reply": f"✅ Món **{latest['name']}** đã được chuẩn bị để thêm vào danh sách!\n\nVui lòng nhấn nút **\"Thêm vào danh sách\"** ở phía trên để hoàn tất."
+            })
+        else:
+            return JSONResponse({
+                "reply": "❌ Không có món nào đang chờ thêm. Hãy tìm kiếm món ăn trước!"
+            })
+
+    # 🧠 Phân tích và tư vấn thông minh
+    try:
+        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+        
+        # Tạo context chi tiết
+        meal_list = "\n".join([
+            f"• **{m['name']}** - {m['calories']} cal, Protein: {m['protein']}g, Carbs: {m['carbs']}g, Fat: {m['fat']}g"
+            for m in meals
+        ])
+        
+        log_list = "\n".join([
+            f"• **{l['meal']['name']}** x{l['quantity']} = {l['meal']['calories']*l['quantity']} cal"
+            for l in logs
+        ])
+        
+        activity_list = "\n".join([
+            f"• **{a['activity']}** {a['duration']} phút = {a['calories_burned']} kcal đốt cháy"
+            for a in activities
+        ])
+        
+        summary_text = (
+            f"**Tổng hôm nay**: {summary.get('total_calories', 0)} cal, "
+            f"Protein: {summary.get('total_protein', 0)}g, "
+            f"Carbs: {summary.get('total_carbs', 0)}g, "
+            f"Fat: {summary.get('total_fat', 0)}g"
+        )
+
+        enhanced_system_prompt = f"""
+        Bạn là SmartCalories AI - trợ lý dinh dưỡng thông minh và thân thiện.
+
+        🎯 **KHẢ NĂNG CỦA BẠN:**
+        - Tìm kiếm món ăn từ cơ sở dữ liệu quốc tế
+        - Phân tích dinh dưỡng chi tiết và khoa học
+        - Tư vấn chế độ ăn cá nhân hóa
+        - Gợi ý thực đơn healthy và cân bằng
+        - Hướng dẫn hoạt động thể chất phù hợp
+
+        📊 **DỮ LIỆU HIỆN TẠI:**
+
+        **Danh sách món ăn có sẵn:**
+        {meal_list}
+
+        **Nhật ký ăn hôm nay:**
+        {log_list}
+
+        **Tổng kết dinh dưỡng hôm nay:**
+        {summary_text}
+
+        **Hoạt động thể chất hôm nay:**
+        {activity_list}
+
+        🎨 **PHONG CÁCH TRẢ LỜI:**
+        - Dùng emoji phù hợp và thân thiện
+        - Trả lời bằng tiếng Việt tự nhiên
+        - Đưa ra lời khuyên thực tế và khoa học
+        - Khuyến khích lối sống healthy
+        - Sử dụng markdown để format đẹp
+
+        📝 **CÂU HỎI/YÊU CẦU:** {last_msg}
+
+        Hãy trả lời một cách hữu ích, thông minh và thân thiện!
+        """
+
+        conversation_context = "\n".join([
+            f"**{msg.get('role', 'user')}**: {msg.get('content', '')}"
+            for msg in messages[-5:]  # Last 5 messages for context
+        ])
+
+        full_prompt = enhanced_system_prompt + "\n\n**Ngữ cảnh cuộc trò chuyện:**\n" + conversation_context
+
+        response = model.generate_content(full_prompt)
+        
+        return JSONResponse({"reply": response.text})
+
+    except Exception as e:
+        print(f"Gemini conversation error: {e}")
+        return JSONResponse({
+            "reply": "⚠️ Xin lỗi, tôi đang gặp sự cố kỹ thuật. Vui lòng thử lại sau hoặc liên hệ hỗ trợ kỹ thuật!"
+        })
     
 # Route xuất CSV nhật ký
 @app.get("/export-csv")

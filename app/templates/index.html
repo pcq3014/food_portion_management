@@ -35,7 +35,6 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 font-sans">
 <body class="bg-gradient-to-br from-blue-50 via-pink-50 to-blue-100 min-h-screen text-gray-800">
 <header class="header-gradient header-shadow relative flex flex-col items-center px-2 md:px-8 py-3 md:py-5 sticky top-0 z-40 glass">
   <button id="sidebarToggleBtn"
@@ -3997,25 +3996,35 @@ chatbotModal.addEventListener('click', function(e) {
 
 </style>
 <script>
-  function switchView(view) {
-    // Ẩn tất cả view
-    document.getElementById("welcomeView").classList.add("hidden");
-    document.getElementById("mealsView").classList.add("hidden");
-    document.getElementById("logView").classList.add("hidden");
+function switchView(view) {
+  // Ẩn tất cả view
+  document.getElementById("welcomeView").classList.add("hidden");
+  document.getElementById("mealsView").classList.add("hidden");
+  document.getElementById("logView").classList.add("hidden");
 
-    // Hiện view tương ứng
-    document.getElementById(view + "View").classList.remove("hidden");
+  // Hiện view tương ứng
+  document.getElementById(view + "View").classList.remove("hidden");
 
-    // Cập nhật trạng thái active cho sidebar
-    document.querySelectorAll("aside button").forEach(btn => {
-      btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
-    });
-    const activeBtn = document.getElementById("btn-" + view);
-    if (activeBtn) {
-      activeBtn.classList.add("bg-white", "text-blue-700", "font-semibold", "shadow-md");
-    }
+  // Cập nhật trạng thái active cho sidebar buttons
+  document.querySelectorAll(".sidebar-btn").forEach(btn => {
+    btn.classList.remove("bg-white", "text-blue-700", "font-semibold", "shadow-md");
+    btn.classList.add("text-white");
+  });
+  
+  const activeBtn = document.getElementById("btn-" + view);
+  if (activeBtn) {
+    activeBtn.classList.add("bg-white", "text-blue-700", "font-semibold", "shadow-md");
+    activeBtn.classList.remove("text-white");
   }
 
+  // Đóng sidebar trên mobile sau khi chọn
+  if (window.innerWidth < 768) {
+    closeSidebar();
+  }
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
   function goHome() {
     // Ẩn tất cả
     document.getElementById("mealsView").classList.add("hidden");
@@ -4028,22 +4037,24 @@ chatbotModal.addEventListener('click', function(e) {
     });
   }
 
-  window.onload = () => {
-    const params = new URLSearchParams(window.location.search);
-    const view = params.get("view");
+window.onload = () => {
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get("view");
 
-    document.getElementById("mealsView").classList.add("hidden");
-    document.getElementById("logView").classList.add("hidden");
-    document.getElementById("welcomeView").classList.add("hidden");
+  // Ẩn tất cả view ban đầu
+  document.getElementById("mealsView").classList.add("hidden");
+  document.getElementById("logView").classList.add("hidden");
+  document.getElementById("welcomeView").classList.add("hidden");
 
-    if (view === "log") {
-      switchView("log");
-    } else if (view === "meals") {
-      switchView("meals");
-    } else {
-      document.getElementById("welcomeView").classList.remove("hidden");
-    }
-  };
+  if (view === "log") {
+    switchView("log");
+  } else if (view === "meals") {
+    switchView("meals");
+  } else {
+    // Hiện welcome view mặc định
+    document.getElementById("welcomeView").classList.remove("hidden");
+  }
+};
 </script>
 <script>
 function submitGoalsForm(event) {
@@ -5065,7 +5076,7 @@ function openSidebar() {
   
   sidebar.classList.add('open');
   overlay.classList.remove('hidden');
-  document.body.style.overflow = 'hidden'; // Prevent background scroll
+  document.body.style.overflow = 'hidden';
 }
 
 function closeSidebar() {
@@ -5074,7 +5085,7 @@ function closeSidebar() {
   
   sidebar.classList.remove('open');
   overlay.classList.add('hidden');
-  document.body.style.overflow = ''; // Restore background scroll
+  document.body.style.overflow = '';
 }
 
 function closeSidebarOnMobile() {

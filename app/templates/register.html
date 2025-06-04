@@ -118,32 +118,50 @@
     .strength-weak { background: #ef4444; }
     .strength-medium { background: #f59e0b; }
     .strength-strong { background: #10b981; }
+
+    /* Mobile optimizations */
+    @media (max-width: 640px) {
+      .floating-shapes::before,
+      .floating-shapes::after {
+        display: none;
+      }
+      
+      .animate-float {
+        animation: none;
+      }
+      
+      body {
+        padding: 0.5rem;
+        min-height: 100vh;
+        min-height: 100dvh; /* Dynamic viewport height for mobile */
+      }
+    }
   </style>
 </head>
-<body class="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 flex items-center justify-center min-h-screen px-4 relative overflow-hidden">
+<body class="bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 min-h-screen min-h-[100dvh] flex items-start sm:items-center justify-center px-2 sm:px-4 py-4 sm:py-0 relative overflow-x-hidden">
   <!-- Background decorative elements -->
-  <div class="absolute inset-0 overflow-hidden">
+  <div class="absolute inset-0 overflow-hidden hidden sm:block">
     <div class="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
     <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-emerald-300 opacity-10 rounded-full blur-3xl animate-pulse delay-1000"></div>
     <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-green-300 opacity-5 rounded-full blur-2xl animate-ping"></div>
     <div class="absolute bottom-1/3 right-1/3 w-24 h-24 bg-teal-300 opacity-5 rounded-full blur-2xl animate-ping delay-700"></div>
   </div>
 
-  <div class="glass-morphism p-8 md:p-12 rounded-3xl shadow-2xl max-w-md w-full border border-white/20 transition-all duration-500 hover:shadow-3xl animate-fade-in-up floating-shapes relative">
+  <div class="glass-morphism p-4 sm:p-8 md:p-12 rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full border border-white/20 transition-all duration-500 hover:shadow-3xl animate-fade-in-up floating-shapes relative my-4 sm:my-0">
     <!-- Header Section -->
-    <div class="flex flex-col items-center mb-8">
-      <div class="relative mb-6">
-        <div class="bg-gradient-to-br from-emerald-400 to-green-500 rounded-full p-6 shadow-lg animate-float animate-pulse-glow">
-          <i class="fa fa-user-plus text-5xl text-white"></i>
+    <div class="flex flex-col items-center mb-6 sm:mb-8">
+      <div class="relative mb-4 sm:mb-6">
+        <div class="bg-gradient-to-br from-emerald-400 to-green-500 rounded-full p-4 sm:p-6 shadow-lg animate-float animate-pulse-glow">
+          <i class="fa fa-user-plus text-3xl sm:text-5xl text-white"></i>
         </div>
-        <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-ping"></div>
+        <div class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-4 h-4 sm:w-6 sm:h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-ping"></div>
       </div>
       
-      <h2 class="text-3xl md:text-4xl font-bold text-center mb-3 gradient-text tracking-wide">
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 sm:mb-3 gradient-text tracking-wide">
         Đăng ký
       </h2>
       
-      <div class="w-16 h-1 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mb-4"></div>
+      <div class="w-12 sm:w-16 h-1 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mb-3 sm:mb-4"></div>
       
       <p class="text-gray-600 text-center text-sm md:text-base leading-relaxed px-2">
         Tạo tài khoản mới để bắt đầu hành trình 
@@ -153,7 +171,7 @@
     </div>
 
     <!-- Form Section -->
-    <form method="post" action="/register" class="space-y-5">
+    <form method="post" action="/register" class="space-y-4 sm:space-y-5">
       <div class="relative group">
         <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity blur"></div>
         <input 
@@ -161,9 +179,9 @@
           name="fullname" 
           placeholder="Họ và tên" 
           required
-          class="peer w-full py-4 pl-14 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400"
+          class="peer w-full py-3 sm:py-4 pl-12 sm:pl-14 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400 text-sm sm:text-base"
         />
-        <i class="fa fa-user-circle absolute left-4 top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-lg"></i>
+        <i class="fa fa-user-circle absolute left-3 sm:left-4 top-3 sm:top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-base sm:text-lg"></i>
         <div class="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 scale-x-0 peer-focus:scale-x-100 transition-transform duration-300 rounded-full"></div>
       </div>
       
@@ -174,9 +192,9 @@
           name="username" 
           placeholder="Tên đăng nhập" 
           required
-          class="peer w-full py-4 pl-14 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400"
+          class="peer w-full py-3 sm:py-4 pl-12 sm:pl-14 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400 text-sm sm:text-base"
         />
-        <i class="fa fa-user absolute left-4 top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-lg"></i>
+        <i class="fa fa-user absolute left-3 sm:left-4 top-3 sm:top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-base sm:text-lg"></i>
         <div class="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 scale-x-0 peer-focus:scale-x-100 transition-transform duration-300 rounded-full"></div>
       </div>
       
@@ -187,9 +205,9 @@
           name="email" 
           placeholder="Email" 
           required
-          class="peer w-full py-4 pl-14 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400"
+          class="peer w-full py-3 sm:py-4 pl-12 sm:pl-14 pr-4 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400 text-sm sm:text-base"
         />
-        <i class="fa fa-envelope absolute left-4 top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-lg"></i>
+        <i class="fa fa-envelope absolute left-3 sm:left-4 top-3 sm:top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-base sm:text-lg"></i>
         <div class="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 scale-x-0 peer-focus:scale-x-100 transition-transform duration-300 rounded-full"></div>
       </div>
       
@@ -201,11 +219,11 @@
           id="password"
           placeholder="Mật khẩu" 
           required
-          class="peer w-full py-4 pl-14 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400"
+          class="peer w-full py-3 sm:py-4 pl-12 sm:pl-14 pr-10 sm:pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400 text-sm sm:text-base"
         />
-        <i class="fa fa-lock absolute left-4 top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-lg"></i>
-        <button type="button" onclick="togglePassword('password', 'toggleIcon1')" class="absolute right-4 top-4 text-gray-400 hover:text-emerald-500 transition-colors duration-300">
-          <i class="fa fa-eye" id="toggleIcon1"></i>
+        <i class="fa fa-lock absolute left-3 sm:left-4 top-3 sm:top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-base sm:text-lg"></i>
+        <button type="button" onclick="togglePassword('password', 'toggleIcon1')" class="absolute right-3 sm:right-4 top-3 sm:top-4 text-gray-400 hover:text-emerald-500 transition-colors duration-300">
+          <i class="fa fa-eye text-sm sm:text-base" id="toggleIcon1"></i>
         </button>
         <div class="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 scale-x-0 peer-focus:scale-x-100 transition-transform duration-300 rounded-full"></div>
         <!-- Password strength indicator -->
@@ -223,21 +241,21 @@
           id="confirmPassword"
           placeholder="Xác nhận mật khẩu" 
           required
-          class="peer w-full py-4 pl-14 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400"
+          class="peer w-full py-3 sm:py-4 pl-12 sm:pl-14 pr-10 sm:pr-12 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all duration-300 shadow-sm bg-white/80 backdrop-blur-sm input-glow text-gray-700 placeholder-gray-400 text-sm sm:text-base"
         />
-        <i class="fa fa-lock absolute left-4 top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-lg"></i>
-        <button type="button" onclick="togglePassword('confirmPassword', 'toggleIcon2')" class="absolute right-4 top-4 text-gray-400 hover:text-emerald-500 transition-colors duration-300">
-          <i class="fa fa-eye" id="toggleIcon2"></i>
+        <i class="fa fa-lock absolute left-3 sm:left-4 top-3 sm:top-4 text-gray-400 peer-focus:text-emerald-500 transition-colors duration-300 text-base sm:text-lg"></i>
+        <button type="button" onclick="togglePassword('confirmPassword', 'toggleIcon2')" class="absolute right-3 sm:right-4 top-3 sm:top-4 text-gray-400 hover:text-emerald-500 transition-colors duration-300">
+          <i class="fa fa-eye text-sm sm:text-base" id="toggleIcon2"></i>
         </button>
         <div class="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-500 to-green-500 scale-x-0 peer-focus:scale-x-100 transition-transform duration-300 rounded-full"></div>
       </div>
       
       <button 
         type="submit"
-        class="group relative w-full bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-600 hover:via-green-600 hover:to-emerald-700 text-white py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] transform active:scale-[0.98] overflow-hidden"
+        class="group relative w-full bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-600 hover:via-green-600 hover:to-emerald-700 text-white py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] transform active:scale-[0.98] overflow-hidden text-sm sm:text-base"
       >
         <span class="relative z-10 flex items-center justify-center gap-2">
-          <i class="fa fa-user-plus text-lg"></i>
+          <i class="fa fa-user-plus text-base sm:text-lg"></i>
           Tạo tài khoản
         </span>
         <div class="absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -246,38 +264,39 @@
 
     <!-- Message Section -->
     {% if error %}
-    <div class="flex items-start gap-3 mt-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl shadow-sm animate-slide-in-right backdrop-blur-sm">
+    <div class="flex items-start gap-3 mt-4 sm:mt-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-800 px-3 sm:px-4 py-3 sm:py-4 rounded-xl shadow-sm animate-slide-in-right backdrop-blur-sm">
       <div class="bg-red-100 rounded-full p-2 flex-shrink-0 mt-0.5">
-        <i class="fa fa-exclamation-triangle text-lg text-red-600"></i>
+        <i class="fa fa-exclamation-triangle text-sm sm:text-lg text-red-600"></i>
       </div>
       <div>
-        <p class="font-semibold text-sm mb-1">Đăng ký thất bại!</p>
-        <p class="text-sm leading-relaxed">{{ error }}</p>
+        <p class="font-semibold text-xs sm:text-sm mb-1">Đăng ký thất bại!</p>
+        <p class="text-xs sm:text-sm leading-relaxed">{{ error }}</p>
       </div>
     </div>
     {% endif %}
 
     <!-- Footer Section -->
-    <div class="mt-8 text-center space-y-4">
+    <div class="mt-6 sm:mt-8 text-center space-y-3 sm:space-y-4">
       <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
       
-      <p class="text-gray-600 text-sm">
+      <p class="text-gray-600 text-xs sm:text-sm">
         Đã có tài khoản?
         <a href="/login" class="group text-emerald-600 font-semibold hover:text-emerald-700 transition-colors duration-300 ml-1">
           Đăng nhập ngay
           <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform duration-300 text-xs"></i>
         </a>
       </p>
-          <!-- Terms and Privacy -->
-    <div class="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-      <p class="text-xs text-gray-600 text-center leading-relaxed">
-        Bằng việc đăng ký, bạn đồng ý với 
-        <a href="#" class="text-emerald-600 hover:text-emerald-700 font-medium">Điều khoản sử dụng</a> 
-        và 
-        <a href="#" class="text-emerald-600 hover:text-emerald-700 font-medium">Chính sách bảo mật</a> 
-        của chúng tôi.
-      </p>
-    </div>
+      
+      <!-- Terms and Privacy -->
+      <div class="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+        <p class="text-xs text-gray-600 text-center leading-relaxed">
+          Bằng việc đăng ký, bạn đồng ý với 
+          <a href="#" class="text-emerald-600 hover:text-emerald-700 font-medium">Điều khoản sử dụng</a> 
+          và 
+          <a href="#" class="text-emerald-600 hover:text-emerald-700 font-medium">Chính sách bảo mật</a> 
+          của chúng tôi.
+        </p>
+      </div>
     </div>
   </div>
 

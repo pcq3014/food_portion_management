@@ -169,7 +169,7 @@
       </h2>
       
       <!-- Search form với hiệu ứng glassmorphism nâng cao -->
-      <form method="get" action="/" class="w-full mb-6">
+      <form method="get" action="/" class="w-full mb-6" onsubmit="return handleSearchForm(event)">
         <div class="flex flex-col lg:flex-row gap-4">
           <div class="flex-1 relative group">
             <div class="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
@@ -1370,17 +1370,23 @@
 
       <!-- Quick Action Cards for better UX -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-10 max-w-4xl mx-auto">
+        <!-- Meals Card -->
+        <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-pink-200 hover:border-pink-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="event.preventDefault(); switchView('meals');">
+          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🍽️</div>
+          <h3 class="text-lg font-bold text-gray-800 mb-2">Danh sách món ăn</h3>
+          <p class="text-sm text-gray-600">Khám phá và quản lý món ăn yêu thích</p>
+        </div>
 
         {% if user.role != 'admin' %}
         <!-- Analytics Card -->
-        <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="switchView('log')">
+        <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="event.preventDefault(); switchView('log');">
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📊</div>
           <h3 class="text-lg font-bold text-gray-800 mb-2">Phân tích dinh dưỡng</h3>
           <p class="text-sm text-gray-600">Xem báo cáo và thống kê chi tiết</p>
         </div>
 
         <!-- Quick Log Card -->
-        <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-green-200 hover:border-green-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="openLogMealModal()">
+        <div class="quick-action-card bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-2 border-green-200 hover:border-green-400 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer group" onclick="event.preventDefault(); openLogMealModal();">
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📝</div>
           <h3 class="text-lg font-bold text-gray-800 mb-2">Ghi nhật ký</h3>
           <p class="text-sm text-gray-600">Thêm nhanh món ăn vào nhật ký</p>
@@ -1460,6 +1466,27 @@
     </div>
   </div>
 </div>
+<script>
+window.addEventListener('popstate', function(event) {
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get("view");
+  
+  if (view === "log") {
+    switchView("log");
+  } else if (view === "meals") {
+    switchView("meals");
+  } else {
+    goHome();
+  }
+});
+function handleSearchForm(event) {
+  event.preventDefault();
+  const searchValue = event.target.search.value;
+  const newUrl = window.location.pathname + "?view=meals" + (searchValue ? "&search=" + encodeURIComponent(searchValue) : "");
+  window.location.href = newUrl;
+  return false;
+}
+</script>
 <style>
 /* Enhanced Welcome View Styles với responsive tối ưu */
 #welcomeView {
@@ -4005,6 +4032,12 @@ function switchView(view) {
 
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  // Ngăn chặn reload trang bằng cách update URL mà không reload
+  if (history.pushState) {
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?view=" + view;
+    window.history.pushState({path: newUrl}, '', newUrl);
+  }
 }
 
 function goHome() {
@@ -4021,13 +4054,22 @@ function goHome() {
     btn.classList.add("text-white");
   });
   
+  // Update URL về trang chủ mà không reload
+  if (history.pushState) {
+    const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+    window.history.pushState({path: newUrl}, '', newUrl);
+  }
+  
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
 window.onload = () => {
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
+
+  // Đặt cờ để tránh xử lý lặp lại
+  if (window.viewInitialized) return;
+  window.viewInitialized = true;
 
   if (view === "log") {
     switchView("log");

@@ -65,7 +65,7 @@
 
 - **Đỗ Ngọc Phi** - MSSV: 2221050848
 - **Phạm Cường Quốc** - MSSV: 2221050002
-- **Đinh Công Minh** - MSSV: 222105794
+- **Đinh Công Minh** - MSSV: 2221050794
 - **GVHD**: Thầy Nguyễn Văn Thắng 
   _Khoa CNTT - Trường ĐH Mỏ - Địa chất_
 

@@ -64,8 +64,9 @@
 ## 👤 Tác giả
 
 - **Đỗ Ngọc Phi** - MSSV: 2221050848
-- **Nguyễn Minh Quân** - MSSV: 2221050125
-- **GVHD**: Thầy Đặng Văn Nam, Cô Dương Thị Hiền Thanh  
+- **Phạm Cường Quốc** - MSSV: 2221050002
+- **Đinh Công Minh** - MSSV: 222105794
+- **GVHD**: Thầy Nguyễn Văn Thắng 
   _Khoa CNTT - Trường ĐH Mỏ - Địa chất_
 
 ## 🚀 Demo trực tiếp

@@ -288,7 +288,7 @@ Cảm ơn các thư viện và công cụ open-source đã giúp dự án này c
   
   Được tạo với ❤️ bởi **SmartCalories Team**
   
-  [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/your-username/smartcalories)
-  [![Email](https://img.shields.io/badge/-Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:support@smartcalories.com)
+  [![GitHub](https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/pcq3014)
+  [![Email](https://img.shields.io/badge/-Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:smartcalories.vn@gmail.com)
   
 </div>

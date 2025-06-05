@@ -236,7 +236,7 @@ Chúng tôi hoan nghênh mọi đóng góp! Hãy:
 
 ## 🐛 Báo lỗi
 
-Nếu bạn gặp lỗi, hãy tạo [Issue](https://github.com/your-username/smartcalories/issues) với:
+Nếu bạn gặp lỗi, hãy tạo [Issue](https://github.com/pcq3014/food_portion_management/issues) với:
 - Mô tả chi tiết lỗi
 - Các bước tái hiện
 - Screenshot (nếu có)

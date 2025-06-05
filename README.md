@@ -55,6 +55,12 @@
 - ⚡ Tốc độ tải nhanh và mượt mà
 - 🎭 Hiệu ứng animation tinh tế
 
+### 🏃‍♂️ **Ghi nhật ký hoạt động thể chất**
+- 🏃 Chọn hoạt động: Đi bộ, chạy bộ, đạp xe, bơi lội, gym, yoga,...
+- 🕒 Thời gian thực hiện: Ghi theo phút hoặc giờ
+- 🔥 Tính toán calo tiêu hao: Dựa vào loại hoạt động, thời gian và trọng lượng cơ thể
+- 📅 Lưu nhật ký hoạt động: Dễ dàng xem lại và theo dõi tiến độ
+
 ## 🚀 Demo trực tiếp
 
 Bạn có thể trải nghiệm ứng dụng tại: **[nhat-ky-an-uong.onrender.com](https://nhat-ky-an-uong.onrender.com/)**

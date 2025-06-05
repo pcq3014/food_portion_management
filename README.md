@@ -61,6 +61,13 @@
 - ⚡ Tốc độ tải nhanh và mượt mà
 - 🎭 Hiệu ứng animation tinh tế
 
+## 👤 Tác giả
+
+- **Đỗ Ngọc Phi** - MSSV: 2221050848
+- **Nguyễn Minh Quân** - MSSV: 2221050125
+- **GVHD**: Thầy Đặng Văn Nam, Cô Dương Thị Hiền Thanh  
+  _Khoa CNTT - Trường ĐH Mỏ - Địa chất_
+
 ## 🚀 Demo trực tiếp
 
 Bạn có thể trải nghiệm ứng dụng tại: **[nhat-ky-an-uong.onrender.com](https://nhat-ky-an-uong.onrender.com/)**
